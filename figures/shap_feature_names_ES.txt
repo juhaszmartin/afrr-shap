@@ -1,0 +1,779 @@
+hour
+dayofweek
+dayofweek_sin
+dayofweek_cos
+day_of_year
+is_holiday
+generation_import - Generation - Hydro Water Reservoir
+intraday_wind_and_solar_forecast - Wind Onshore
+generation - Other renewable - Actual Aggregated
+activated_balancing_energy_prices - Price
+generation - Hydro Pumped Storage - Actual Consumption
+wind_and_solar_forecast - Solar
+generation - Hydro Run-of-river and poundage - Actual Aggregated
+generation_import - Generation - Hydro Run-of-river and poundage
+generation_import - Generation - Solar
+100m_wind_speed_mean
+generation - Fossil Gas - Actual Aggregated
+generation - Waste - Actual Aggregated
+generation - Nuclear - Actual Aggregated
+generation_import - Import - sum
+10m_wind_speed_mean
+generation_import - Generation - Fossil Hard coal
+generation_import - Generation - Fossil Gas
+generation_import - Generation - Nuclear
+generation - Fossil Oil shale - Actual Aggregated
+generation_import - Generation - Wind Onshore
+generation_forecast - Scheduled Aggregated
+load - Actual Load
+generation_import - Import - PT
+generation_import - Generation - Biomass
+generation - Fossil Oil - Actual Aggregated
+100m_wind_speed_std
+generation_forecast - Scheduled Consumption
+10m_wind_speed_std
+generation - Fossil Peat - Actual Aggregated
+generation - Wind Onshore - Actual Aggregated
+generation_import - Generation - Other renewable
+load_forecast - Forecasted Load
+generation - Fossil Brown coal/Lignite - Actual Aggregated
+generation - Solar - Actual Aggregated
+temperature_mean_celsius
+generation - Wind Offshore - Actual Aggregated
+generation - Geothermal - Actual Aggregated
+generation - Marine - Actual Aggregated
+generation_import - Generation - Other
+generation_import - Generation - Waste
+temperature_std_celsius
+generation - Fossil Coal-derived gas - Actual Aggregated
+generation - Biomass - Actual Aggregated
+generation - Other - Actual Aggregated
+intraday_wind_and_solar_forecast - Solar
+wind_and_solar_forecast - Wind Onshore
+ssrd_mean_j_m2
+generation_import - Generation - Fossil Oil
+generation - Hydro Water Reservoir - Actual Aggregated
+generation - Fossil Hard coal - Actual Aggregated
+generation_import - Generation - Hydro Pumped Storage
+ssrd_std_j_m2
+generation_import - Import - FR
+intraday_wind_and_solar_forecast - Wind Onshore_t-150min
+wind_and_solar_forecast - Solar_t-150min
+100m_wind_speed_mean_t-150min
+10m_wind_speed_mean_t-150min
+100m_wind_speed_std_t-150min
+10m_wind_speed_std_t-150min
+intraday_wind_and_solar_forecast - Solar_t-150min
+wind_and_solar_forecast - Wind Onshore_t-150min
+ssrd_mean_j_m2_t-150min
+ssrd_std_j_m2_t-150min
+intraday_wind_and_solar_forecast - Wind Onshore_t-135min
+wind_and_solar_forecast - Solar_t-135min
+100m_wind_speed_mean_t-135min
+10m_wind_speed_mean_t-135min
+100m_wind_speed_std_t-135min
+10m_wind_speed_std_t-135min
+intraday_wind_and_solar_forecast - Solar_t-135min
+wind_and_solar_forecast - Wind Onshore_t-135min
+ssrd_mean_j_m2_t-135min
+ssrd_std_j_m2_t-135min
+intraday_wind_and_solar_forecast - Wind Onshore_t-120min
+wind_and_solar_forecast - Solar_t-120min
+100m_wind_speed_mean_t-120min
+10m_wind_speed_mean_t-120min
+100m_wind_speed_std_t-120min
+10m_wind_speed_std_t-120min
+intraday_wind_and_solar_forecast - Solar_t-120min
+wind_and_solar_forecast - Wind Onshore_t-120min
+ssrd_mean_j_m2_t-120min
+ssrd_std_j_m2_t-120min
+intraday_wind_and_solar_forecast - Wind Onshore_t-105min
+wind_and_solar_forecast - Solar_t-105min
+100m_wind_speed_mean_t-105min
+10m_wind_speed_mean_t-105min
+100m_wind_speed_std_t-105min
+10m_wind_speed_std_t-105min
+intraday_wind_and_solar_forecast - Solar_t-105min
+wind_and_solar_forecast - Wind Onshore_t-105min
+ssrd_mean_j_m2_t-105min
+ssrd_std_j_m2_t-105min
+intraday_wind_and_solar_forecast - Wind Onshore_t-90min
+wind_and_solar_forecast - Solar_t-90min
+100m_wind_speed_mean_t-90min
+10m_wind_speed_mean_t-90min
+100m_wind_speed_std_t-90min
+10m_wind_speed_std_t-90min
+intraday_wind_and_solar_forecast - Solar_t-90min
+wind_and_solar_forecast - Wind Onshore_t-90min
+ssrd_mean_j_m2_t-90min
+ssrd_std_j_m2_t-90min
+intraday_wind_and_solar_forecast - Wind Onshore_t-75min
+wind_and_solar_forecast - Solar_t-75min
+100m_wind_speed_mean_t-75min
+10m_wind_speed_mean_t-75min
+100m_wind_speed_std_t-75min
+10m_wind_speed_std_t-75min
+intraday_wind_and_solar_forecast - Solar_t-75min
+wind_and_solar_forecast - Wind Onshore_t-75min
+ssrd_mean_j_m2_t-75min
+ssrd_std_j_m2_t-75min
+intraday_wind_and_solar_forecast - Wind Onshore_t-60min
+wind_and_solar_forecast - Solar_t-60min
+100m_wind_speed_mean_t-60min
+10m_wind_speed_mean_t-60min
+100m_wind_speed_std_t-60min
+10m_wind_speed_std_t-60min
+intraday_wind_and_solar_forecast - Solar_t-60min
+wind_and_solar_forecast - Wind Onshore_t-60min
+ssrd_mean_j_m2_t-60min
+ssrd_std_j_m2_t-60min
+intraday_wind_and_solar_forecast - Wind Onshore_t-45min
+wind_and_solar_forecast - Solar_t-45min
+100m_wind_speed_mean_t-45min
+10m_wind_speed_mean_t-45min
+100m_wind_speed_std_t-45min
+10m_wind_speed_std_t-45min
+intraday_wind_and_solar_forecast - Solar_t-45min
+wind_and_solar_forecast - Wind Onshore_t-45min
+ssrd_mean_j_m2_t-45min
+ssrd_std_j_m2_t-45min
+intraday_wind_and_solar_forecast - Wind Onshore_t-30min
+wind_and_solar_forecast - Solar_t-30min
+100m_wind_speed_mean_t-30min
+10m_wind_speed_mean_t-30min
+100m_wind_speed_std_t-30min
+10m_wind_speed_std_t-30min
+intraday_wind_and_solar_forecast - Solar_t-30min
+wind_and_solar_forecast - Wind Onshore_t-30min
+ssrd_mean_j_m2_t-30min
+ssrd_std_j_m2_t-30min
+intraday_wind_and_solar_forecast - Wind Onshore_t-15min
+wind_and_solar_forecast - Solar_t-15min
+100m_wind_speed_mean_t-15min
+10m_wind_speed_mean_t-15min
+100m_wind_speed_std_t-15min
+10m_wind_speed_std_t-15min
+intraday_wind_and_solar_forecast - Solar_t-15min
+wind_and_solar_forecast - Wind Onshore_t-15min
+ssrd_mean_j_m2_t-15min
+ssrd_std_j_m2_t-15min
+generation_forecast - Scheduled Aggregated_t-150min
+generation_forecast - Scheduled Consumption_t-150min
+load_forecast - Forecasted Load_t-150min
+generation_forecast - Scheduled Aggregated_t-135min
+generation_forecast - Scheduled Consumption_t-135min
+load_forecast - Forecasted Load_t-135min
+generation_forecast - Scheduled Aggregated_t-120min
+generation_forecast - Scheduled Consumption_t-120min
+load_forecast - Forecasted Load_t-120min
+generation_forecast - Scheduled Aggregated_t-105min
+generation_forecast - Scheduled Consumption_t-105min
+load_forecast - Forecasted Load_t-105min
+generation_forecast - Scheduled Aggregated_t-90min
+generation_forecast - Scheduled Consumption_t-90min
+load_forecast - Forecasted Load_t-90min
+generation_forecast - Scheduled Aggregated_t-75min
+generation_forecast - Scheduled Consumption_t-75min
+load_forecast - Forecasted Load_t-75min
+generation_forecast - Scheduled Aggregated_t-60min
+generation_forecast - Scheduled Consumption_t-60min
+load_forecast - Forecasted Load_t-60min
+generation_forecast - Scheduled Aggregated_t-45min
+generation_forecast - Scheduled Consumption_t-45min
+load_forecast - Forecasted Load_t-45min
+generation_forecast - Scheduled Aggregated_t-30min
+generation_forecast - Scheduled Consumption_t-30min
+load_forecast - Forecasted Load_t-30min
+generation_forecast - Scheduled Aggregated_t-15min
+generation_forecast - Scheduled Consumption_t-15min
+load_forecast - Forecasted Load_t-15min
+generation_import - Generation - Hydro Water Reservoir_t-150min
+generation - Other renewable - Actual Aggregated_t-150min
+activated_balancing_energy_prices - Price_t-150min
+generation - Hydro Pumped Storage - Actual Consumption_t-150min
+generation - Hydro Run-of-river and poundage - Actual Aggregated_t-150min
+generation_import - Generation - Hydro Run-of-river and poundage_t-150min
+generation_import - Generation - Solar_t-150min
+generation - Fossil Gas - Actual Aggregated_t-150min
+generation - Waste - Actual Aggregated_t-150min
+generation - Nuclear - Actual Aggregated_t-150min
+generation_import - Import - sum_t-150min
+generation_import - Generation - Fossil Hard coal_t-150min
+generation_import - Generation - Fossil Gas_t-150min
+generation_import - Generation - Nuclear_t-150min
+generation - Fossil Oil shale - Actual Aggregated_t-150min
+generation_import - Generation - Wind Onshore_t-150min
+generation - Fossil Oil - Actual Aggregated_t-150min
+load - Actual Load_t-150min
+generation_import - Import - PT_t-150min
+generation_import - Generation - Biomass_t-150min
+generation - Fossil Peat - Actual Aggregated_t-150min
+generation - Wind Onshore - Actual Aggregated_t-150min
+generation_import - Generation - Other renewable_t-150min
+generation - Fossil Brown coal/Lignite - Actual Aggregated_t-150min
+generation - Solar - Actual Aggregated_t-150min
+temperature_mean_celsius_t-150min
+generation - Wind Offshore - Actual Aggregated_t-150min
+generation - Geothermal - Actual Aggregated_t-150min
+generation - Marine - Actual Aggregated_t-150min
+generation_import - Generation - Other_t-150min
+generation_import - Generation - Waste_t-150min
+temperature_std_celsius_t-150min
+generation - Fossil Coal-derived gas - Actual Aggregated_t-150min
+generation - Biomass - Actual Aggregated_t-150min
+generation - Other - Actual Aggregated_t-150min
+generation_import - Generation - Fossil Oil_t-150min
+generation - Hydro Water Reservoir - Actual Aggregated_t-150min
+generation - Fossil Hard coal - Actual Aggregated_t-150min
+generation_import - Generation - Hydro Pumped Storage_t-150min
+generation_import - Import - FR_t-150min
+generation_import - Generation - Hydro Water Reservoir_t-135min
+generation - Other renewable - Actual Aggregated_t-135min
+activated_balancing_energy_prices - Price_t-135min
+generation - Hydro Pumped Storage - Actual Consumption_t-135min
+generation - Hydro Run-of-river and poundage - Actual Aggregated_t-135min
+generation_import - Generation - Hydro Run-of-river and poundage_t-135min
+generation_import - Generation - Solar_t-135min
+generation - Fossil Gas - Actual Aggregated_t-135min
+generation - Waste - Actual Aggregated_t-135min
+generation - Nuclear - Actual Aggregated_t-135min
+generation_import - Import - sum_t-135min
+generation_import - Generation - Fossil Hard coal_t-135min
+generation_import - Generation - Fossil Gas_t-135min
+generation_import - Generation - Nuclear_t-135min
+generation - Fossil Oil shale - Actual Aggregated_t-135min
+generation_import - Generation - Wind Onshore_t-135min
+generation - Fossil Oil - Actual Aggregated_t-135min
+load - Actual Load_t-135min
+generation_import - Import - PT_t-135min
+generation_import - Generation - Biomass_t-135min
+generation - Fossil Peat - Actual Aggregated_t-135min
+generation - Wind Onshore - Actual Aggregated_t-135min
+generation_import - Generation - Other renewable_t-135min
+generation - Fossil Brown coal/Lignite - Actual Aggregated_t-135min
+generation - Solar - Actual Aggregated_t-135min
+temperature_mean_celsius_t-135min
+generation - Wind Offshore - Actual Aggregated_t-135min
+generation - Geothermal - Actual Aggregated_t-135min
+generation - Marine - Actual Aggregated_t-135min
+generation_import - Generation - Other_t-135min
+generation_import - Generation - Waste_t-135min
+temperature_std_celsius_t-135min
+generation - Fossil Coal-derived gas - Actual Aggregated_t-135min
+generation - Biomass - Actual Aggregated_t-135min
+generation - Other - Actual Aggregated_t-135min
+generation_import - Generation - Fossil Oil_t-135min
+generation - Hydro Water Reservoir - Actual Aggregated_t-135min
+generation - Fossil Hard coal - Actual Aggregated_t-135min
+generation_import - Generation - Hydro Pumped Storage_t-135min
+generation_import - Import - FR_t-135min
+generation_import - Generation - Hydro Water Reservoir_t-120min
+generation - Other renewable - Actual Aggregated_t-120min
+activated_balancing_energy_prices - Price_t-120min
+generation - Hydro Pumped Storage - Actual Consumption_t-120min
+generation - Hydro Run-of-river and poundage - Actual Aggregated_t-120min
+generation_import - Generation - Hydro Run-of-river and poundage_t-120min
+generation_import - Generation - Solar_t-120min
+generation - Fossil Gas - Actual Aggregated_t-120min
+generation - Waste - Actual Aggregated_t-120min
+generation - Nuclear - Actual Aggregated_t-120min
+generation_import - Import - sum_t-120min
+generation_import - Generation - Fossil Hard coal_t-120min
+generation_import - Generation - Fossil Gas_t-120min
+generation_import - Generation - Nuclear_t-120min
+generation - Fossil Oil shale - Actual Aggregated_t-120min
+generation_import - Generation - Wind Onshore_t-120min
+generation - Fossil Oil - Actual Aggregated_t-120min
+load - Actual Load_t-120min
+generation_import - Import - PT_t-120min
+generation_import - Generation - Biomass_t-120min
+generation - Fossil Peat - Actual Aggregated_t-120min
+generation - Wind Onshore - Actual Aggregated_t-120min
+generation_import - Generation - Other renewable_t-120min
+generation - Fossil Brown coal/Lignite - Actual Aggregated_t-120min
+generation - Solar - Actual Aggregated_t-120min
+temperature_mean_celsius_t-120min
+generation - Wind Offshore - Actual Aggregated_t-120min
+generation - Geothermal - Actual Aggregated_t-120min
+generation - Marine - Actual Aggregated_t-120min
+generation_import - Generation - Other_t-120min
+generation_import - Generation - Waste_t-120min
+temperature_std_celsius_t-120min
+generation - Fossil Coal-derived gas - Actual Aggregated_t-120min
+generation - Biomass - Actual Aggregated_t-120min
+generation - Other - Actual Aggregated_t-120min
+generation_import - Generation - Fossil Oil_t-120min
+generation - Hydro Water Reservoir - Actual Aggregated_t-120min
+generation - Fossil Hard coal - Actual Aggregated_t-120min
+generation_import - Generation - Hydro Pumped Storage_t-120min
+generation_import - Import - FR_t-120min
+generation_import - Generation - Hydro Water Reservoir_t-105min
+generation - Other renewable - Actual Aggregated_t-105min
+activated_balancing_energy_prices - Price_t-105min
+generation - Hydro Pumped Storage - Actual Consumption_t-105min
+generation - Hydro Run-of-river and poundage - Actual Aggregated_t-105min
+generation_import - Generation - Hydro Run-of-river and poundage_t-105min
+generation_import - Generation - Solar_t-105min
+generation - Fossil Gas - Actual Aggregated_t-105min
+generation - Waste - Actual Aggregated_t-105min
+generation - Nuclear - Actual Aggregated_t-105min
+generation_import - Import - sum_t-105min
+generation_import - Generation - Fossil Hard coal_t-105min
+generation_import - Generation - Fossil Gas_t-105min
+generation_import - Generation - Nuclear_t-105min
+generation - Fossil Oil shale - Actual Aggregated_t-105min
+generation_import - Generation - Wind Onshore_t-105min
+generation - Fossil Oil - Actual Aggregated_t-105min
+load - Actual Load_t-105min
+generation_import - Import - PT_t-105min
+generation_import - Generation - Biomass_t-105min
+generation - Fossil Peat - Actual Aggregated_t-105min
+generation - Wind Onshore - Actual Aggregated_t-105min
+generation_import - Generation - Other renewable_t-105min
+generation - Fossil Brown coal/Lignite - Actual Aggregated_t-105min
+generation - Solar - Actual Aggregated_t-105min
+temperature_mean_celsius_t-105min
+generation - Wind Offshore - Actual Aggregated_t-105min
+generation - Geothermal - Actual Aggregated_t-105min
+generation - Marine - Actual Aggregated_t-105min
+generation_import - Generation - Other_t-105min
+generation_import - Generation - Waste_t-105min
+temperature_std_celsius_t-105min
+generation - Fossil Coal-derived gas - Actual Aggregated_t-105min
+generation - Biomass - Actual Aggregated_t-105min
+generation - Other - Actual Aggregated_t-105min
+generation_import - Generation - Fossil Oil_t-105min
+generation - Hydro Water Reservoir - Actual Aggregated_t-105min
+generation - Fossil Hard coal - Actual Aggregated_t-105min
+generation_import - Generation - Hydro Pumped Storage_t-105min
+generation_import - Import - FR_t-105min
+generation_import - Generation - Hydro Water Reservoir_t-90min
+generation - Other renewable - Actual Aggregated_t-90min
+activated_balancing_energy_prices - Price_t-90min
+generation - Hydro Pumped Storage - Actual Consumption_t-90min
+generation - Hydro Run-of-river and poundage - Actual Aggregated_t-90min
+generation_import - Generation - Hydro Run-of-river and poundage_t-90min
+generation_import - Generation - Solar_t-90min
+generation - Fossil Gas - Actual Aggregated_t-90min
+generation - Waste - Actual Aggregated_t-90min
+generation - Nuclear - Actual Aggregated_t-90min
+generation_import - Import - sum_t-90min
+generation_import - Generation - Fossil Hard coal_t-90min
+generation_import - Generation - Fossil Gas_t-90min
+generation_import - Generation - Nuclear_t-90min
+generation - Fossil Oil shale - Actual Aggregated_t-90min
+generation_import - Generation - Wind Onshore_t-90min
+generation - Fossil Oil - Actual Aggregated_t-90min
+load - Actual Load_t-90min
+generation_import - Import - PT_t-90min
+generation_import - Generation - Biomass_t-90min
+generation - Fossil Peat - Actual Aggregated_t-90min
+generation - Wind Onshore - Actual Aggregated_t-90min
+generation_import - Generation - Other renewable_t-90min
+generation - Fossil Brown coal/Lignite - Actual Aggregated_t-90min
+generation - Solar - Actual Aggregated_t-90min
+temperature_mean_celsius_t-90min
+generation - Wind Offshore - Actual Aggregated_t-90min
+generation - Geothermal - Actual Aggregated_t-90min
+generation - Marine - Actual Aggregated_t-90min
+generation_import - Generation - Other_t-90min
+generation_import - Generation - Waste_t-90min
+temperature_std_celsius_t-90min
+generation - Fossil Coal-derived gas - Actual Aggregated_t-90min
+generation - Biomass - Actual Aggregated_t-90min
+generation - Other - Actual Aggregated_t-90min
+generation_import - Generation - Fossil Oil_t-90min
+generation - Hydro Water Reservoir - Actual Aggregated_t-90min
+generation - Fossil Hard coal - Actual Aggregated_t-90min
+generation_import - Generation - Hydro Pumped Storage_t-90min
+generation_import - Import - FR_t-90min
+generation_import - Generation - Hydro Water Reservoir_t-75min
+generation - Other renewable - Actual Aggregated_t-75min
+activated_balancing_energy_prices - Price_t-75min
+generation - Hydro Pumped Storage - Actual Consumption_t-75min
+generation - Hydro Run-of-river and poundage - Actual Aggregated_t-75min
+generation_import - Generation - Hydro Run-of-river and poundage_t-75min
+generation_import - Generation - Solar_t-75min
+generation - Fossil Gas - Actual Aggregated_t-75min
+generation - Waste - Actual Aggregated_t-75min
+generation - Nuclear - Actual Aggregated_t-75min
+generation_import - Import - sum_t-75min
+generation_import - Generation - Fossil Hard coal_t-75min
+generation_import - Generation - Fossil Gas_t-75min
+generation_import - Generation - Nuclear_t-75min
+generation - Fossil Oil shale - Actual Aggregated_t-75min
+generation_import - Generation - Wind Onshore_t-75min
+generation - Fossil Oil - Actual Aggregated_t-75min
+load - Actual Load_t-75min
+generation_import - Import - PT_t-75min
+generation_import - Generation - Biomass_t-75min
+generation - Fossil Peat - Actual Aggregated_t-75min
+generation - Wind Onshore - Actual Aggregated_t-75min
+generation_import - Generation - Other renewable_t-75min
+generation - Fossil Brown coal/Lignite - Actual Aggregated_t-75min
+generation - Solar - Actual Aggregated_t-75min
+temperature_mean_celsius_t-75min
+generation - Wind Offshore - Actual Aggregated_t-75min
+generation - Geothermal - Actual Aggregated_t-75min
+generation - Marine - Actual Aggregated_t-75min
+generation_import - Generation - Other_t-75min
+generation_import - Generation - Waste_t-75min
+temperature_std_celsius_t-75min
+generation - Fossil Coal-derived gas - Actual Aggregated_t-75min
+generation - Biomass - Actual Aggregated_t-75min
+generation - Other - Actual Aggregated_t-75min
+generation_import - Generation - Fossil Oil_t-75min
+generation - Hydro Water Reservoir - Actual Aggregated_t-75min
+generation - Fossil Hard coal - Actual Aggregated_t-75min
+generation_import - Generation - Hydro Pumped Storage_t-75min
+generation_import - Import - FR_t-75min
+generation_import - Generation - Hydro Water Reservoir_t-60min
+generation - Other renewable - Actual Aggregated_t-60min
+activated_balancing_energy_prices - Price_t-60min
+generation - Hydro Pumped Storage - Actual Consumption_t-60min
+generation - Hydro Run-of-river and poundage - Actual Aggregated_t-60min
+generation_import - Generation - Hydro Run-of-river and poundage_t-60min
+generation_import - Generation - Solar_t-60min
+generation - Fossil Gas - Actual Aggregated_t-60min
+generation - Waste - Actual Aggregated_t-60min
+generation - Nuclear - Actual Aggregated_t-60min
+generation_import - Import - sum_t-60min
+generation_import - Generation - Fossil Hard coal_t-60min
+generation_import - Generation - Fossil Gas_t-60min
+generation_import - Generation - Nuclear_t-60min
+generation - Fossil Oil shale - Actual Aggregated_t-60min
+generation_import - Generation - Wind Onshore_t-60min
+generation - Fossil Oil - Actual Aggregated_t-60min
+load - Actual Load_t-60min
+generation_import - Import - PT_t-60min
+generation_import - Generation - Biomass_t-60min
+generation - Fossil Peat - Actual Aggregated_t-60min
+generation - Wind Onshore - Actual Aggregated_t-60min
+generation_import - Generation - Other renewable_t-60min
+generation - Fossil Brown coal/Lignite - Actual Aggregated_t-60min
+generation - Solar - Actual Aggregated_t-60min
+temperature_mean_celsius_t-60min
+generation - Wind Offshore - Actual Aggregated_t-60min
+generation - Geothermal - Actual Aggregated_t-60min
+generation - Marine - Actual Aggregated_t-60min
+generation_import - Generation - Other_t-60min
+generation_import - Generation - Waste_t-60min
+temperature_std_celsius_t-60min
+generation - Fossil Coal-derived gas - Actual Aggregated_t-60min
+generation - Biomass - Actual Aggregated_t-60min
+generation - Other - Actual Aggregated_t-60min
+generation_import - Generation - Fossil Oil_t-60min
+generation - Hydro Water Reservoir - Actual Aggregated_t-60min
+generation - Fossil Hard coal - Actual Aggregated_t-60min
+generation_import - Generation - Hydro Pumped Storage_t-60min
+generation_import - Import - FR_t-60min
+generation_import - Generation - Hydro Water Reservoir_t-45min
+generation - Other renewable - Actual Aggregated_t-45min
+activated_balancing_energy_prices - Price_t-45min
+generation - Hydro Pumped Storage - Actual Consumption_t-45min
+generation - Hydro Run-of-river and poundage - Actual Aggregated_t-45min
+generation_import - Generation - Hydro Run-of-river and poundage_t-45min
+generation_import - Generation - Solar_t-45min
+generation - Fossil Gas - Actual Aggregated_t-45min
+generation - Waste - Actual Aggregated_t-45min
+generation - Nuclear - Actual Aggregated_t-45min
+generation_import - Import - sum_t-45min
+generation_import - Generation - Fossil Hard coal_t-45min
+generation_import - Generation - Fossil Gas_t-45min
+generation_import - Generation - Nuclear_t-45min
+generation - Fossil Oil shale - Actual Aggregated_t-45min
+generation_import - Generation - Wind Onshore_t-45min
+generation - Fossil Oil - Actual Aggregated_t-45min
+load - Actual Load_t-45min
+generation_import - Import - PT_t-45min
+generation_import - Generation - Biomass_t-45min
+generation - Fossil Peat - Actual Aggregated_t-45min
+generation - Wind Onshore - Actual Aggregated_t-45min
+generation_import - Generation - Other renewable_t-45min
+generation - Fossil Brown coal/Lignite - Actual Aggregated_t-45min
+generation - Solar - Actual Aggregated_t-45min
+temperature_mean_celsius_t-45min
+generation - Wind Offshore - Actual Aggregated_t-45min
+generation - Geothermal - Actual Aggregated_t-45min
+generation - Marine - Actual Aggregated_t-45min
+generation_import - Generation - Other_t-45min
+generation_import - Generation - Waste_t-45min
+temperature_std_celsius_t-45min
+generation - Fossil Coal-derived gas - Actual Aggregated_t-45min
+generation - Biomass - Actual Aggregated_t-45min
+generation - Other - Actual Aggregated_t-45min
+generation_import - Generation - Fossil Oil_t-45min
+generation - Hydro Water Reservoir - Actual Aggregated_t-45min
+generation - Fossil Hard coal - Actual Aggregated_t-45min
+generation_import - Generation - Hydro Pumped Storage_t-45min
+generation_import - Import - FR_t-45min
+generation_import - Generation - Hydro Water Reservoir_t-30min
+generation - Other renewable - Actual Aggregated_t-30min
+activated_balancing_energy_prices - Price_t-30min
+generation - Hydro Pumped Storage - Actual Consumption_t-30min
+generation - Hydro Run-of-river and poundage - Actual Aggregated_t-30min
+generation_import - Generation - Hydro Run-of-river and poundage_t-30min
+generation_import - Generation - Solar_t-30min
+generation - Fossil Gas - Actual Aggregated_t-30min
+generation - Waste - Actual Aggregated_t-30min
+generation - Nuclear - Actual Aggregated_t-30min
+generation_import - Import - sum_t-30min
+generation_import - Generation - Fossil Hard coal_t-30min
+generation_import - Generation - Fossil Gas_t-30min
+generation_import - Generation - Nuclear_t-30min
+generation - Fossil Oil shale - Actual Aggregated_t-30min
+generation_import - Generation - Wind Onshore_t-30min
+generation - Fossil Oil - Actual Aggregated_t-30min
+load - Actual Load_t-30min
+generation_import - Import - PT_t-30min
+generation_import - Generation - Biomass_t-30min
+generation - Fossil Peat - Actual Aggregated_t-30min
+generation - Wind Onshore - Actual Aggregated_t-30min
+generation_import - Generation - Other renewable_t-30min
+generation - Fossil Brown coal/Lignite - Actual Aggregated_t-30min
+generation - Solar - Actual Aggregated_t-30min
+temperature_mean_celsius_t-30min
+generation - Wind Offshore - Actual Aggregated_t-30min
+generation - Geothermal - Actual Aggregated_t-30min
+generation - Marine - Actual Aggregated_t-30min
+generation_import - Generation - Other_t-30min
+generation_import - Generation - Waste_t-30min
+temperature_std_celsius_t-30min
+generation - Fossil Coal-derived gas - Actual Aggregated_t-30min
+generation - Biomass - Actual Aggregated_t-30min
+generation - Other - Actual Aggregated_t-30min
+generation_import - Generation - Fossil Oil_t-30min
+generation - Hydro Water Reservoir - Actual Aggregated_t-30min
+generation - Fossil Hard coal - Actual Aggregated_t-30min
+generation_import - Generation - Hydro Pumped Storage_t-30min
+generation_import - Import - FR_t-30min
+generation_import - Generation - Hydro Water Reservoir_t-15min
+generation - Other renewable - Actual Aggregated_t-15min
+activated_balancing_energy_prices - Price_t-15min
+generation - Hydro Pumped Storage - Actual Consumption_t-15min
+generation - Hydro Run-of-river and poundage - Actual Aggregated_t-15min
+generation_import - Generation - Hydro Run-of-river and poundage_t-15min
+generation_import - Generation - Solar_t-15min
+generation - Fossil Gas - Actual Aggregated_t-15min
+generation - Waste - Actual Aggregated_t-15min
+generation - Nuclear - Actual Aggregated_t-15min
+generation_import - Import - sum_t-15min
+generation_import - Generation - Fossil Hard coal_t-15min
+generation_import - Generation - Fossil Gas_t-15min
+generation_import - Generation - Nuclear_t-15min
+generation - Fossil Oil shale - Actual Aggregated_t-15min
+generation_import - Generation - Wind Onshore_t-15min
+generation - Fossil Oil - Actual Aggregated_t-15min
+load - Actual Load_t-15min
+generation_import - Import - PT_t-15min
+generation_import - Generation - Biomass_t-15min
+generation - Fossil Peat - Actual Aggregated_t-15min
+generation - Wind Onshore - Actual Aggregated_t-15min
+generation_import - Generation - Other renewable_t-15min
+generation - Fossil Brown coal/Lignite - Actual Aggregated_t-15min
+generation - Solar - Actual Aggregated_t-15min
+temperature_mean_celsius_t-15min
+generation - Wind Offshore - Actual Aggregated_t-15min
+generation - Geothermal - Actual Aggregated_t-15min
+generation - Marine - Actual Aggregated_t-15min
+generation_import - Generation - Other_t-15min
+generation_import - Generation - Waste_t-15min
+temperature_std_celsius_t-15min
+generation - Fossil Coal-derived gas - Actual Aggregated_t-15min
+generation - Biomass - Actual Aggregated_t-15min
+generation - Other - Actual Aggregated_t-15min
+generation_import - Generation - Fossil Oil_t-15min
+generation - Hydro Water Reservoir - Actual Aggregated_t-15min
+generation - Fossil Hard coal - Actual Aggregated_t-15min
+generation_import - Generation - Hydro Pumped Storage_t-15min
+generation_import - Import - FR_t-15min
+imbalance_prices - Long_t-300min
+imbalance_prices - Short_t-300min
+imbalance_volumes - value_t-300min
+imbalance_prices - Long_t-285min
+imbalance_prices - Short_t-285min
+imbalance_volumes - value_t-285min
+imbalance_prices - Long_t-270min
+imbalance_prices - Short_t-270min
+imbalance_volumes - value_t-270min
+imbalance_prices - Long_t-255min
+imbalance_prices - Short_t-255min
+imbalance_volumes - value_t-255min
+imbalance_prices - Long_t-240min
+imbalance_prices - Short_t-240min
+imbalance_volumes - value_t-240min
+imbalance_prices - Long_t-225min
+imbalance_prices - Short_t-225min
+imbalance_volumes - value_t-225min
+imbalance_prices - Long_t-210min
+imbalance_prices - Short_t-210min
+imbalance_volumes - value_t-210min
+imbalance_prices - Long_t-195min
+imbalance_prices - Short_t-195min
+imbalance_volumes - value_t-195min
+imbalance_prices - Long_t-180min
+imbalance_prices - Short_t-180min
+imbalance_volumes - value_t-180min
+imbalance_prices - Long_t-165min
+imbalance_prices - Short_t-165min
+imbalance_volumes - value_t-165min
+imbalance_prices - Long_t-150min
+imbalance_prices - Short_t-150min
+imbalance_volumes - value_t-150min
+imbalance_prices - Long_t-135min
+imbalance_prices - Short_t-135min
+imbalance_volumes - value_t-135min
+imbalance_prices - Long_t-120min
+imbalance_prices - Short_t-120min
+imbalance_volumes - value_t-120min
+imbalance_prices - Long_t-105min
+imbalance_prices - Short_t-105min
+imbalance_volumes - value_t-105min
+imbalance_prices - Long_t-90min
+imbalance_prices - Short_t-90min
+imbalance_volumes - value_t-90min
+imbalance_prices - Long_t-75min
+imbalance_prices - Short_t-75min
+imbalance_volumes - value_t-75min
+imbalance_prices - Long_t-60min
+imbalance_prices - Short_t-60min
+imbalance_volumes - value_t-60min
+imbalance_prices - Long_t-45min
+imbalance_prices - Short_t-45min
+imbalance_volumes - value_t-45min
+imbalance_prices - Long_t-30min
+imbalance_prices - Short_t-30min
+imbalance_volumes - value_t-30min
+imbalance_prices - Long_t-15min
+imbalance_prices - Short_t-15min
+imbalance_volumes - value_t-15min
+intraday_wind_and_solar_forecast - Wind Onshore_t+15min
+wind_and_solar_forecast - Solar_t+15min
+100m_wind_speed_mean_t+15min
+10m_wind_speed_mean_t+15min
+100m_wind_speed_std_t+15min
+10m_wind_speed_std_t+15min
+intraday_wind_and_solar_forecast - Solar_t+15min
+wind_and_solar_forecast - Wind Onshore_t+15min
+ssrd_mean_j_m2_t+15min
+ssrd_std_j_m2_t+15min
+intraday_wind_and_solar_forecast - Wind Onshore_t+30min
+wind_and_solar_forecast - Solar_t+30min
+100m_wind_speed_mean_t+30min
+10m_wind_speed_mean_t+30min
+100m_wind_speed_std_t+30min
+10m_wind_speed_std_t+30min
+intraday_wind_and_solar_forecast - Solar_t+30min
+wind_and_solar_forecast - Wind Onshore_t+30min
+ssrd_mean_j_m2_t+30min
+ssrd_std_j_m2_t+30min
+intraday_wind_and_solar_forecast - Wind Onshore_t+45min
+wind_and_solar_forecast - Solar_t+45min
+100m_wind_speed_mean_t+45min
+10m_wind_speed_mean_t+45min
+100m_wind_speed_std_t+45min
+10m_wind_speed_std_t+45min
+intraday_wind_and_solar_forecast - Solar_t+45min
+wind_and_solar_forecast - Wind Onshore_t+45min
+ssrd_mean_j_m2_t+45min
+ssrd_std_j_m2_t+45min
+intraday_wind_and_solar_forecast - Wind Onshore_t+60min
+wind_and_solar_forecast - Solar_t+60min
+100m_wind_speed_mean_t+60min
+10m_wind_speed_mean_t+60min
+100m_wind_speed_std_t+60min
+10m_wind_speed_std_t+60min
+intraday_wind_and_solar_forecast - Solar_t+60min
+wind_and_solar_forecast - Wind Onshore_t+60min
+ssrd_mean_j_m2_t+60min
+ssrd_std_j_m2_t+60min
+intraday_wind_and_solar_forecast - Wind Onshore_t+75min
+wind_and_solar_forecast - Solar_t+75min
+100m_wind_speed_mean_t+75min
+10m_wind_speed_mean_t+75min
+100m_wind_speed_std_t+75min
+10m_wind_speed_std_t+75min
+intraday_wind_and_solar_forecast - Solar_t+75min
+wind_and_solar_forecast - Wind Onshore_t+75min
+ssrd_mean_j_m2_t+75min
+ssrd_std_j_m2_t+75min
+intraday_wind_and_solar_forecast - Wind Onshore_t+90min
+wind_and_solar_forecast - Solar_t+90min
+100m_wind_speed_mean_t+90min
+10m_wind_speed_mean_t+90min
+100m_wind_speed_std_t+90min
+10m_wind_speed_std_t+90min
+intraday_wind_and_solar_forecast - Solar_t+90min
+wind_and_solar_forecast - Wind Onshore_t+90min
+ssrd_mean_j_m2_t+90min
+ssrd_std_j_m2_t+90min
+intraday_wind_and_solar_forecast - Wind Onshore_t+105min
+wind_and_solar_forecast - Solar_t+105min
+100m_wind_speed_mean_t+105min
+10m_wind_speed_mean_t+105min
+100m_wind_speed_std_t+105min
+10m_wind_speed_std_t+105min
+intraday_wind_and_solar_forecast - Solar_t+105min
+wind_and_solar_forecast - Wind Onshore_t+105min
+ssrd_mean_j_m2_t+105min
+ssrd_std_j_m2_t+105min
+intraday_wind_and_solar_forecast - Wind Onshore_t+120min
+wind_and_solar_forecast - Solar_t+120min
+100m_wind_speed_mean_t+120min
+10m_wind_speed_mean_t+120min
+100m_wind_speed_std_t+120min
+10m_wind_speed_std_t+120min
+intraday_wind_and_solar_forecast - Solar_t+120min
+wind_and_solar_forecast - Wind Onshore_t+120min
+ssrd_mean_j_m2_t+120min
+ssrd_std_j_m2_t+120min
+intraday_wind_and_solar_forecast - Wind Onshore_t+135min
+wind_and_solar_forecast - Solar_t+135min
+100m_wind_speed_mean_t+135min
+10m_wind_speed_mean_t+135min
+100m_wind_speed_std_t+135min
+10m_wind_speed_std_t+135min
+intraday_wind_and_solar_forecast - Solar_t+135min
+wind_and_solar_forecast - Wind Onshore_t+135min
+ssrd_mean_j_m2_t+135min
+ssrd_std_j_m2_t+135min
+intraday_wind_and_solar_forecast - Wind Onshore_t+150min
+wind_and_solar_forecast - Solar_t+150min
+100m_wind_speed_mean_t+150min
+10m_wind_speed_mean_t+150min
+100m_wind_speed_std_t+150min
+10m_wind_speed_std_t+150min
+intraday_wind_and_solar_forecast - Solar_t+150min
+wind_and_solar_forecast - Wind Onshore_t+150min
+ssrd_mean_j_m2_t+150min
+ssrd_std_j_m2_t+150min
+generation_forecast - Scheduled Aggregated_t+15min
+generation_forecast - Scheduled Consumption_t+15min
+load_forecast - Forecasted Load_t+15min
+generation_forecast - Scheduled Aggregated_t+30min
+generation_forecast - Scheduled Consumption_t+30min
+load_forecast - Forecasted Load_t+30min
+generation_forecast - Scheduled Aggregated_t+45min
+generation_forecast - Scheduled Consumption_t+45min
+load_forecast - Forecasted Load_t+45min
+generation_forecast - Scheduled Aggregated_t+60min
+generation_forecast - Scheduled Consumption_t+60min
+load_forecast - Forecasted Load_t+60min
+generation_forecast - Scheduled Aggregated_t+75min
+generation_forecast - Scheduled Consumption_t+75min
+load_forecast - Forecasted Load_t+75min
+generation_forecast - Scheduled Aggregated_t+90min
+generation_forecast - Scheduled Consumption_t+90min
+load_forecast - Forecasted Load_t+90min
+generation_forecast - Scheduled Aggregated_t+105min
+generation_forecast - Scheduled Consumption_t+105min
+load_forecast - Forecasted Load_t+105min
+generation_forecast - Scheduled Aggregated_t+120min
+generation_forecast - Scheduled Consumption_t+120min
+load_forecast - Forecasted Load_t+120min
+generation_forecast - Scheduled Aggregated_t+135min
+generation_forecast - Scheduled Consumption_t+135min
+load_forecast - Forecasted Load_t+135min
+generation_forecast - Scheduled Aggregated_t+150min
+generation_forecast - Scheduled Consumption_t+150min
+load_forecast - Forecasted Load_t+150min

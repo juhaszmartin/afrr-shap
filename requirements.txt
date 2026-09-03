@@ -1,0 +1,10 @@
+polars
+pandas
+numpy
+holidays
+torch
+scikit-learn
+shap
+matplotlib
+ipykernel
+pyarrow

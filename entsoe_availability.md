@@ -1,0 +1,623 @@
+# ENTSO-E Data Availability by Country
+
+This document summarizes the raw ENTSO-E datasets and specific variables that were successfully extracted and fed into the neural network for each country.
+
+## AT
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **activated_balancing_energy_prices**:
+  - `Direction`
+  - `Price`
+  - `ReserveType`
+- **generation**:
+  - `Biomass - Actual Aggregated`
+  - `Biomass - Actual Consumption`
+  - `Fossil Gas - Actual Aggregated`
+  - `Fossil Gas - Actual Consumption`
+  - `Fossil Hard coal - Actual Aggregated`
+  - `Fossil Hard coal - Actual Consumption`
+  - `Fossil Oil - Actual Aggregated`
+  - `Fossil Oil - Actual Consumption`
+  - `Geothermal - Actual Aggregated`
+  - `Geothermal - Actual Consumption`
+  - `Hydro Pumped Storage - Actual Aggregated`
+  - `Hydro Pumped Storage - Actual Consumption`
+  - `Hydro Run-of-river and poundage - Actual Aggregated`
+  - `Hydro Run-of-river and poundage - Actual Consumption`
+  - `Hydro Water Reservoir - Actual Aggregated`
+  - `Hydro Water Reservoir - Actual Consumption`
+  - `Other - Actual Aggregated`
+  - `Other - Actual Consumption`
+  - `Other renewable - Actual Aggregated`
+  - `Other renewable - Actual Consumption`
+  - `Solar - Actual Aggregated`
+  - `Solar - Actual Consumption`
+  - `Waste - Actual Aggregated`
+  - `Waste - Actual Consumption`
+  - `Wind Onshore - Actual Aggregated`
+  - `Wind Onshore - Actual Consumption`
+- **generation_import**:
+  - `Generation - Biomass`
+  - `Generation - Fossil Gas`
+  - `Generation - Geothermal`
+  - `Generation - Hydro Pumped Storage`
+  - `Generation - Hydro Run-of-river and poundage`
+  - `Generation - Hydro Water Reservoir`
+  - `Generation - Other`
+  - `Generation - Solar`
+  - `Generation - Waste`
+  - `Generation - Wind Onshore`
+  - `Import - CH`
+  - `Import - CZ`
+  - `Import - DE_LU`
+  - `Import - HU`
+  - `Import - IT_NORD`
+  - `Import - SI`
+  - `Import - sum`
+- **intraday_wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+- **load**:
+  - `Actual Load`
+- **load_forecast**:
+  - `Forecasted Load`
+- **wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+
+## BA
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **generation**:
+  - `Fossil Brown coal/Lignite`
+  - `Hydro Pumped Storage`
+  - `Hydro Run-of-river and poundage`
+  - `Hydro Water Reservoir`
+  - `Other renewable`
+  - `Wind Onshore`
+- **generation_forecast**:
+  - `value`
+- **generation_import**:
+  - `Generation - Fossil Brown coal/Lignite`
+  - `Generation - Hydro Pumped Storage`
+  - `Generation - Hydro Run-of-river and poundage`
+  - `Generation - Hydro Water Reservoir`
+  - `Generation - Wind Onshore`
+  - `Import - HR`
+  - `Import - ME`
+  - `Import - RS`
+  - `Import - sum`
+- **import**:
+  - `HR`
+  - `ME`
+  - `RS`
+  - `sum`
+- **intraday_wind_and_solar_forecast**:
+  - `Wind Onshore`
+- **load**:
+  - `Actual Load`
+- **load_forecast**:
+  - `Forecasted Load`
+- **wind_and_solar_forecast**:
+  - `Wind Onshore`
+
+## BE
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **generation_import**:
+  - `Generation - Biomass`
+  - `Generation - Fossil Gas`
+  - `Generation - Fossil Oil`
+  - `Generation - Hydro Pumped Storage`
+  - `Generation - Hydro Run-of-river and poundage`
+  - `Generation - Nuclear`
+  - `Generation - Other`
+  - `Generation - Solar`
+  - `Generation - Waste`
+  - `Generation - Wind Offshore`
+  - `Generation - Wind Onshore`
+  - `Import - DE_LU`
+  - `Import - FR`
+  - `Import - GB`
+  - `Import - NL`
+  - `Import - sum`
+- **import**:
+  - `DE_LU`
+  - `GB`
+  - `sum`
+- **load**:
+  - `Actual Load`
+- **load_forecast**:
+  - `Forecasted Load`
+
+## CH
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **activated_balancing_energy_prices**:
+  - `Direction`
+  - `Price`
+  - `ReserveType`
+
+## DE
+- **generation**:
+  - `Biomass - Actual Aggregated`
+  - `Fossil Brown coal/Lignite - Actual Aggregated`
+  - `Fossil Coal-derived gas - Actual Aggregated`
+  - `Fossil Gas - Actual Aggregated`
+  - `Fossil Hard coal - Actual Aggregated`
+  - `Fossil Oil - Actual Aggregated`
+  - `Geothermal - Actual Aggregated`
+  - `Hydro Pumped Storage - Actual Aggregated`
+  - `Hydro Pumped Storage - Actual Consumption`
+  - `Hydro Run-of-river and poundage - Actual Aggregated`
+  - `Hydro Water Reservoir - Actual Aggregated`
+  - `Other - Actual Aggregated`
+  - `Other renewable - Actual Aggregated`
+  - `Solar - Actual Aggregated`
+  - `Waste - Actual Aggregated`
+  - `Wind Offshore - Actual Aggregated`
+  - `Wind Onshore - Actual Aggregated`
+- **intraday_wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Offshore`
+  - `Wind Onshore`
+- **load**:
+  - `Actual Load`
+- **load_forecast**:
+  - `Forecasted Load`
+- **wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Offshore`
+  - `Wind Onshore`
+
+## ES
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **activated_balancing_energy_prices**:
+  - `Direction`
+  - `Price`
+  - `ReserveType`
+- **generation**:
+  - `Biomass - Actual Aggregated`
+  - `Fossil Brown coal/Lignite - Actual Aggregated`
+  - `Fossil Coal-derived gas - Actual Aggregated`
+  - `Fossil Gas - Actual Aggregated`
+  - `Fossil Hard coal - Actual Aggregated`
+  - `Fossil Oil - Actual Aggregated`
+  - `Fossil Oil shale - Actual Aggregated`
+  - `Fossil Peat - Actual Aggregated`
+  - `Geothermal - Actual Aggregated`
+  - `Hydro Pumped Storage - Actual Consumption`
+  - `Hydro Run-of-river and poundage - Actual Aggregated`
+  - `Hydro Water Reservoir - Actual Aggregated`
+  - `Marine - Actual Aggregated`
+  - `Nuclear - Actual Aggregated`
+  - `Other - Actual Aggregated`
+  - `Other renewable - Actual Aggregated`
+  - `Solar - Actual Aggregated`
+  - `Waste - Actual Aggregated`
+  - `Wind Offshore - Actual Aggregated`
+  - `Wind Onshore - Actual Aggregated`
+- **generation_forecast**:
+  - `Scheduled Aggregated`
+  - `Scheduled Consumption`
+- **generation_import**:
+  - `Generation - Biomass`
+  - `Generation - Fossil Gas`
+  - `Generation - Fossil Hard coal`
+  - `Generation - Fossil Oil`
+  - `Generation - Hydro Pumped Storage`
+  - `Generation - Hydro Run-of-river and poundage`
+  - `Generation - Hydro Water Reservoir`
+  - `Generation - Nuclear`
+  - `Generation - Other`
+  - `Generation - Other renewable`
+  - `Generation - Solar`
+  - `Generation - Waste`
+  - `Generation - Wind Onshore`
+  - `Import - FR`
+  - `Import - PT`
+  - `Import - sum`
+- **intraday_wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+- **load**:
+  - `Actual Load`
+- **load_forecast**:
+  - `Forecasted Load`
+- **wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+
+## FI
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **generation**:
+  - `Biomass`
+  - `Fossil Gas`
+  - `Fossil Hard coal`
+  - `Fossil Oil`
+  - `Fossil Peat`
+  - `Hydro Run-of-river and poundage`
+  - `Nuclear`
+  - `Other`
+  - `Other renewable`
+  - `Solar`
+  - `Waste`
+  - `Wind Onshore`
+- **generation_forecast**:
+  - `value`
+- **generation_import**:
+  - `Generation - Biomass`
+  - `Generation - Fossil Gas`
+  - `Generation - Fossil Hard coal`
+  - `Generation - Fossil Oil`
+  - `Generation - Fossil Peat`
+  - `Generation - Hydro Run-of-river and poundage`
+  - `Generation - Nuclear`
+  - `Generation - Other`
+  - `Generation - Other renewable`
+  - `Generation - Solar`
+  - `Generation - Waste`
+  - `Generation - Wind Onshore`
+  - `Import - EE`
+  - `Import - NO_4`
+  - `Import - RU`
+  - `Import - SE_1`
+  - `Import - SE_3`
+  - `Import - sum`
+- **intraday_wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+- **load**:
+  - `Actual Load`
+- **load_forecast**:
+  - `Forecasted Load`
+- **wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+
+## FR
+- **activated_balancing_energy_prices**:
+  - `Direction`
+  - `Price`
+  - `ReserveType`
+
+## GR
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **activated_balancing_energy_prices**:
+  - `Direction`
+  - `Price`
+  - `ReserveType`
+
+## HR
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **activated_balancing_energy_prices**:
+  - `Direction`
+  - `Price`
+  - `ReserveType`
+- **generation**:
+  - `Biomass - Actual Aggregated`
+  - `Fossil Gas - Actual Aggregated`
+  - `Fossil Hard coal - Actual Aggregated`
+  - `Fossil Oil - Actual Aggregated`
+  - `Geothermal - Actual Aggregated`
+  - `Hydro Pumped Storage - Actual Aggregated`
+  - `Hydro Pumped Storage - Actual Consumption`
+  - `Hydro Run-of-river and poundage - Actual Aggregated`
+  - `Hydro Water Reservoir - Actual Aggregated`
+  - `Other renewable - Actual Aggregated`
+  - `Solar - Actual Aggregated`
+  - `Waste - Actual Aggregated`
+  - `Wind Onshore - Actual Aggregated`
+- **generation_forecast**:
+  - `Scheduled Aggregated`
+  - `Scheduled Consumption`
+- **generation_import**:
+  - `Generation - Biomass`
+  - `Generation - Fossil Gas`
+  - `Generation - Fossil Hard coal`
+  - `Generation - Fossil Oil`
+  - `Generation - Hydro Pumped Storage`
+  - `Generation - Hydro Run-of-river and poundage`
+  - `Generation - Hydro Water Reservoir`
+  - `Generation - Other renewable`
+  - `Generation - Solar`
+  - `Generation - Waste`
+  - `Generation - Wind Onshore`
+  - `Import - BA`
+  - `Import - HU`
+  - `Import - RS`
+  - `Import - SI`
+  - `Import - sum`
+- **import**:
+  - `HU`
+  - `SI`
+  - `sum`
+- **intraday_wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+- **load**:
+  - `Actual Load`
+- **load_forecast**:
+  - `Forecasted Load`
+- **wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+
+## HU
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **activated_balancing_energy_prices**:
+  - `Direction`
+  - `Price`
+  - `ReserveType`
+- **generation**:
+  - `Biomass - Actual Aggregated`
+  - `Fossil Brown coal/Lignite - Actual Aggregated`
+  - `Fossil Gas - Actual Aggregated`
+  - `Hydro Run-of-river and poundage - Actual Aggregated`
+  - `Hydro Water Reservoir - Actual Aggregated`
+  - `Nuclear - Actual Aggregated`
+  - `Other - Actual Aggregated`
+  - `Other renewable - Actual Aggregated`
+  - `Waste - Actual Aggregated`
+  - `Wind Onshore - Actual Aggregated`
+- **generation_forecast**:
+  - `value`
+- **generation_import**:
+  - `Generation - Biomass`
+  - `Generation - Fossil Brown coal/Lignite`
+  - `Generation - Fossil Gas`
+  - `Generation - Fossil Oil`
+  - `Generation - Hydro Run-of-river and poundage`
+  - `Generation - Hydro Water Reservoir`
+  - `Generation - Nuclear`
+  - `Generation - Other`
+  - `Generation - Other renewable`
+  - `Generation - Solar`
+  - `Generation - Waste`
+  - `Generation - Wind Onshore`
+  - `Import - AT`
+  - `Import - HR`
+  - `Import - RO`
+  - `Import - RS`
+  - `Import - SK`
+  - `Import - UA`
+  - `Import - sum`
+- **intraday_wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+- **load**:
+  - `Actual Load`
+- **load_forecast**:
+  - `Forecasted Load`
+- **wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+
+## LT
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **generation**:
+  - `Biomass - Actual Aggregated`
+  - `Fossil Gas - Actual Aggregated`
+  - `Hydro Pumped Storage - Actual Aggregated`
+  - `Hydro Pumped Storage - Actual Consumption`
+  - `Hydro Run-of-river and poundage - Actual Aggregated`
+  - `Other - Actual Aggregated`
+  - `Solar - Actual Aggregated`
+  - `Waste - Actual Aggregated`
+  - `Wind Onshore - Actual Aggregated`
+- **generation_forecast**:
+  - `Scheduled Aggregated`
+  - `Scheduled Consumption`
+- **generation_import**:
+  - `Generation - Biomass`
+  - `Generation - Fossil Gas`
+  - `Generation - Hydro Pumped Storage`
+  - `Generation - Hydro Run-of-river and poundage`
+  - `Generation - Other`
+  - `Generation - Solar`
+  - `Generation - Waste`
+  - `Generation - Wind Onshore`
+  - `Import - BY`
+  - `Import - LV`
+  - `Import - PL`
+  - `Import - RU_KGD`
+  - `Import - SE_4`
+  - `Import - sum`
+- **import**:
+  - `BY`
+  - `LV`
+  - `PL`
+  - `RU_KGD`
+  - `SE_4`
+  - `sum`
+- **intraday_wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+- **load**:
+  - `Actual Load`
+- **load_forecast**:
+  - `Forecasted Load`
+- **net_position**:
+  - `value`
+- **prices**:
+  - `value`
+- **wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+
+## LV
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **generation_forecast**:
+  - `value`
+- **intraday_wind_and_solar_forecast**:
+  - `Wind Onshore`
+- **wind_and_solar_forecast**:
+  - `Wind Onshore`
+
+## PL
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **generation_forecast**:
+  - `value`
+- **generation_import**:
+  - `Generation - Biomass`
+  - `Generation - Fossil Brown coal/Lignite`
+  - `Generation - Fossil Coal-derived gas`
+  - `Generation - Fossil Gas`
+  - `Generation - Fossil Hard coal`
+  - `Generation - Fossil Oil`
+  - `Generation - Hydro Pumped Storage`
+  - `Generation - Hydro Run-of-river and poundage`
+  - `Generation - Hydro Water Reservoir`
+  - `Generation - Wind Onshore`
+  - `Import - CZ`
+  - `Import - DE_LU`
+  - `Import - LT`
+  - `Import - SE_4`
+  - `Import - SK`
+  - `Import - UA`
+  - `Import - sum`
+- **import**:
+  - `CZ`
+  - `DE_LU`
+  - `SK`
+  - `UA`
+  - `sum`
+- **intraday_wind_and_solar_forecast**:
+  - `Wind Onshore`
+- **load**:
+  - `Actual Load`
+- **load_forecast**:
+  - `Forecasted Load`
+- **wind_and_solar_forecast**:
+  - `Wind Onshore`
+
+## PT
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **activated_balancing_energy_prices**:
+  - `Direction`
+  - `Price`
+  - `ReserveType`
+
+## RO
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **activated_balancing_energy_prices**:
+  - `Direction`
+  - `Price`
+  - `ReserveType`
+- **generation**:
+  - `Biomass`
+  - `Fossil Brown coal/Lignite`
+  - `Fossil Gas`
+  - `Fossil Hard coal`
+  - `Hydro Run-of-river and poundage`
+  - `Hydro Water Reservoir`
+  - `Nuclear`
+  - `Solar`
+  - `Wind Onshore`
+- **generation_forecast**:
+  - `value`
+- **generation_import**:
+  - `Generation - Biomass`
+  - `Generation - Fossil Brown coal/Lignite`
+  - `Generation - Fossil Gas`
+  - `Generation - Fossil Hard coal`
+  - `Generation - Hydro Run-of-river and poundage`
+  - `Generation - Hydro Water Reservoir`
+  - `Generation - Nuclear`
+  - `Generation - Solar`
+  - `Generation - Wind Onshore`
+  - `Import - BG`
+  - `Import - HU`
+  - `Import - RS`
+  - `Import - UA`
+  - `Import - sum`
+- **import**:
+  - `HU`
+  - `sum`
+- **intraday_wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+- **load**:
+  - `Actual Load`
+- **load_forecast**:
+  - `Forecasted Load`
+- **wind_and_solar_forecast**:
+  - `Solar`
+  - `Wind Onshore`
+
+## RS
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **activated_balancing_energy_prices**:
+  - `Direction`
+  - `Price`
+  - `ReserveType`
+- **generation_forecast**:
+  - `value`
+
+## SK
+- **Other**:
+  - `ssrd_mean_j_m2`
+  - `ssrd_std_j_m2`
+  - `temperature_mean_celsius`
+  - `temperature_std_celsius`
+- **activated_balancing_energy_prices**:
+  - `Direction`
+  - `Price`
+  - `ReserveType`
+

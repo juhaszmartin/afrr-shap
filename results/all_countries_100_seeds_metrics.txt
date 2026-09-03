@@ -1,0 +1,710 @@
+
+===============================
+FINAL METRICS FOR AT (100 Seeds)
+===============================
+                               Target        MAE        RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  73.009044  368.427626  0.053479   74.701109  1.446254  0.685203  0.003521   2.172350
+1    imbalance_prices - Short_t+15min  73.092174  368.456689  0.053330   74.880897  1.358631  0.664706  0.003416   2.031686
+2   imbalance_volumes - value_t+15min  23.709852   32.196260  0.207755  123.641063  0.182606  0.218594  0.010752   1.287523
+3     imbalance_prices - Long_t+30min  72.634880  372.467194  0.032611   73.584559  1.238587  0.508599  0.002644   2.104247
+4    imbalance_prices - Short_t+30min  72.650470  372.436631  0.032769   73.512315  1.209367  0.503373  0.002615   2.091349
+5   imbalance_volumes - value_t+30min  25.320368   34.299136  0.100908  132.971344  0.172229  0.203755  0.010688   1.272336
+6     imbalance_prices - Long_t+45min  72.598188  374.459645  0.022233   73.146461  1.121516  0.483758  0.002526   2.051756
+7    imbalance_prices - Short_t+45min  72.580300  374.521254  0.021912   72.994457  1.030500  0.432804  0.002261   1.907671
+8   imbalance_volumes - value_t+45min  26.281156   35.547890  0.034275  139.117436  0.175796  0.212237  0.011537   1.338524
+9     imbalance_prices - Long_t+60min  72.310710  375.578175  0.016384   72.499825  0.931240  0.441525  0.002313   2.027251
+10   imbalance_prices - Short_t+60min  72.294569  375.591693  0.016313   72.419589  0.887521  0.423744  0.002219   1.948407
+11  imbalance_volumes - value_t+60min  27.014784   36.413256 -0.013310  146.033373  0.176652  0.224953  0.012536   1.318266
+12    imbalance_prices - Long_t+75min  72.328070  376.621775  0.010908   72.245326  0.902493  0.636349  0.003342   1.967666
+13   imbalance_prices - Short_t+75min  72.337747  376.601863  0.011013   72.374039  0.851802  0.597072  0.003135   1.796556
+14  imbalance_volumes - value_t+75min  27.278016   36.687324 -0.028604  149.361009  0.166737  0.204101  0.011455   1.453904
+
+Overall averages across targets:
+MAE: 57.029, RMSE: 260.687, R2: 0.038, SMAPE: 94.899
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 73.009 ± 1.446, RMSE 368.428 ± 0.685, R2 0.053 ± 0.004, SMAPE 74.701 ± 2.172
+imbalance_prices - Short_t+15min: MAE 73.092 ± 1.359, RMSE 368.457 ± 0.665, R2 0.053 ± 0.003, SMAPE 74.881 ± 2.032
+imbalance_volumes - value_t+15min: MAE 23.710 ± 0.183, RMSE 32.196 ± 0.219, R2 0.208 ± 0.011, SMAPE 123.641 ± 1.288
+imbalance_prices - Long_t+30min: MAE 72.635 ± 1.239, RMSE 372.467 ± 0.509, R2 0.033 ± 0.003, SMAPE 73.585 ± 2.104
+imbalance_prices - Short_t+30min: MAE 72.650 ± 1.209, RMSE 372.437 ± 0.503, R2 0.033 ± 0.003, SMAPE 73.512 ± 2.091
+imbalance_volumes - value_t+30min: MAE 25.320 ± 0.172, RMSE 34.299 ± 0.204, R2 0.101 ± 0.011, SMAPE 132.971 ± 1.272
+imbalance_prices - Long_t+45min: MAE 72.598 ± 1.122, RMSE 374.460 ± 0.484, R2 0.022 ± 0.003, SMAPE 73.146 ± 2.052
+imbalance_prices - Short_t+45min: MAE 72.580 ± 1.030, RMSE 374.521 ± 0.433, R2 0.022 ± 0.002, SMAPE 72.994 ± 1.908
+imbalance_volumes - value_t+45min: MAE 26.281 ± 0.176, RMSE 35.548 ± 0.212, R2 0.034 ± 0.012, SMAPE 139.117 ± 1.339
+imbalance_prices - Long_t+60min: MAE 72.311 ± 0.931, RMSE 375.578 ± 0.442, R2 0.016 ± 0.002, SMAPE 72.500 ± 2.027
+imbalance_prices - Short_t+60min: MAE 72.295 ± 0.888, RMSE 375.592 ± 0.424, R2 0.016 ± 0.002, SMAPE 72.420 ± 1.948
+imbalance_volumes - value_t+60min: MAE 27.015 ± 0.177, RMSE 36.413 ± 0.225, R2 -0.013 ± 0.013, SMAPE 146.033 ± 1.318
+imbalance_prices - Long_t+75min: MAE 72.328 ± 0.902, RMSE 376.622 ± 0.636, R2 0.011 ± 0.003, SMAPE 72.245 ± 1.968
+imbalance_prices - Short_t+75min: MAE 72.338 ± 0.852, RMSE 376.602 ± 0.597, R2 0.011 ± 0.003, SMAPE 72.374 ± 1.797
+imbalance_volumes - value_t+75min: MAE 27.278 ± 0.167, RMSE 36.687 ± 0.204, R2 -0.029 ± 0.011, SMAPE 149.361 ± 1.454
+
+===============================
+FINAL METRICS FOR BA (100 Seeds)
+===============================
+                               Target         MAE        RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min   38.810247   71.597682  0.260216   69.076562  0.446264  0.341248  0.007060   1.063233
+1    imbalance_prices - Short_t+15min   63.951153  152.416836  0.023890   24.058442  0.802351  0.619544  0.007940   0.523528
+2   imbalance_volumes - value_t+15min  245.210185  320.548188  0.502689   98.149102  4.896177  5.756398  0.017874   1.967601
+3     imbalance_prices - Long_t+30min   40.238228   73.661388  0.216782   69.967069  0.374676  0.350752  0.007471   0.960554
+4    imbalance_prices - Short_t+30min   64.284149  153.817674  0.005891   24.175283  0.803353  0.661320  0.008551   0.508451
+5   imbalance_volumes - value_t+30min  272.681675  354.737272  0.390320  106.249720  3.896385  4.646844  0.015967   1.627166
+6     imbalance_prices - Long_t+45min   40.705582   74.724448  0.193828   70.062388  0.395079  0.405068  0.008751   1.018562
+7    imbalance_prices - Short_t+45min   63.781554  153.841866  0.005600   23.908239  0.771611  0.564945  0.007304   0.452161
+8   imbalance_volumes - value_t+45min  291.712961  377.470671  0.309545  112.384885  2.813810  3.517069  0.012842   1.444397
+9     imbalance_prices - Long_t+60min   40.516329   74.934291  0.189260   69.613058  0.370463  0.388834  0.008411   0.962946
+10   imbalance_prices - Short_t+60min   63.116203  153.920037  0.004586   23.517151  0.756405  0.625464  0.008098   0.465170
+11  imbalance_volumes - value_t+60min  304.247095  391.618991  0.256862  116.458244  2.763054  3.222300  0.012213   1.331296
+12    imbalance_prices - Long_t+75min   40.492854   75.069098  0.186260   69.143104  0.388961  0.353823  0.007675   0.896800
+13   imbalance_prices - Short_t+75min   62.854457  154.224462  0.000646   23.282093  0.733641  0.598077  0.007761   0.410153
+14  imbalance_volumes - value_t+75min  312.374265  401.092567  0.220435  118.871991  2.655440  2.799873  0.010882   1.162916
+
+Overall averages across targets:
+MAE: 129.665, RMSE: 198.912, R2: 0.184, SMAPE: 67.928
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 38.810 ± 0.446, RMSE 71.598 ± 0.341, R2 0.260 ± 0.007, SMAPE 69.077 ± 1.063
+imbalance_prices - Short_t+15min: MAE 63.951 ± 0.802, RMSE 152.417 ± 0.620, R2 0.024 ± 0.008, SMAPE 24.058 ± 0.524
+imbalance_volumes - value_t+15min: MAE 245.210 ± 4.896, RMSE 320.548 ± 5.756, R2 0.503 ± 0.018, SMAPE 98.149 ± 1.968
+imbalance_prices - Long_t+30min: MAE 40.238 ± 0.375, RMSE 73.661 ± 0.351, R2 0.217 ± 0.007, SMAPE 69.967 ± 0.961
+imbalance_prices - Short_t+30min: MAE 64.284 ± 0.803, RMSE 153.818 ± 0.661, R2 0.006 ± 0.009, SMAPE 24.175 ± 0.508
+imbalance_volumes - value_t+30min: MAE 272.682 ± 3.896, RMSE 354.737 ± 4.647, R2 0.390 ± 0.016, SMAPE 106.250 ± 1.627
+imbalance_prices - Long_t+45min: MAE 40.706 ± 0.395, RMSE 74.724 ± 0.405, R2 0.194 ± 0.009, SMAPE 70.062 ± 1.019
+imbalance_prices - Short_t+45min: MAE 63.782 ± 0.772, RMSE 153.842 ± 0.565, R2 0.006 ± 0.007, SMAPE 23.908 ± 0.452
+imbalance_volumes - value_t+45min: MAE 291.713 ± 2.814, RMSE 377.471 ± 3.517, R2 0.310 ± 0.013, SMAPE 112.385 ± 1.444
+imbalance_prices - Long_t+60min: MAE 40.516 ± 0.370, RMSE 74.934 ± 0.389, R2 0.189 ± 0.008, SMAPE 69.613 ± 0.963
+imbalance_prices - Short_t+60min: MAE 63.116 ± 0.756, RMSE 153.920 ± 0.625, R2 0.005 ± 0.008, SMAPE 23.517 ± 0.465
+imbalance_volumes - value_t+60min: MAE 304.247 ± 2.763, RMSE 391.619 ± 3.222, R2 0.257 ± 0.012, SMAPE 116.458 ± 1.331
+imbalance_prices - Long_t+75min: MAE 40.493 ± 0.389, RMSE 75.069 ± 0.354, R2 0.186 ± 0.008, SMAPE 69.143 ± 0.897
+imbalance_prices - Short_t+75min: MAE 62.854 ± 0.734, RMSE 154.224 ± 0.598, R2 0.001 ± 0.008, SMAPE 23.282 ± 0.410
+imbalance_volumes - value_t+75min: MAE 312.374 ± 2.655, RMSE 401.093 ± 2.800, R2 0.220 ± 0.011, SMAPE 118.872 ± 1.163
+
+===============================
+FINAL METRICS FOR BE (100 Seeds)
+===============================
+                               Target        MAE        RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  70.977340  115.614763  0.296177   73.225995  1.833912  1.500669  0.018369   2.050715
+1    imbalance_prices - Short_t+15min  71.047962  115.638872  0.295885   73.294960  1.785321  1.490995  0.018215   1.988080
+2   imbalance_volumes - value_t+15min  23.524479   31.865260  0.323953  118.806651  0.389189  0.588933  0.025087   1.945892
+3     imbalance_prices - Long_t+30min  73.757913  120.745469  0.232386   74.567983  1.543465  1.140424  0.014519   1.614669
+4    imbalance_prices - Short_t+30min  73.797176  120.780816  0.231932   74.553991  1.591012  1.171403  0.014926   1.633920
+5   imbalance_volumes - value_t+30min  24.962216   34.215761  0.220698  125.536659  0.343626  0.469671  0.021457   1.564097
+6     imbalance_prices - Long_t+45min  75.919544  124.439292  0.184719   75.579414  1.371988  1.046843  0.013764   1.482455
+7    imbalance_prices - Short_t+45min  76.156287  124.619230  0.182345   75.660846  1.552237  1.167513  0.015386   1.568938
+8   imbalance_volumes - value_t+45min  25.957037   35.796734  0.147120  130.171252  0.355315  0.454065  0.021721   1.380643
+9     imbalance_prices - Long_t+60min  78.361877  128.560427  0.129831   76.486004  1.549845  1.025502  0.013902   1.660967
+10   imbalance_prices - Short_t+60min  78.430525  128.596678  0.129338   76.505398  1.589972  1.041360  0.014126   1.663870
+11  imbalance_volumes - value_t+60min  27.013271   37.359573  0.071130  135.566346  0.308470  0.319258  0.015932   1.519973
+12    imbalance_prices - Long_t+75min  79.432087  130.245146  0.106887   76.929261  1.473579  0.884767  0.012146   1.816603
+13   imbalance_prices - Short_t+75min  79.519121  130.310665  0.105984   76.986920  1.535929  0.927727  0.012754   1.818232
+14  imbalance_volumes - value_t+75min  27.369803   37.871321  0.045542  137.295594  0.259032  0.230266  0.011628   1.641127
+
+Overall averages across targets:
+MAE: 59.082, RMSE: 94.444, R2: 0.180, SMAPE: 93.411
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 70.977 ± 1.834, RMSE 115.615 ± 1.501, R2 0.296 ± 0.018, SMAPE 73.226 ± 2.051
+imbalance_prices - Short_t+15min: MAE 71.048 ± 1.785, RMSE 115.639 ± 1.491, R2 0.296 ± 0.018, SMAPE 73.295 ± 1.988
+imbalance_volumes - value_t+15min: MAE 23.524 ± 0.389, RMSE 31.865 ± 0.589, R2 0.324 ± 0.025, SMAPE 118.807 ± 1.946
+imbalance_prices - Long_t+30min: MAE 73.758 ± 1.543, RMSE 120.745 ± 1.140, R2 0.232 ± 0.015, SMAPE 74.568 ± 1.615
+imbalance_prices - Short_t+30min: MAE 73.797 ± 1.591, RMSE 120.781 ± 1.171, R2 0.232 ± 0.015, SMAPE 74.554 ± 1.634
+imbalance_volumes - value_t+30min: MAE 24.962 ± 0.344, RMSE 34.216 ± 0.470, R2 0.221 ± 0.021, SMAPE 125.537 ± 1.564
+imbalance_prices - Long_t+45min: MAE 75.920 ± 1.372, RMSE 124.439 ± 1.047, R2 0.185 ± 0.014, SMAPE 75.579 ± 1.482
+imbalance_prices - Short_t+45min: MAE 76.156 ± 1.552, RMSE 124.619 ± 1.168, R2 0.182 ± 0.015, SMAPE 75.661 ± 1.569
+imbalance_volumes - value_t+45min: MAE 25.957 ± 0.355, RMSE 35.797 ± 0.454, R2 0.147 ± 0.022, SMAPE 130.171 ± 1.381
+imbalance_prices - Long_t+60min: MAE 78.362 ± 1.550, RMSE 128.560 ± 1.026, R2 0.130 ± 0.014, SMAPE 76.486 ± 1.661
+imbalance_prices - Short_t+60min: MAE 78.431 ± 1.590, RMSE 128.597 ± 1.041, R2 0.129 ± 0.014, SMAPE 76.505 ± 1.664
+imbalance_volumes - value_t+60min: MAE 27.013 ± 0.308, RMSE 37.360 ± 0.319, R2 0.071 ± 0.016, SMAPE 135.566 ± 1.520
+imbalance_prices - Long_t+75min: MAE 79.432 ± 1.474, RMSE 130.245 ± 0.885, R2 0.107 ± 0.012, SMAPE 76.929 ± 1.817
+imbalance_prices - Short_t+75min: MAE 79.519 ± 1.536, RMSE 130.311 ± 0.928, R2 0.106 ± 0.013, SMAPE 76.987 ± 1.818
+imbalance_volumes - value_t+75min: MAE 27.370 ± 0.259, RMSE 37.871 ± 0.230, R2 0.046 ± 0.012, SMAPE 137.296 ± 1.641
+
+===============================
+FINAL METRICS FOR CH (100 Seeds)
+===============================
+                               Target        MAE        RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  78.081159  182.220544  0.328855  105.881645  0.484055  1.409176  0.010367   0.666410
+1    imbalance_prices - Short_t+15min  66.092772  151.722542  0.200442   25.967007  0.678005  0.683781  0.007215   0.401111
+2   imbalance_volumes - value_t+15min  18.988082   26.192613  0.672299   87.064984  0.128491  0.166074  0.004158   0.468054
+3     imbalance_prices - Long_t+30min  81.711019  190.945930  0.263051  108.876815  0.474210  1.331680  0.010279   0.634043
+4    imbalance_prices - Short_t+30min  67.789858  155.105285  0.164393   26.608876  0.603503  0.701823  0.007564   0.349628
+5   imbalance_volumes - value_t+30min  21.247807   29.813276  0.575443   92.614328  0.098786  0.127598  0.003635   0.410121
+6     imbalance_prices - Long_t+45min  83.592136  195.487380  0.227584  110.504376  0.512952  1.277480  0.010099   0.576843
+7    imbalance_prices - Short_t+45min  68.755743  156.449063  0.149848   27.085744  0.578603  0.727318  0.007899   0.337421
+8   imbalance_volumes - value_t+45min  22.209299   31.581768  0.523587   94.695868  0.069936  0.098575  0.002973   0.390500
+9     imbalance_prices - Long_t+60min  86.371310  201.275436  0.181168  113.018902  0.578939  1.263465  0.010280   0.655393
+10   imbalance_prices - Short_t+60min  71.278308  160.508427  0.105104   28.186352  0.670998  0.708769  0.007904   0.404772
+11  imbalance_volumes - value_t+60min  24.318181   34.498588  0.431509  101.419576  0.109992  0.146049  0.004816   0.543501
+12    imbalance_prices - Long_t+75min  87.613677  204.407211  0.155492  114.086590  0.578546  1.239931  0.010238   0.636348
+13   imbalance_prices - Short_t+75min  73.136648  162.831969  0.079007   29.079089  0.811516  0.724712  0.008195   0.502405
+14  imbalance_volumes - value_t+75min  25.370744   36.145829  0.375925  104.507215  0.115454  0.154302  0.005330   0.580607
+
+Overall averages across targets:
+MAE: 58.437, RMSE: 127.946, R2: 0.296, SMAPE: 77.973
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 78.081 ± 0.484, RMSE 182.221 ± 1.409, R2 0.329 ± 0.010, SMAPE 105.882 ± 0.666
+imbalance_prices - Short_t+15min: MAE 66.093 ± 0.678, RMSE 151.723 ± 0.684, R2 0.200 ± 0.007, SMAPE 25.967 ± 0.401
+imbalance_volumes - value_t+15min: MAE 18.988 ± 0.128, RMSE 26.193 ± 0.166, R2 0.672 ± 0.004, SMAPE 87.065 ± 0.468
+imbalance_prices - Long_t+30min: MAE 81.711 ± 0.474, RMSE 190.946 ± 1.332, R2 0.263 ± 0.010, SMAPE 108.877 ± 0.634
+imbalance_prices - Short_t+30min: MAE 67.790 ± 0.604, RMSE 155.105 ± 0.702, R2 0.164 ± 0.008, SMAPE 26.609 ± 0.350
+imbalance_volumes - value_t+30min: MAE 21.248 ± 0.099, RMSE 29.813 ± 0.128, R2 0.575 ± 0.004, SMAPE 92.614 ± 0.410
+imbalance_prices - Long_t+45min: MAE 83.592 ± 0.513, RMSE 195.487 ± 1.277, R2 0.228 ± 0.010, SMAPE 110.504 ± 0.577
+imbalance_prices - Short_t+45min: MAE 68.756 ± 0.579, RMSE 156.449 ± 0.727, R2 0.150 ± 0.008, SMAPE 27.086 ± 0.337
+imbalance_volumes - value_t+45min: MAE 22.209 ± 0.070, RMSE 31.582 ± 0.099, R2 0.524 ± 0.003, SMAPE 94.696 ± 0.390
+imbalance_prices - Long_t+60min: MAE 86.371 ± 0.579, RMSE 201.275 ± 1.263, R2 0.181 ± 0.010, SMAPE 113.019 ± 0.655
+imbalance_prices - Short_t+60min: MAE 71.278 ± 0.671, RMSE 160.508 ± 0.709, R2 0.105 ± 0.008, SMAPE 28.186 ± 0.405
+imbalance_volumes - value_t+60min: MAE 24.318 ± 0.110, RMSE 34.499 ± 0.146, R2 0.432 ± 0.005, SMAPE 101.420 ± 0.544
+imbalance_prices - Long_t+75min: MAE 87.614 ± 0.579, RMSE 204.407 ± 1.240, R2 0.155 ± 0.010, SMAPE 114.087 ± 0.636
+imbalance_prices - Short_t+75min: MAE 73.137 ± 0.812, RMSE 162.832 ± 0.725, R2 0.079 ± 0.008, SMAPE 29.079 ± 0.502
+imbalance_volumes - value_t+75min: MAE 25.371 ± 0.115, RMSE 36.146 ± 0.154, R2 0.376 ± 0.005, SMAPE 104.507 ± 0.581
+
+===============================
+FINAL METRICS FOR DE (100 Seeds)
+===============================
+                             Target        MAE        RMSE        R2      SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0   imbalance_prices - Long_t+15min  41.951940  114.587850  0.233566  56.801541  0.425651  0.596417  0.007984   0.785399
+1  imbalance_prices - Short_t+15min  41.957683  114.614096  0.233216  56.817984  0.372989  0.583663  0.007815   0.651202
+2   imbalance_prices - Long_t+30min  43.540591  118.269173  0.183530  58.319281  0.359396  0.411122  0.005677   0.645809
+3  imbalance_prices - Short_t+30min  43.518654  118.193935  0.184568  58.254604  0.339751  0.423398  0.005842   0.625527
+4   imbalance_prices - Long_t+45min  44.303005  120.194538  0.156719  58.990793  0.357264  0.342547  0.004809   0.655237
+5  imbalance_prices - Short_t+45min  44.287344  120.185567  0.156845  58.974295  0.332481  0.338236  0.004747   0.566120
+6   imbalance_prices - Long_t+60min  44.779609  121.251863  0.141800  59.452594  0.342507  0.293394  0.004154   0.623999
+7  imbalance_prices - Short_t+60min  44.783663  121.230397  0.142105  59.459280  0.321565  0.283724  0.004017   0.595101
+8   imbalance_prices - Long_t+75min  45.203824  121.944600  0.131965  59.871045  0.317255  0.276770  0.003941   0.582129
+9  imbalance_prices - Short_t+75min  45.181149  121.963939  0.131690  59.865843  0.319834  0.259542  0.003696   0.590169
+
+Overall averages across targets:
+MAE: 43.951, RMSE: 119.244, R2: 0.170, SMAPE: 58.681
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 41.952 ± 0.426, RMSE 114.588 ± 0.596, R2 0.234 ± 0.008, SMAPE 56.802 ± 0.785
+imbalance_prices - Short_t+15min: MAE 41.958 ± 0.373, RMSE 114.614 ± 0.584, R2 0.233 ± 0.008, SMAPE 56.818 ± 0.651
+imbalance_prices - Long_t+30min: MAE 43.541 ± 0.359, RMSE 118.269 ± 0.411, R2 0.184 ± 0.006, SMAPE 58.319 ± 0.646
+imbalance_prices - Short_t+30min: MAE 43.519 ± 0.340, RMSE 118.194 ± 0.423, R2 0.185 ± 0.006, SMAPE 58.255 ± 0.626
+imbalance_prices - Long_t+45min: MAE 44.303 ± 0.357, RMSE 120.195 ± 0.343, R2 0.157 ± 0.005, SMAPE 58.991 ± 0.655
+imbalance_prices - Short_t+45min: MAE 44.287 ± 0.332, RMSE 120.186 ± 0.338, R2 0.157 ± 0.005, SMAPE 58.974 ± 0.566
+imbalance_prices - Long_t+60min: MAE 44.780 ± 0.343, RMSE 121.252 ± 0.293, R2 0.142 ± 0.004, SMAPE 59.453 ± 0.624
+imbalance_prices - Short_t+60min: MAE 44.784 ± 0.322, RMSE 121.230 ± 0.284, R2 0.142 ± 0.004, SMAPE 59.459 ± 0.595
+imbalance_prices - Long_t+75min: MAE 45.204 ± 0.317, RMSE 121.945 ± 0.277, R2 0.132 ± 0.004, SMAPE 59.871 ± 0.582
+imbalance_prices - Short_t+75min: MAE 45.181 ± 0.320, RMSE 121.964 ± 0.260, R2 0.132 ± 0.004, SMAPE 59.866 ± 0.590
+
+===============================
+FINAL METRICS FOR ES (100 Seeds)
+===============================
+                               Target        MAE        RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  21.662238   33.443532  0.510076   79.401994  0.251269  0.191254  0.005608   2.094930
+1    imbalance_prices - Short_t+15min  21.419260   33.209898  0.560950   53.795737  0.221778  0.178390  0.004719   0.283597
+2   imbalance_volumes - value_t+15min  64.201940  114.130860  0.381903  140.297314  0.510336  2.197703  0.023827   1.824797
+3     imbalance_prices - Long_t+30min  22.171929   34.012085  0.493290   80.351707  0.203964  0.155488  0.004634   1.672053
+4    imbalance_prices - Short_t+30min  22.252189   34.149281  0.535766   54.672190  0.217129  0.187637  0.005107   0.273148
+5   imbalance_volumes - value_t+30min  65.627489  119.792118  0.318189  143.828793  0.352825  1.924461  0.021907   1.794495
+6     imbalance_prices - Long_t+45min  22.491683   34.317222  0.484201   80.990965  0.201983  0.112044  0.003368   1.531244
+7    imbalance_prices - Short_t+45min  22.808158   34.751114  0.519237   55.192560  0.198599  0.170913  0.004732   0.224380
+8   imbalance_volumes - value_t+45min  66.348044  123.402246  0.275597  144.829938  0.389708  1.946994  0.022849   1.764358
+9     imbalance_prices - Long_t+60min  23.227984   35.107704  0.460164   82.424365  0.223383  0.138568  0.004261   1.450873
+10   imbalance_prices - Short_t+60min  23.692184   35.801016  0.489741   56.043294  0.209666  0.193593  0.005522   0.220584
+11  imbalance_volumes - value_t+60min  68.045934  129.015765  0.207156  147.797758  0.307821  1.390185  0.017081   1.633458
+12    imbalance_prices - Long_t+75min  23.729920   35.613195  0.444515   83.287152  0.233790  0.168699  0.005262   1.285944
+13   imbalance_prices - Short_t+75min  24.244983   36.391723  0.472757   56.492477  0.230126  0.208630  0.006048   0.213789
+14  imbalance_volumes - value_t+75min  68.619559  131.479020  0.174238  148.489129  0.278499  1.414320  0.017720   1.787767
+
+Overall averages across targets:
+MAE: 37.370, RMSE: 64.308, R2: 0.422, SMAPE: 93.860
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 21.662 ± 0.251, RMSE 33.444 ± 0.191, R2 0.510 ± 0.006, SMAPE 79.402 ± 2.095
+imbalance_prices - Short_t+15min: MAE 21.419 ± 0.222, RMSE 33.210 ± 0.178, R2 0.561 ± 0.005, SMAPE 53.796 ± 0.284
+imbalance_volumes - value_t+15min: MAE 64.202 ± 0.510, RMSE 114.131 ± 2.198, R2 0.382 ± 0.024, SMAPE 140.297 ± 1.825
+imbalance_prices - Long_t+30min: MAE 22.172 ± 0.204, RMSE 34.012 ± 0.155, R2 0.493 ± 0.005, SMAPE 80.352 ± 1.672
+imbalance_prices - Short_t+30min: MAE 22.252 ± 0.217, RMSE 34.149 ± 0.188, R2 0.536 ± 0.005, SMAPE 54.672 ± 0.273
+imbalance_volumes - value_t+30min: MAE 65.627 ± 0.353, RMSE 119.792 ± 1.924, R2 0.318 ± 0.022, SMAPE 143.829 ± 1.794
+imbalance_prices - Long_t+45min: MAE 22.492 ± 0.202, RMSE 34.317 ± 0.112, R2 0.484 ± 0.003, SMAPE 80.991 ± 1.531
+imbalance_prices - Short_t+45min: MAE 22.808 ± 0.199, RMSE 34.751 ± 0.171, R2 0.519 ± 0.005, SMAPE 55.193 ± 0.224
+imbalance_volumes - value_t+45min: MAE 66.348 ± 0.390, RMSE 123.402 ± 1.947, R2 0.276 ± 0.023, SMAPE 144.830 ± 1.764
+imbalance_prices - Long_t+60min: MAE 23.228 ± 0.223, RMSE 35.108 ± 0.139, R2 0.460 ± 0.004, SMAPE 82.424 ± 1.451
+imbalance_prices - Short_t+60min: MAE 23.692 ± 0.210, RMSE 35.801 ± 0.194, R2 0.490 ± 0.006, SMAPE 56.043 ± 0.221
+imbalance_volumes - value_t+60min: MAE 68.046 ± 0.308, RMSE 129.016 ± 1.390, R2 0.207 ± 0.017, SMAPE 147.798 ± 1.633
+imbalance_prices - Long_t+75min: MAE 23.730 ± 0.234, RMSE 35.613 ± 0.169, R2 0.445 ± 0.005, SMAPE 83.287 ± 1.286
+imbalance_prices - Short_t+75min: MAE 24.245 ± 0.230, RMSE 36.392 ± 0.209, R2 0.473 ± 0.006, SMAPE 56.492 ± 0.214
+imbalance_volumes - value_t+75min: MAE 68.620 ± 0.278, RMSE 131.479 ± 1.414, R2 0.174 ± 0.018, SMAPE 148.489 ± 1.788
+
+===============================
+FINAL METRICS FOR FI (100 Seeds)
+===============================
+                               Target         MAE        RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min   45.242105  112.384895  0.326636  106.073797  0.736286  0.400130  0.004797   1.505158
+1    imbalance_prices - Short_t+15min   45.337457  112.438009  0.325998  106.182768  0.813972  0.432954  0.005195   1.695271
+2   imbalance_volumes - value_t+15min  115.849446  161.024728  0.606994   82.928950  1.863070  1.945642  0.009515   1.153806
+3     imbalance_prices - Long_t+30min   48.004865  117.004695  0.270140  109.822727  0.751479  0.377733  0.004713   1.377345
+4    imbalance_prices - Short_t+30min   47.991779  117.028737  0.269840  109.934371  0.696130  0.375098  0.004684   1.349197
+5   imbalance_volumes - value_t+30min  129.212607  178.399678  0.517640   88.601517  1.815184  2.044846  0.011091   1.051317
+6     imbalance_prices - Long_t+45min   49.893482  119.809082  0.234729  112.760382  0.735929  0.494806  0.006323   1.366889
+7    imbalance_prices - Short_t+45min   49.887688  119.807892  0.234748  112.733091  0.721003  0.428140  0.005472   1.346481
+8   imbalance_volumes - value_t+45min  139.161330  189.915176  0.453366   93.009794  1.898668  2.227417  0.012847   0.990899
+9     imbalance_prices - Long_t+60min   52.224232  122.784193  0.196257  116.431493  0.617951  0.394028  0.005161   1.247426
+10   imbalance_prices - Short_t+60min   52.274408  122.793873  0.196130  116.560989  0.630096  0.401457  0.005261   1.233225
+11  imbalance_volumes - value_t+60min  150.877050  202.660636  0.377560   98.219402  1.639474  1.876352  0.011545   0.964863
+12    imbalance_prices - Long_t+75min   53.763755  124.925620  0.167976  118.970689  0.683696  0.407264  0.005428   1.228518
+13   imbalance_prices - Short_t+75min   53.757163  124.974264  0.167328  119.059001  0.630574  0.410756  0.005479   1.168957
+14  imbalance_volumes - value_t+75min  158.174565  211.226484  0.323818  101.541149  1.648693  1.859936  0.011943   0.962192
+
+Overall averages across targets:
+MAE: 79.443, RMSE: 142.479, R2: 0.311, SMAPE: 106.189
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 45.242 ± 0.736, RMSE 112.385 ± 0.400, R2 0.327 ± 0.005, SMAPE 106.074 ± 1.505
+imbalance_prices - Short_t+15min: MAE 45.337 ± 0.814, RMSE 112.438 ± 0.433, R2 0.326 ± 0.005, SMAPE 106.183 ± 1.695
+imbalance_volumes - value_t+15min: MAE 115.849 ± 1.863, RMSE 161.025 ± 1.946, R2 0.607 ± 0.010, SMAPE 82.929 ± 1.154
+imbalance_prices - Long_t+30min: MAE 48.005 ± 0.751, RMSE 117.005 ± 0.378, R2 0.270 ± 0.005, SMAPE 109.823 ± 1.377
+imbalance_prices - Short_t+30min: MAE 47.992 ± 0.696, RMSE 117.029 ± 0.375, R2 0.270 ± 0.005, SMAPE 109.934 ± 1.349
+imbalance_volumes - value_t+30min: MAE 129.213 ± 1.815, RMSE 178.400 ± 2.045, R2 0.518 ± 0.011, SMAPE 88.602 ± 1.051
+imbalance_prices - Long_t+45min: MAE 49.893 ± 0.736, RMSE 119.809 ± 0.495, R2 0.235 ± 0.006, SMAPE 112.760 ± 1.367
+imbalance_prices - Short_t+45min: MAE 49.888 ± 0.721, RMSE 119.808 ± 0.428, R2 0.235 ± 0.005, SMAPE 112.733 ± 1.346
+imbalance_volumes - value_t+45min: MAE 139.161 ± 1.899, RMSE 189.915 ± 2.227, R2 0.453 ± 0.013, SMAPE 93.010 ± 0.991
+imbalance_prices - Long_t+60min: MAE 52.224 ± 0.618, RMSE 122.784 ± 0.394, R2 0.196 ± 0.005, SMAPE 116.431 ± 1.247
+imbalance_prices - Short_t+60min: MAE 52.274 ± 0.630, RMSE 122.794 ± 0.401, R2 0.196 ± 0.005, SMAPE 116.561 ± 1.233
+imbalance_volumes - value_t+60min: MAE 150.877 ± 1.639, RMSE 202.661 ± 1.876, R2 0.378 ± 0.012, SMAPE 98.219 ± 0.965
+imbalance_prices - Long_t+75min: MAE 53.764 ± 0.684, RMSE 124.926 ± 0.407, R2 0.168 ± 0.005, SMAPE 118.971 ± 1.229
+imbalance_prices - Short_t+75min: MAE 53.757 ± 0.631, RMSE 124.974 ± 0.411, R2 0.167 ± 0.005, SMAPE 119.059 ± 1.169
+imbalance_volumes - value_t+75min: MAE 158.175 ± 1.649, RMSE 211.226 ± 1.860, R2 0.324 ± 0.012, SMAPE 101.541 ± 0.962
+
+===============================
+FINAL METRICS FOR FR (100 Seeds)
+===============================
+                               Target         MAE        RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min   43.560775  117.378167  0.260672   75.368728  0.439938  1.007637  0.012668   0.742453
+1    imbalance_prices - Short_t+15min   45.345135  112.263013  0.282529   75.023994  0.467710  1.006004  0.012841   0.633407
+2   imbalance_volumes - value_t+15min  121.365573  160.751441  0.461264  106.819580  1.470353  1.863147  0.012499   1.218551
+3     imbalance_prices - Long_t+30min   47.230661  125.002740  0.161531   79.926635  0.474078  0.741566  0.009929   0.625727
+4    imbalance_prices - Short_t+30min   49.319519  120.046815  0.179622   79.535260  0.503727  0.673029  0.009185   0.574045
+5   imbalance_volumes - value_t+30min  140.229483  184.320170  0.291614  121.945320  2.515412  3.013599  0.023114   1.497985
+6     imbalance_prices - Long_t+45min   49.403543  128.502454  0.113948   82.346026  0.501782  0.403426  0.005567   0.720812
+7    imbalance_prices - Short_t+45min   51.712253  123.732925  0.128487   81.892877  0.542446  0.408128  0.005750   0.635317
+8   imbalance_volumes - value_t+45min  148.794527  195.522937  0.202899  131.054696  2.748382  3.156707  0.025752   1.434565
+9     imbalance_prices - Long_t+60min   51.545951  130.714694  0.083041   84.835086  0.507320  0.369904  0.005189   0.741403
+10   imbalance_prices - Short_t+60min   54.020059  126.106120  0.094556   84.366976  0.556994  0.412839  0.005925   0.686841
+11  imbalance_volumes - value_t+60min  158.030259  207.201388  0.104896  139.203567  2.308927  2.844740  0.024628   1.181270
+12    imbalance_prices - Long_t+75min   52.934107  132.108600  0.063348   86.262245  0.491170  0.329002  0.004665   0.798620
+13   imbalance_prices - Short_t+75min   55.541724  127.682108  0.071741   85.776670  0.527961  0.378929  0.005509   0.747398
+14  imbalance_volumes - value_t+75min  162.592461  213.063669  0.053437  144.114313  2.841935  3.393302  0.030222   1.148812
+
+Overall averages across targets:
+MAE: 82.108, RMSE: 146.960, R2: 0.170, SMAPE: 97.231
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 43.561 ± 0.440, RMSE 117.378 ± 1.008, R2 0.261 ± 0.013, SMAPE 75.369 ± 0.742
+imbalance_prices - Short_t+15min: MAE 45.345 ± 0.468, RMSE 112.263 ± 1.006, R2 0.283 ± 0.013, SMAPE 75.024 ± 0.633
+imbalance_volumes - value_t+15min: MAE 121.366 ± 1.470, RMSE 160.751 ± 1.863, R2 0.461 ± 0.012, SMAPE 106.820 ± 1.219
+imbalance_prices - Long_t+30min: MAE 47.231 ± 0.474, RMSE 125.003 ± 0.742, R2 0.162 ± 0.010, SMAPE 79.927 ± 0.626
+imbalance_prices - Short_t+30min: MAE 49.320 ± 0.504, RMSE 120.047 ± 0.673, R2 0.180 ± 0.009, SMAPE 79.535 ± 0.574
+imbalance_volumes - value_t+30min: MAE 140.229 ± 2.515, RMSE 184.320 ± 3.014, R2 0.292 ± 0.023, SMAPE 121.945 ± 1.498
+imbalance_prices - Long_t+45min: MAE 49.404 ± 0.502, RMSE 128.502 ± 0.403, R2 0.114 ± 0.006, SMAPE 82.346 ± 0.721
+imbalance_prices - Short_t+45min: MAE 51.712 ± 0.542, RMSE 123.733 ± 0.408, R2 0.128 ± 0.006, SMAPE 81.893 ± 0.635
+imbalance_volumes - value_t+45min: MAE 148.795 ± 2.748, RMSE 195.523 ± 3.157, R2 0.203 ± 0.026, SMAPE 131.055 ± 1.435
+imbalance_prices - Long_t+60min: MAE 51.546 ± 0.507, RMSE 130.715 ± 0.370, R2 0.083 ± 0.005, SMAPE 84.835 ± 0.741
+imbalance_prices - Short_t+60min: MAE 54.020 ± 0.557, RMSE 126.106 ± 0.413, R2 0.095 ± 0.006, SMAPE 84.367 ± 0.687
+imbalance_volumes - value_t+60min: MAE 158.030 ± 2.309, RMSE 207.201 ± 2.845, R2 0.105 ± 0.025, SMAPE 139.204 ± 1.181
+imbalance_prices - Long_t+75min: MAE 52.934 ± 0.491, RMSE 132.109 ± 0.329, R2 0.063 ± 0.005, SMAPE 86.262 ± 0.799
+imbalance_prices - Short_t+75min: MAE 55.542 ± 0.528, RMSE 127.682 ± 0.379, R2 0.072 ± 0.006, SMAPE 85.777 ± 0.747
+imbalance_volumes - value_t+75min: MAE 162.592 ± 2.842, RMSE 213.064 ± 3.393, R2 0.053 ± 0.030, SMAPE 144.114 ± 1.149
+
+===============================
+FINAL METRICS FOR GR (100 Seeds)
+===============================
+                               Target        MAE        RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  48.890407   94.623821  0.341356   53.150456  0.621617  0.322885  0.004497   0.534241
+1    imbalance_prices - Short_t+15min  48.974924   94.639565  0.341137   53.197163  0.698218  0.324978  0.004527   0.502797
+2   imbalance_volumes - value_t+15min  35.755174   48.193287  0.728515   83.042971  0.419047  0.472454  0.005350   1.127551
+3     imbalance_prices - Long_t+30min  51.471070   97.775395  0.296770   55.453427  0.645909  0.265976  0.003827   0.505697
+4    imbalance_prices - Short_t+30min  51.456251   97.747073  0.297177   55.353204  0.647476  0.259971  0.003740   0.511580
+5   imbalance_volumes - value_t+30min  39.580599   53.463284  0.666039   88.565493  0.301333  0.316881  0.003964   0.979280
+6     imbalance_prices - Long_t+45min  53.802578  100.318152  0.259945   57.328765  0.674564  0.268427  0.003961   0.554449
+7    imbalance_prices - Short_t+45min  53.802659  100.304589  0.260145   57.312174  0.632736  0.249842  0.003685   0.521607
+8   imbalance_volumes - value_t+45min  43.248459   58.433248  0.601187   93.671097  0.322655  0.379251  0.005186   1.004666
+9     imbalance_prices - Long_t+60min  56.332973  102.961487  0.220670   59.256641  0.631025  0.280014  0.004238   0.498494
+10   imbalance_prices - Short_t+60min  56.337725  102.972907  0.220497   59.276668  0.649390  0.285726  0.004327   0.467632
+11  imbalance_volumes - value_t+60min  47.537081   64.138340  0.519761  100.934548  0.344369  0.418287  0.006272   1.018427
+12    imbalance_prices - Long_t+75min  58.173062  104.884909  0.191279   61.050189  0.585199  0.275224  0.004245   0.486711
+13   imbalance_prices - Short_t+75min  58.182336  104.888700  0.191220   61.000755  0.587675  0.276937  0.004270   0.495543
+14  imbalance_volumes - value_t+75min  51.074632   69.140512  0.442172  106.061805  0.350100  0.412743  0.006669   1.104132
+
+Overall averages across targets:
+MAE: 50.308, RMSE: 86.299, R2: 0.372, SMAPE: 69.644
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 48.890 ± 0.622, RMSE 94.624 ± 0.323, R2 0.341 ± 0.004, SMAPE 53.150 ± 0.534
+imbalance_prices - Short_t+15min: MAE 48.975 ± 0.698, RMSE 94.640 ± 0.325, R2 0.341 ± 0.005, SMAPE 53.197 ± 0.503
+imbalance_volumes - value_t+15min: MAE 35.755 ± 0.419, RMSE 48.193 ± 0.472, R2 0.729 ± 0.005, SMAPE 83.043 ± 1.128
+imbalance_prices - Long_t+30min: MAE 51.471 ± 0.646, RMSE 97.775 ± 0.266, R2 0.297 ± 0.004, SMAPE 55.453 ± 0.506
+imbalance_prices - Short_t+30min: MAE 51.456 ± 0.647, RMSE 97.747 ± 0.260, R2 0.297 ± 0.004, SMAPE 55.353 ± 0.512
+imbalance_volumes - value_t+30min: MAE 39.581 ± 0.301, RMSE 53.463 ± 0.317, R2 0.666 ± 0.004, SMAPE 88.565 ± 0.979
+imbalance_prices - Long_t+45min: MAE 53.803 ± 0.675, RMSE 100.318 ± 0.268, R2 0.260 ± 0.004, SMAPE 57.329 ± 0.554
+imbalance_prices - Short_t+45min: MAE 53.803 ± 0.633, RMSE 100.305 ± 0.250, R2 0.260 ± 0.004, SMAPE 57.312 ± 0.522
+imbalance_volumes - value_t+45min: MAE 43.248 ± 0.323, RMSE 58.433 ± 0.379, R2 0.601 ± 0.005, SMAPE 93.671 ± 1.005
+imbalance_prices - Long_t+60min: MAE 56.333 ± 0.631, RMSE 102.961 ± 0.280, R2 0.221 ± 0.004, SMAPE 59.257 ± 0.498
+imbalance_prices - Short_t+60min: MAE 56.338 ± 0.649, RMSE 102.973 ± 0.286, R2 0.220 ± 0.004, SMAPE 59.277 ± 0.468
+imbalance_volumes - value_t+60min: MAE 47.537 ± 0.344, RMSE 64.138 ± 0.418, R2 0.520 ± 0.006, SMAPE 100.935 ± 1.018
+imbalance_prices - Long_t+75min: MAE 58.173 ± 0.585, RMSE 104.885 ± 0.275, R2 0.191 ± 0.004, SMAPE 61.050 ± 0.487
+imbalance_prices - Short_t+75min: MAE 58.182 ± 0.588, RMSE 104.889 ± 0.277, R2 0.191 ± 0.004, SMAPE 61.001 ± 0.496
+imbalance_volumes - value_t+75min: MAE 51.075 ± 0.350, RMSE 69.141 ± 0.413, R2 0.442 ± 0.007, SMAPE 106.062 ± 1.104
+
+===============================
+FINAL METRICS FOR HR (100 Seeds)
+===============================
+                               Target        MAE        RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  78.947805  125.927170  0.138004   82.996749  3.496940  2.905365  0.040174   5.681430
+1    imbalance_prices - Short_t+15min  78.970987  125.847532  0.139215   83.077184  3.111669  2.491161  0.034293   5.926263
+2   imbalance_volumes - value_t+15min  11.554685   14.981771  0.486844  104.764223  0.244502  0.282200  0.019347   2.143086
+3     imbalance_prices - Long_t+30min  79.966421  128.793830  0.098556   82.767258  2.540950  2.016688  0.028283   4.997637
+4    imbalance_prices - Short_t+30min  80.573309  129.456963  0.089082   83.539433  3.044912  2.678778  0.038358   5.208117
+5   imbalance_volumes - value_t+30min  12.455357   16.295303  0.393054  111.696663  0.194412  0.205415  0.015355   1.927012
+6     imbalance_prices - Long_t+45min  81.966549  131.472441  0.060593   84.174709  2.568652  2.328980  0.033467   4.762148
+7    imbalance_prices - Short_t+45min  81.820305  131.454199  0.060895   83.930915  2.227065  2.158024  0.030916   4.538987
+8   imbalance_volumes - value_t+45min  13.170982   17.289167  0.316922  117.189946  0.171851  0.180258  0.014266   1.828754
+9     imbalance_prices - Long_t+60min  83.968409  133.432892  0.031449   85.975841  2.841604  2.347170  0.034229   5.591359
+10   imbalance_prices - Short_t+60min  83.653839  133.220410  0.034513   85.382786  2.528035  2.413497  0.035431   4.400469
+11  imbalance_volumes - value_t+60min  14.037489   18.468357  0.220735  123.687351  0.148841  0.156588  0.013245   1.892513
+12    imbalance_prices - Long_t+75min  85.537304  135.506066  0.000111   86.342802  2.793256  2.579928  0.038300   5.379242
+13   imbalance_prices - Short_t+75min  85.028474  135.007144  0.007532   85.717379  2.570428  2.298917  0.033913   4.763775
+14  imbalance_volumes - value_t+75min  14.509558   19.144999  0.162676  127.556514  0.137273  0.145758  0.012753   1.692158
+
+Overall averages across targets:
+MAE: 59.077, RMSE: 93.087, R2: 0.149, SMAPE: 95.253
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 78.948 ± 3.497, RMSE 125.927 ± 2.905, R2 0.138 ± 0.040, SMAPE 82.997 ± 5.681
+imbalance_prices - Short_t+15min: MAE 78.971 ± 3.112, RMSE 125.848 ± 2.491, R2 0.139 ± 0.034, SMAPE 83.077 ± 5.926
+imbalance_volumes - value_t+15min: MAE 11.555 ± 0.245, RMSE 14.982 ± 0.282, R2 0.487 ± 0.019, SMAPE 104.764 ± 2.143
+imbalance_prices - Long_t+30min: MAE 79.966 ± 2.541, RMSE 128.794 ± 2.017, R2 0.099 ± 0.028, SMAPE 82.767 ± 4.998
+imbalance_prices - Short_t+30min: MAE 80.573 ± 3.045, RMSE 129.457 ± 2.679, R2 0.089 ± 0.038, SMAPE 83.539 ± 5.208
+imbalance_volumes - value_t+30min: MAE 12.455 ± 0.194, RMSE 16.295 ± 0.205, R2 0.393 ± 0.015, SMAPE 111.697 ± 1.927
+imbalance_prices - Long_t+45min: MAE 81.967 ± 2.569, RMSE 131.472 ± 2.329, R2 0.061 ± 0.033, SMAPE 84.175 ± 4.762
+imbalance_prices - Short_t+45min: MAE 81.820 ± 2.227, RMSE 131.454 ± 2.158, R2 0.061 ± 0.031, SMAPE 83.931 ± 4.539
+imbalance_volumes - value_t+45min: MAE 13.171 ± 0.172, RMSE 17.289 ± 0.180, R2 0.317 ± 0.014, SMAPE 117.190 ± 1.829
+imbalance_prices - Long_t+60min: MAE 83.968 ± 2.842, RMSE 133.433 ± 2.347, R2 0.031 ± 0.034, SMAPE 85.976 ± 5.591
+imbalance_prices - Short_t+60min: MAE 83.654 ± 2.528, RMSE 133.220 ± 2.413, R2 0.035 ± 0.035, SMAPE 85.383 ± 4.400
+imbalance_volumes - value_t+60min: MAE 14.037 ± 0.149, RMSE 18.468 ± 0.157, R2 0.221 ± 0.013, SMAPE 123.687 ± 1.893
+imbalance_prices - Long_t+75min: MAE 85.537 ± 2.793, RMSE 135.506 ± 2.580, R2 0.000 ± 0.038, SMAPE 86.343 ± 5.379
+imbalance_prices - Short_t+75min: MAE 85.028 ± 2.570, RMSE 135.007 ± 2.299, R2 0.008 ± 0.034, SMAPE 85.717 ± 4.764
+imbalance_volumes - value_t+75min: MAE 14.510 ± 0.137, RMSE 19.145 ± 0.146, R2 0.163 ± 0.013, SMAPE 127.557 ± 1.692
+
+===============================
+FINAL METRICS FOR HU (100 Seeds)
+===============================
+                               Target           MAE           RMSE        R2       SMAPE     MAE_STD    RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  46426.698281   90753.269698  0.280300  112.909032  693.007485  288.167965  0.004576   1.308645
+1    imbalance_prices - Short_t+15min  46540.511758   90801.538496  0.279534  112.986728  660.285654  298.321746  0.004740   1.302320
+2   imbalance_volumes - value_t+15min     16.679145      23.052030  0.535444   90.844812    0.388866    0.455747  0.018611   1.229789
+3     imbalance_prices - Long_t+30min  50355.675898   96505.912715  0.186163  117.897260  746.229575  346.867490  0.005855   1.467768
+4    imbalance_prices - Short_t+30min  50503.420508   96611.568734  0.184378  118.013653  833.411968  380.466475  0.006433   1.480823
+5   imbalance_volumes - value_t+30min     18.561948      26.259365  0.397284   95.655430    0.321481    0.385703  0.017859   1.390788
+6     imbalance_prices - Long_t+45min  52967.256328   99393.692909  0.136726  121.253428  888.550511  356.123082  0.006194   1.336595
+7    imbalance_prices - Short_t+45min  53086.796914   99525.811395  0.134429  121.268702  875.986109  367.926411  0.006406   1.314949
+8   imbalance_volumes - value_t+45min     20.139320      28.836087  0.273215   98.989822    0.361971    0.396687  0.020086   1.562395
+9     imbalance_prices - Long_t+60min  55519.954102  101903.894875  0.092571  124.992758  959.874777  322.078146  0.005743   1.194004
+10   imbalance_prices - Short_t+60min  55735.604258  102046.919268  0.090020  125.135547  990.178788  354.669429  0.006334   1.150427
+11  imbalance_volumes - value_t+60min     22.087936      31.679250  0.122862  104.371759    0.380562    0.391330  0.021786   2.042082
+12    imbalance_prices - Long_t+75min  57447.835273  103747.517613  0.059439  127.843662  989.655070  291.747364  0.005297   1.032832
+13   imbalance_prices - Short_t+75min  57617.590977  103848.389444  0.057610  127.853971  948.331014  285.046297  0.005177   1.033903
+14  imbalance_volumes - value_t+75min     23.076334      33.297451  0.031025  107.195782    0.312674    0.313219  0.018299   2.072075
+
+Overall averages across targets:
+MAE: 35086.793, RMSE: 65685.443, R2: 0.191, SMAPE: 113.814
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 46426.698 ± 693.007, RMSE 90753.270 ± 288.168, R2 0.280 ± 0.005, SMAPE 112.909 ± 1.309
+imbalance_prices - Short_t+15min: MAE 46540.512 ± 660.286, RMSE 90801.538 ± 298.322, R2 0.280 ± 0.005, SMAPE 112.987 ± 1.302
+imbalance_volumes - value_t+15min: MAE 16.679 ± 0.389, RMSE 23.052 ± 0.456, R2 0.535 ± 0.019, SMAPE 90.845 ± 1.230
+imbalance_prices - Long_t+30min: MAE 50355.676 ± 746.230, RMSE 96505.913 ± 346.867, R2 0.186 ± 0.006, SMAPE 117.897 ± 1.468
+imbalance_prices - Short_t+30min: MAE 50503.421 ± 833.412, RMSE 96611.569 ± 380.466, R2 0.184 ± 0.006, SMAPE 118.014 ± 1.481
+imbalance_volumes - value_t+30min: MAE 18.562 ± 0.321, RMSE 26.259 ± 0.386, R2 0.397 ± 0.018, SMAPE 95.655 ± 1.391
+imbalance_prices - Long_t+45min: MAE 52967.256 ± 888.551, RMSE 99393.693 ± 356.123, R2 0.137 ± 0.006, SMAPE 121.253 ± 1.337
+imbalance_prices - Short_t+45min: MAE 53086.797 ± 875.986, RMSE 99525.811 ± 367.926, R2 0.134 ± 0.006, SMAPE 121.269 ± 1.315
+imbalance_volumes - value_t+45min: MAE 20.139 ± 0.362, RMSE 28.836 ± 0.397, R2 0.273 ± 0.020, SMAPE 98.990 ± 1.562
+imbalance_prices - Long_t+60min: MAE 55519.954 ± 959.875, RMSE 101903.895 ± 322.078, R2 0.093 ± 0.006, SMAPE 124.993 ± 1.194
+imbalance_prices - Short_t+60min: MAE 55735.604 ± 990.179, RMSE 102046.919 ± 354.669, R2 0.090 ± 0.006, SMAPE 125.136 ± 1.150
+imbalance_volumes - value_t+60min: MAE 22.088 ± 0.381, RMSE 31.679 ± 0.391, R2 0.123 ± 0.022, SMAPE 104.372 ± 2.042
+imbalance_prices - Long_t+75min: MAE 57447.835 ± 989.655, RMSE 103747.518 ± 291.747, R2 0.059 ± 0.005, SMAPE 127.844 ± 1.033
+imbalance_prices - Short_t+75min: MAE 57617.591 ± 948.331, RMSE 103848.389 ± 285.046, R2 0.058 ± 0.005, SMAPE 127.854 ± 1.034
+imbalance_volumes - value_t+75min: MAE 23.076 ± 0.313, RMSE 33.297 ± 0.313, R2 0.031 ± 0.018, SMAPE 107.196 ± 2.072
+
+===============================
+FINAL METRICS FOR LT (100 Seeds)
+===============================
+                               Target         MAE        RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min   96.081533  144.042911  0.205225  104.787034  4.941134  3.980670  0.043364   1.159385
+1    imbalance_prices - Short_t+15min   95.624469  143.957352  0.206046  104.845682  5.487552  4.365799  0.047761   1.188032
+2   imbalance_volumes - value_t+15min   68.594588   90.567886  0.073440  125.655675  1.562999  2.091304  0.043114   4.517819
+3     imbalance_prices - Long_t+30min   99.431431  148.189589  0.159084  106.435023  4.376238  3.312168  0.037502   0.971104
+4    imbalance_prices - Short_t+30min   99.669312  148.381034  0.156859  106.553671  4.740894  3.509955  0.039834   1.076380
+5   imbalance_volumes - value_t+30min   71.634396   94.421216 -0.007171  130.344443  1.697183  2.477549  0.053541   3.503168
+6     imbalance_prices - Long_t+45min  101.060371  150.374682  0.134244  107.577390  3.901940  2.852971  0.032907   1.249208
+7    imbalance_prices - Short_t+45min  101.102602  150.417863  0.133723  107.630110  4.145136  2.963826  0.034199   1.173602
+8   imbalance_volumes - value_t+45min   73.714855   96.924492 -0.061576  133.242006  2.127184  3.111769  0.069574   2.971971
+9     imbalance_prices - Long_t+60min  102.052577  152.013456  0.115315  108.362585  3.933374  2.775150  0.032490   1.301068
+10   imbalance_prices - Short_t+60min  102.720403  152.433230  0.110363  108.430582  4.145307  3.046697  0.035828   1.248890
+11  imbalance_volumes - value_t+60min   74.682227   97.980694 -0.085142  135.223910  2.677514  3.738102  0.085088   2.704070
+12    imbalance_prices - Long_t+75min  102.881639  153.256773  0.100881  108.791324  3.740711  2.406094  0.028440   1.199820
+13   imbalance_prices - Short_t+75min  102.908424  153.311085  0.100275  108.882084  3.316867  2.228337  0.026234   1.493555
+14  imbalance_volumes - value_t+75min   75.254262   98.565577 -0.098259  136.633775  2.814936  3.870112  0.088964   2.482731
+
+Overall averages across targets:
+MAE: 91.161, RMSE: 131.656, R2: 0.083, SMAPE: 115.560
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 96.082 ± 4.941, RMSE 144.043 ± 3.981, R2 0.205 ± 0.043, SMAPE 104.787 ± 1.159
+imbalance_prices - Short_t+15min: MAE 95.624 ± 5.488, RMSE 143.957 ± 4.366, R2 0.206 ± 0.048, SMAPE 104.846 ± 1.188
+imbalance_volumes - value_t+15min: MAE 68.595 ± 1.563, RMSE 90.568 ± 2.091, R2 0.073 ± 0.043, SMAPE 125.656 ± 4.518
+imbalance_prices - Long_t+30min: MAE 99.431 ± 4.376, RMSE 148.190 ± 3.312, R2 0.159 ± 0.038, SMAPE 106.435 ± 0.971
+imbalance_prices - Short_t+30min: MAE 99.669 ± 4.741, RMSE 148.381 ± 3.510, R2 0.157 ± 0.040, SMAPE 106.554 ± 1.076
+imbalance_volumes - value_t+30min: MAE 71.634 ± 1.697, RMSE 94.421 ± 2.478, R2 -0.007 ± 0.054, SMAPE 130.344 ± 3.503
+imbalance_prices - Long_t+45min: MAE 101.060 ± 3.902, RMSE 150.375 ± 2.853, R2 0.134 ± 0.033, SMAPE 107.577 ± 1.249
+imbalance_prices - Short_t+45min: MAE 101.103 ± 4.145, RMSE 150.418 ± 2.964, R2 0.134 ± 0.034, SMAPE 107.630 ± 1.174
+imbalance_volumes - value_t+45min: MAE 73.715 ± 2.127, RMSE 96.924 ± 3.112, R2 -0.062 ± 0.070, SMAPE 133.242 ± 2.972
+imbalance_prices - Long_t+60min: MAE 102.053 ± 3.933, RMSE 152.013 ± 2.775, R2 0.115 ± 0.032, SMAPE 108.363 ± 1.301
+imbalance_prices - Short_t+60min: MAE 102.720 ± 4.145, RMSE 152.433 ± 3.047, R2 0.110 ± 0.036, SMAPE 108.431 ± 1.249
+imbalance_volumes - value_t+60min: MAE 74.682 ± 2.678, RMSE 97.981 ± 3.738, R2 -0.085 ± 0.085, SMAPE 135.224 ± 2.704
+imbalance_prices - Long_t+75min: MAE 102.882 ± 3.741, RMSE 153.257 ± 2.406, R2 0.101 ± 0.028, SMAPE 108.791 ± 1.200
+imbalance_prices - Short_t+75min: MAE 102.908 ± 3.317, RMSE 153.311 ± 2.228, R2 0.100 ± 0.026, SMAPE 108.882 ± 1.494
+imbalance_volumes - value_t+75min: MAE 75.254 ± 2.815, RMSE 98.566 ± 3.870, R2 -0.098 ± 0.089, SMAPE 136.634 ± 2.483
+
+===============================
+FINAL METRICS FOR LV (100 Seeds)
+===============================
+                               Target         MAE        RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  143.143868  351.048180  0.141244  119.290736  0.888977  0.611119  0.002991   0.952475
+1    imbalance_prices - Short_t+15min  143.132283  351.090223  0.141038  119.349632  0.866026  0.580548  0.002842   0.912713
+2   imbalance_volumes - value_t+15min    5.875550    7.872044  0.303037  113.682522  0.155615  0.199197  0.035310   1.607497
+3     imbalance_prices - Long_t+30min  147.038067  359.410777  0.099841  122.941504  0.915593  0.752781  0.003772   0.869846
+4    imbalance_prices - Short_t+30min  146.987798  359.393433  0.099928  122.827670  0.925864  0.749528  0.003755   0.881193
+5   imbalance_volumes - value_t+30min    6.176019    8.365575  0.212578  116.570172  0.209620  0.270666  0.051024   1.855174
+6     imbalance_prices - Long_t+45min  149.162422  363.223798  0.080642  124.895975  0.998196  0.735363  0.003725   0.818191
+7    imbalance_prices - Short_t+45min  149.157950  363.216270  0.080679  124.882700  0.984846  0.755062  0.003824   0.819452
+8   imbalance_volumes - value_t+45min    6.368347    8.699505  0.148350  118.158986  0.242275  0.311122  0.061045   1.934010
+9     imbalance_prices - Long_t+60min  152.806759  368.673293  0.052852  127.300645  1.110650  0.558285  0.002869   0.925527
+10   imbalance_prices - Short_t+60min  152.781742  368.624924  0.053100  127.223732  1.119890  0.560906  0.002882   0.765156
+11  imbalance_volumes - value_t+60min    6.782131    9.236009  0.040351  123.129022  0.237714  0.298669  0.062246   1.849457
+12    imbalance_prices - Long_t+75min  154.679798  370.734949  0.042230  128.131965  1.240306  0.508573  0.002628   0.877587
+13   imbalance_prices - Short_t+75min  154.629961  370.725585  0.042278  128.121473  1.214151  0.485944  0.002511   0.799862
+14  imbalance_volumes - value_t+75min    6.922757    9.433875 -0.000884  125.761207  0.213182  0.259894  0.055101   1.716996
+
+Overall averages across targets:
+MAE: 101.710, RMSE: 244.650, R2: 0.102, SMAPE: 122.818
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 143.144 ± 0.889, RMSE 351.048 ± 0.611, R2 0.141 ± 0.003, SMAPE 119.291 ± 0.952
+imbalance_prices - Short_t+15min: MAE 143.132 ± 0.866, RMSE 351.090 ± 0.581, R2 0.141 ± 0.003, SMAPE 119.350 ± 0.913
+imbalance_volumes - value_t+15min: MAE 5.876 ± 0.156, RMSE 7.872 ± 0.199, R2 0.303 ± 0.035, SMAPE 113.683 ± 1.607
+imbalance_prices - Long_t+30min: MAE 147.038 ± 0.916, RMSE 359.411 ± 0.753, R2 0.100 ± 0.004, SMAPE 122.942 ± 0.870
+imbalance_prices - Short_t+30min: MAE 146.988 ± 0.926, RMSE 359.393 ± 0.750, R2 0.100 ± 0.004, SMAPE 122.828 ± 0.881
+imbalance_volumes - value_t+30min: MAE 6.176 ± 0.210, RMSE 8.366 ± 0.271, R2 0.213 ± 0.051, SMAPE 116.570 ± 1.855
+imbalance_prices - Long_t+45min: MAE 149.162 ± 0.998, RMSE 363.224 ± 0.735, R2 0.081 ± 0.004, SMAPE 124.896 ± 0.818
+imbalance_prices - Short_t+45min: MAE 149.158 ± 0.985, RMSE 363.216 ± 0.755, R2 0.081 ± 0.004, SMAPE 124.883 ± 0.819
+imbalance_volumes - value_t+45min: MAE 6.368 ± 0.242, RMSE 8.700 ± 0.311, R2 0.148 ± 0.061, SMAPE 118.159 ± 1.934
+imbalance_prices - Long_t+60min: MAE 152.807 ± 1.111, RMSE 368.673 ± 0.558, R2 0.053 ± 0.003, SMAPE 127.301 ± 0.926
+imbalance_prices - Short_t+60min: MAE 152.782 ± 1.120, RMSE 368.625 ± 0.561, R2 0.053 ± 0.003, SMAPE 127.224 ± 0.765
+imbalance_volumes - value_t+60min: MAE 6.782 ± 0.238, RMSE 9.236 ± 0.299, R2 0.040 ± 0.062, SMAPE 123.129 ± 1.849
+imbalance_prices - Long_t+75min: MAE 154.680 ± 1.240, RMSE 370.735 ± 0.509, R2 0.042 ± 0.003, SMAPE 128.132 ± 0.878
+imbalance_prices - Short_t+75min: MAE 154.630 ± 1.214, RMSE 370.726 ± 0.486, R2 0.042 ± 0.003, SMAPE 128.121 ± 0.800
+imbalance_volumes - value_t+75min: MAE 6.923 ± 0.213, RMSE 9.434 ± 0.260, R2 -0.001 ± 0.055, SMAPE 125.761 ± 1.717
+
+===============================
+FINAL METRICS FOR PL (100 Seeds)
+===============================
+                               Target         MAE        RMSE        R2       SMAPE   MAE_STD   RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  155.545178  806.494957 -0.011134   38.476873  1.655920   4.905018  0.012291   0.534894
+1    imbalance_prices - Short_t+15min  155.392254  806.241544 -0.010499   38.440375  1.758564   4.921907  0.012328   0.562537
+2   imbalance_volumes - value_t+15min  110.240714  202.151155 -0.625800   97.930782  5.067342  14.258140  0.230910   3.674215
+3     imbalance_prices - Long_t+30min  164.563137  804.317450 -0.005680   40.730267  1.250206   3.801721  0.009503   0.475816
+4    imbalance_prices - Short_t+30min  164.616557  804.422199 -0.005943   40.737992  1.435828   3.865046  0.009657   0.543536
+5   imbalance_volumes - value_t+30min  114.820609  196.211151 -0.527914  101.729930  3.913000   9.615518  0.150460   3.289119
+6     imbalance_prices - Long_t+45min  171.518244  799.845192  0.005470   42.464132  1.556021   2.767547  0.006878   0.632804
+7    imbalance_prices - Short_t+45min  171.614790  799.582630  0.006122   42.500423  1.635513   2.810943  0.006985   0.633728
+8   imbalance_volumes - value_t+45min  118.485048  194.187726 -0.495641  104.959784  4.211883   8.033894  0.123579   3.002203
+9     imbalance_prices - Long_t+60min  178.961726  794.262894  0.019331   44.365830  1.597589   1.689984  0.004173   0.743159
+10   imbalance_prices - Short_t+60min  178.964177  794.394003  0.019007   44.359873  1.612179   1.761021  0.004347   0.729131
+11  imbalance_volumes - value_t+60min  123.344720  196.552294 -0.534404  108.322082  4.221147  10.859673  0.169661   2.794019
+12    imbalance_prices - Long_t+75min  184.996858  794.991922  0.017530   45.849982  1.799612   1.680918  0.004154   0.825291
+13   imbalance_prices - Short_t+75min  184.961357  795.113534  0.017229   45.824619  1.719753   1.789467  0.004422   0.794175
+14  imbalance_volumes - value_t+75min  127.236839  198.442862 -0.567421  111.500171  4.393753  14.220653  0.226753   2.827050
+
+Overall averages across targets:
+MAE: 153.684, RMSE: 599.147, R2: -0.180, SMAPE: 63.213
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 155.545 ± 1.656, RMSE 806.495 ± 4.905, R2 -0.011 ± 0.012, SMAPE 38.477 ± 0.535
+imbalance_prices - Short_t+15min: MAE 155.392 ± 1.759, RMSE 806.242 ± 4.922, R2 -0.010 ± 0.012, SMAPE 38.440 ± 0.563
+imbalance_volumes - value_t+15min: MAE 110.241 ± 5.067, RMSE 202.151 ± 14.258, R2 -0.626 ± 0.231, SMAPE 97.931 ± 3.674
+imbalance_prices - Long_t+30min: MAE 164.563 ± 1.250, RMSE 804.317 ± 3.802, R2 -0.006 ± 0.010, SMAPE 40.730 ± 0.476
+imbalance_prices - Short_t+30min: MAE 164.617 ± 1.436, RMSE 804.422 ± 3.865, R2 -0.006 ± 0.010, SMAPE 40.738 ± 0.544
+imbalance_volumes - value_t+30min: MAE 114.821 ± 3.913, RMSE 196.211 ± 9.616, R2 -0.528 ± 0.150, SMAPE 101.730 ± 3.289
+imbalance_prices - Long_t+45min: MAE 171.518 ± 1.556, RMSE 799.845 ± 2.768, R2 0.005 ± 0.007, SMAPE 42.464 ± 0.633
+imbalance_prices - Short_t+45min: MAE 171.615 ± 1.636, RMSE 799.583 ± 2.811, R2 0.006 ± 0.007, SMAPE 42.500 ± 0.634
+imbalance_volumes - value_t+45min: MAE 118.485 ± 4.212, RMSE 194.188 ± 8.034, R2 -0.496 ± 0.124, SMAPE 104.960 ± 3.002
+imbalance_prices - Long_t+60min: MAE 178.962 ± 1.598, RMSE 794.263 ± 1.690, R2 0.019 ± 0.004, SMAPE 44.366 ± 0.743
+imbalance_prices - Short_t+60min: MAE 178.964 ± 1.612, RMSE 794.394 ± 1.761, R2 0.019 ± 0.004, SMAPE 44.360 ± 0.729
+imbalance_volumes - value_t+60min: MAE 123.345 ± 4.221, RMSE 196.552 ± 10.860, R2 -0.534 ± 0.170, SMAPE 108.322 ± 2.794
+imbalance_prices - Long_t+75min: MAE 184.997 ± 1.800, RMSE 794.992 ± 1.681, R2 0.018 ± 0.004, SMAPE 45.850 ± 0.825
+imbalance_prices - Short_t+75min: MAE 184.961 ± 1.720, RMSE 795.114 ± 1.789, R2 0.017 ± 0.004, SMAPE 45.825 ± 0.794
+imbalance_volumes - value_t+75min: MAE 127.237 ± 4.394, RMSE 198.443 ± 14.221, R2 -0.567 ± 0.227, SMAPE 111.500 ± 2.827
+
+===============================
+FINAL METRICS FOR PT (100 Seeds)
+===============================
+                               Target        MAE       RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  20.172043  29.678152  0.535286   59.215371  0.190569  0.180020  0.005648   0.830983
+1    imbalance_prices - Short_t+15min  24.115710  31.672399  0.479617   43.332005  0.285984  0.251099  0.008257   0.383497
+2   imbalance_volumes - value_t+15min  46.504736  60.398324  0.620395   88.763154  1.747039  2.226694  0.028168   2.248423
+3     imbalance_prices - Long_t+30min  21.907579  31.572165  0.474085   62.416765  0.158748  0.150955  0.005035   0.748291
+4    imbalance_prices - Short_t+30min  25.597423  33.425054  0.420405   44.745986  0.241915  0.227523  0.007894   0.371917
+5   imbalance_volumes - value_t+30min  51.081658  66.853455  0.535046   94.406406  1.834958  2.386644  0.033303   2.259729
+6     imbalance_prices - Long_t+45min  23.282328  33.009389  0.425113   65.081935  0.175518  0.171320  0.005971   0.660391
+7    imbalance_prices - Short_t+45min  26.764932  34.795073  0.371906   45.806863  0.226555  0.234257  0.008461   0.368925
+8   imbalance_volumes - value_t+45min  55.909960  73.461860  0.438653   99.861367  2.079166  2.750171  0.042151   2.403242
+9     imbalance_prices - Long_t+60min  24.482151  34.248843  0.381132   67.166102  0.166251  0.170390  0.006159   0.577115
+10   imbalance_prices - Short_t+60min  27.809937  36.002832  0.327582   46.830161  0.229594  0.258303  0.009654   0.355623
+11  imbalance_volumes - value_t+60min  60.297445  79.499825  0.342541  104.574387  2.327524  3.187603  0.052924   2.352265
+12    imbalance_prices - Long_t+75min  25.331310  35.097878  0.350064   68.569722  0.179243  0.186168  0.006900   0.523279
+13   imbalance_prices - Short_t+75min  28.517314  36.885676  0.294222   47.457247  0.235038  0.271492  0.010398   0.372105
+14  imbalance_volumes - value_t+75min  63.600347  84.058072  0.265193  108.250040  2.336824  3.252096  0.057019   2.151939
+
+Overall averages across targets:
+MAE: 35.025, RMSE: 46.711, R2: 0.417, SMAPE: 69.765
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 20.172 ± 0.191, RMSE 29.678 ± 0.180, R2 0.535 ± 0.006, SMAPE 59.215 ± 0.831
+imbalance_prices - Short_t+15min: MAE 24.116 ± 0.286, RMSE 31.672 ± 0.251, R2 0.480 ± 0.008, SMAPE 43.332 ± 0.383
+imbalance_volumes - value_t+15min: MAE 46.505 ± 1.747, RMSE 60.398 ± 2.227, R2 0.620 ± 0.028, SMAPE 88.763 ± 2.248
+imbalance_prices - Long_t+30min: MAE 21.908 ± 0.159, RMSE 31.572 ± 0.151, R2 0.474 ± 0.005, SMAPE 62.417 ± 0.748
+imbalance_prices - Short_t+30min: MAE 25.597 ± 0.242, RMSE 33.425 ± 0.228, R2 0.420 ± 0.008, SMAPE 44.746 ± 0.372
+imbalance_volumes - value_t+30min: MAE 51.082 ± 1.835, RMSE 66.853 ± 2.387, R2 0.535 ± 0.033, SMAPE 94.406 ± 2.260
+imbalance_prices - Long_t+45min: MAE 23.282 ± 0.176, RMSE 33.009 ± 0.171, R2 0.425 ± 0.006, SMAPE 65.082 ± 0.660
+imbalance_prices - Short_t+45min: MAE 26.765 ± 0.227, RMSE 34.795 ± 0.234, R2 0.372 ± 0.008, SMAPE 45.807 ± 0.369
+imbalance_volumes - value_t+45min: MAE 55.910 ± 2.079, RMSE 73.462 ± 2.750, R2 0.439 ± 0.042, SMAPE 99.861 ± 2.403
+imbalance_prices - Long_t+60min: MAE 24.482 ± 0.166, RMSE 34.249 ± 0.170, R2 0.381 ± 0.006, SMAPE 67.166 ± 0.577
+imbalance_prices - Short_t+60min: MAE 27.810 ± 0.230, RMSE 36.003 ± 0.258, R2 0.328 ± 0.010, SMAPE 46.830 ± 0.356
+imbalance_volumes - value_t+60min: MAE 60.297 ± 2.328, RMSE 79.500 ± 3.188, R2 0.343 ± 0.053, SMAPE 104.574 ± 2.352
+imbalance_prices - Long_t+75min: MAE 25.331 ± 0.179, RMSE 35.098 ± 0.186, R2 0.350 ± 0.007, SMAPE 68.570 ± 0.523
+imbalance_prices - Short_t+75min: MAE 28.517 ± 0.235, RMSE 36.886 ± 0.271, R2 0.294 ± 0.010, SMAPE 47.457 ± 0.372
+imbalance_volumes - value_t+75min: MAE 63.600 ± 2.337, RMSE 84.058 ± 3.252, R2 0.265 ± 0.057, SMAPE 108.250 ± 2.152
+
+===============================
+FINAL METRICS FOR RO (100 Seeds)
+===============================
+                               Target         MAE         RMSE        R2       SMAPE    MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  838.120721  1506.298522  0.245127  107.164758   9.843632  9.314071  0.009369   2.413562
+1    imbalance_prices - Short_t+15min  805.330664  1471.127489  0.238310  101.241925   8.670304  8.297981  0.008617   2.340169
+2   imbalance_volumes - value_t+15min   22.142563    28.632105  0.518168   95.575668   0.523774  0.631047  0.021357   1.283683
+3     imbalance_prices - Long_t+30min  864.849552  1559.816249  0.190522  108.974284   9.580362  9.538266  0.009922   2.349021
+4    imbalance_prices - Short_t+30min  828.724191  1519.410464  0.187481  102.925840   8.172559  8.384393  0.008988   2.134850
+5   imbalance_volumes - value_t+30min   24.177820    31.441316  0.418973  101.360702   0.565065  0.695759  0.025812   1.302809
+6     imbalance_prices - Long_t+45min  886.629665  1590.469473  0.158376  111.676421  10.565595  7.009035  0.007425   2.458867
+7    imbalance_prices - Short_t+45min  848.805916  1547.658970  0.156964  105.353432   8.221290  6.559283  0.007155   2.392169
+8   imbalance_volumes - value_t+45min   26.033502    34.054449  0.318421  107.037605   0.547777  0.671866  0.026965   1.462132
+9     imbalance_prices - Long_t+60min  917.498693  1637.493277  0.107845  115.137121  11.582679  7.236951  0.007897   2.401638
+10   imbalance_prices - Short_t+60min  879.692528  1592.523543  0.107351  108.648141   9.865336  6.960054  0.007811   2.239309
+11  imbalance_volumes - value_t+60min   28.826237    37.730053  0.163291  113.969156   0.556009  0.692609  0.030659   1.388354
+12    imbalance_prices - Long_t+75min  939.031335  1652.210157  0.091667  117.236628  12.503531  6.156180  0.006777   2.241475
+13   imbalance_prices - Short_t+75min  900.331039  1607.637419  0.090256  110.842807  11.956823  6.435591  0.007285   2.345812
+14  imbalance_volumes - value_t+75min   31.177693    40.699899  0.026193  118.443458   0.539953  0.677682  0.032501   1.016737
+
+Overall averages across targets:
+MAE: 589.425, RMSE: 1057.147, R2: 0.201, SMAPE: 108.373
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 838.121 ± 9.844, RMSE 1506.299 ± 9.314, R2 0.245 ± 0.009, SMAPE 107.165 ± 2.414
+imbalance_prices - Short_t+15min: MAE 805.331 ± 8.670, RMSE 1471.127 ± 8.298, R2 0.238 ± 0.009, SMAPE 101.242 ± 2.340
+imbalance_volumes - value_t+15min: MAE 22.143 ± 0.524, RMSE 28.632 ± 0.631, R2 0.518 ± 0.021, SMAPE 95.576 ± 1.284
+imbalance_prices - Long_t+30min: MAE 864.850 ± 9.580, RMSE 1559.816 ± 9.538, R2 0.191 ± 0.010, SMAPE 108.974 ± 2.349
+imbalance_prices - Short_t+30min: MAE 828.724 ± 8.173, RMSE 1519.410 ± 8.384, R2 0.187 ± 0.009, SMAPE 102.926 ± 2.135
+imbalance_volumes - value_t+30min: MAE 24.178 ± 0.565, RMSE 31.441 ± 0.696, R2 0.419 ± 0.026, SMAPE 101.361 ± 1.303
+imbalance_prices - Long_t+45min: MAE 886.630 ± 10.566, RMSE 1590.469 ± 7.009, R2 0.158 ± 0.007, SMAPE 111.676 ± 2.459
+imbalance_prices - Short_t+45min: MAE 848.806 ± 8.221, RMSE 1547.659 ± 6.559, R2 0.157 ± 0.007, SMAPE 105.353 ± 2.392
+imbalance_volumes - value_t+45min: MAE 26.034 ± 0.548, RMSE 34.054 ± 0.672, R2 0.318 ± 0.027, SMAPE 107.038 ± 1.462
+imbalance_prices - Long_t+60min: MAE 917.499 ± 11.583, RMSE 1637.493 ± 7.237, R2 0.108 ± 0.008, SMAPE 115.137 ± 2.402
+imbalance_prices - Short_t+60min: MAE 879.693 ± 9.865, RMSE 1592.524 ± 6.960, R2 0.107 ± 0.008, SMAPE 108.648 ± 2.239
+imbalance_volumes - value_t+60min: MAE 28.826 ± 0.556, RMSE 37.730 ± 0.693, R2 0.163 ± 0.031, SMAPE 113.969 ± 1.388
+imbalance_prices - Long_t+75min: MAE 939.031 ± 12.504, RMSE 1652.210 ± 6.156, R2 0.092 ± 0.007, SMAPE 117.237 ± 2.241
+imbalance_prices - Short_t+75min: MAE 900.331 ± 11.957, RMSE 1607.637 ± 6.436, R2 0.090 ± 0.007, SMAPE 110.843 ± 2.346
+imbalance_volumes - value_t+75min: MAE 31.178 ± 0.540, RMSE 40.700 ± 0.678, R2 0.026 ± 0.033, SMAPE 118.443 ± 1.017
+
+===============================
+FINAL METRICS FOR RS (100 Seeds)
+===============================
+                               Target        MAE       RMSE        R2       SMAPE   MAE_STD  RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  49.748142  67.985098  0.411477   63.374675  0.303929  0.218397  0.003782   0.251500
+1    imbalance_prices - Short_t+15min  49.755276  67.989210  0.411406   63.388949  0.301487  0.216248  0.003744   0.252934
+2   imbalance_volumes - value_t+15min  30.437220  41.056186  0.008848  141.258296  0.144125  0.157947  0.007631   0.964248
+3     imbalance_prices - Long_t+30min  52.675583  70.780682  0.362084   65.812381  0.285689  0.228032  0.004110   0.252425
+4    imbalance_prices - Short_t+30min  52.663277  70.778971  0.362115   65.784578  0.282856  0.218639  0.003942   0.244534
+5   imbalance_volumes - value_t+30min  30.441333  41.146269  0.004284  141.910549  0.134633  0.142718  0.006913   0.789613
+6     imbalance_prices - Long_t+45min  54.963495  73.038978  0.320723   67.605234  0.304716  0.238217  0.004432   0.265988
+7    imbalance_prices - Short_t+45min  54.959985  73.037912  0.320741   67.615557  0.294990  0.257188  0.004786   0.258304
+8   imbalance_volumes - value_t+45min  30.599985  41.363073 -0.006239  142.882411  0.145383  0.158376  0.007710   0.779083
+9     imbalance_prices - Long_t+60min  57.473266  75.203776  0.279855   69.725898  0.279571  0.252983  0.004847   0.264109
+10   imbalance_prices - Short_t+60min  57.483942  75.211693  0.279704   69.734494  0.287007  0.242031  0.004636   0.271471
+11  imbalance_volumes - value_t+60min  31.000059  42.003800 -0.037711  144.425194  0.197614  0.214565  0.010613   0.787546
+12    imbalance_prices - Long_t+75min  59.144873  76.689005  0.251121   71.081164  0.315448  0.298819  0.005837   0.298493
+13   imbalance_prices - Short_t+75min  59.169909  76.707513  0.250760   71.096568  0.325206  0.298321  0.005829   0.292193
+14  imbalance_volumes - value_t+75min  31.045380  42.067675 -0.040932  145.350037  0.183913  0.211613  0.010486   0.843924
+
+Overall averages across targets:
+MAE: 46.771, RMSE: 62.337, R2: 0.212, SMAPE: 92.736
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 49.748 ± 0.304, RMSE 67.985 ± 0.218, R2 0.411 ± 0.004, SMAPE 63.375 ± 0.251
+imbalance_prices - Short_t+15min: MAE 49.755 ± 0.301, RMSE 67.989 ± 0.216, R2 0.411 ± 0.004, SMAPE 63.389 ± 0.253
+imbalance_volumes - value_t+15min: MAE 30.437 ± 0.144, RMSE 41.056 ± 0.158, R2 0.009 ± 0.008, SMAPE 141.258 ± 0.964
+imbalance_prices - Long_t+30min: MAE 52.676 ± 0.286, RMSE 70.781 ± 0.228, R2 0.362 ± 0.004, SMAPE 65.812 ± 0.252
+imbalance_prices - Short_t+30min: MAE 52.663 ± 0.283, RMSE 70.779 ± 0.219, R2 0.362 ± 0.004, SMAPE 65.785 ± 0.245
+imbalance_volumes - value_t+30min: MAE 30.441 ± 0.135, RMSE 41.146 ± 0.143, R2 0.004 ± 0.007, SMAPE 141.911 ± 0.790
+imbalance_prices - Long_t+45min: MAE 54.963 ± 0.305, RMSE 73.039 ± 0.238, R2 0.321 ± 0.004, SMAPE 67.605 ± 0.266
+imbalance_prices - Short_t+45min: MAE 54.960 ± 0.295, RMSE 73.038 ± 0.257, R2 0.321 ± 0.005, SMAPE 67.616 ± 0.258
+imbalance_volumes - value_t+45min: MAE 30.600 ± 0.145, RMSE 41.363 ± 0.158, R2 -0.006 ± 0.008, SMAPE 142.882 ± 0.779
+imbalance_prices - Long_t+60min: MAE 57.473 ± 0.280, RMSE 75.204 ± 0.253, R2 0.280 ± 0.005, SMAPE 69.726 ± 0.264
+imbalance_prices - Short_t+60min: MAE 57.484 ± 0.287, RMSE 75.212 ± 0.242, R2 0.280 ± 0.005, SMAPE 69.734 ± 0.271
+imbalance_volumes - value_t+60min: MAE 31.000 ± 0.198, RMSE 42.004 ± 0.215, R2 -0.038 ± 0.011, SMAPE 144.425 ± 0.788
+imbalance_prices - Long_t+75min: MAE 59.145 ± 0.315, RMSE 76.689 ± 0.299, R2 0.251 ± 0.006, SMAPE 71.081 ± 0.298
+imbalance_prices - Short_t+75min: MAE 59.170 ± 0.325, RMSE 76.708 ± 0.298, R2 0.251 ± 0.006, SMAPE 71.097 ± 0.292
+imbalance_volumes - value_t+75min: MAE 31.045 ± 0.184, RMSE 42.068 ± 0.212, R2 -0.041 ± 0.010, SMAPE 145.350 ± 0.844
+
+===============================
+FINAL METRICS FOR SK (100 Seeds)
+===============================
+                               Target        MAE        RMSE         R2       SMAPE   MAE_STD   RMSE_STD    R2_STD  SMAPE_STD
+0     imbalance_prices - Long_t+15min  56.672556  267.869526  -4.072558   87.241346  2.214334  34.983574  1.314906   4.924475
+1    imbalance_prices - Short_t+15min  32.720077  239.997471  -8.222394  192.072036  6.727925  35.331816  2.649333   0.537008
+2   imbalance_volumes - value_t+15min   6.042240   15.614828  -1.015010  119.019585  0.059474   2.573720  0.671036   0.985165
+3     imbalance_prices - Long_t+30min  57.155160  268.341620  -4.082763   86.877267  2.072745  33.427178  1.248520   4.750698
+4    imbalance_prices - Short_t+30min  33.007442  236.619997  -7.936441  191.844488  6.584150  32.147462  2.396505   0.427090
+5   imbalance_volumes - value_t+30min   6.333037   16.565107  -1.277675  122.836499  0.077811   2.953589  0.797077   1.070087
+6     imbalance_prices - Long_t+45min  57.779178  290.692807  -4.966786   86.660157  1.730967  36.611325  1.438923   4.509476
+7    imbalance_prices - Short_t+45min  34.380798  259.646712  -9.734848  191.858659  6.225233  32.886178  2.695521   0.407855
+8   imbalance_volumes - value_t+45min   6.478869   18.055461  -1.671693  124.122087  0.057708   2.474269  0.714843   1.347762
+9     imbalance_prices - Long_t+60min  61.959888  360.855439  -8.262143   90.537925  1.823556  55.093177  2.698947   3.964775
+10   imbalance_prices - Short_t+60min  36.551805  331.161422 -16.657812  192.163079  6.305770  54.815381  5.518473   0.379798
+11  imbalance_volumes - value_t+60min   7.094407   21.931600  -2.983632  131.405458  0.089296   3.771423  1.326640   1.441591
+12    imbalance_prices - Long_t+75min  62.455001  362.080304  -8.378637   90.453905  1.683063  61.850296  3.010415   3.328226
+13   imbalance_prices - Short_t+75min  37.538701  331.415209 -16.729097  192.210854  5.878458  57.371203  5.785602   0.372512
+14  imbalance_volumes - value_t+75min   7.294663   21.810835  -2.953808  133.905422  0.116171   3.975467  1.419850   1.568143
+
+Overall averages across targets:
+MAE: 33.564, RMSE: 202.844, R2: -6.596, SMAPE: 135.547
+
+Concise summary per target (Mean ± Std):
+imbalance_prices - Long_t+15min: MAE 56.673 ± 2.214, RMSE 267.870 ± 34.984, R2 -4.073 ± 1.315, SMAPE 87.241 ± 4.924
+imbalance_prices - Short_t+15min: MAE 32.720 ± 6.728, RMSE 239.997 ± 35.332, R2 -8.222 ± 2.649, SMAPE 192.072 ± 0.537
+imbalance_volumes - value_t+15min: MAE 6.042 ± 0.059, RMSE 15.615 ± 2.574, R2 -1.015 ± 0.671, SMAPE 119.020 ± 0.985
+imbalance_prices - Long_t+30min: MAE 57.155 ± 2.073, RMSE 268.342 ± 33.427, R2 -4.083 ± 1.249, SMAPE 86.877 ± 4.751
+imbalance_prices - Short_t+30min: MAE 33.007 ± 6.584, RMSE 236.620 ± 32.147, R2 -7.936 ± 2.397, SMAPE 191.844 ± 0.427
+imbalance_volumes - value_t+30min: MAE 6.333 ± 0.078, RMSE 16.565 ± 2.954, R2 -1.278 ± 0.797, SMAPE 122.836 ± 1.070
+imbalance_prices - Long_t+45min: MAE 57.779 ± 1.731, RMSE 290.693 ± 36.611, R2 -4.967 ± 1.439, SMAPE 86.660 ± 4.509
+imbalance_prices - Short_t+45min: MAE 34.381 ± 6.225, RMSE 259.647 ± 32.886, R2 -9.735 ± 2.696, SMAPE 191.859 ± 0.408
+imbalance_volumes - value_t+45min: MAE 6.479 ± 0.058, RMSE 18.055 ± 2.474, R2 -1.672 ± 0.715, SMAPE 124.122 ± 1.348
+imbalance_prices - Long_t+60min: MAE 61.960 ± 1.824, RMSE 360.855 ± 55.093, R2 -8.262 ± 2.699, SMAPE 90.538 ± 3.965
+imbalance_prices - Short_t+60min: MAE 36.552 ± 6.306, RMSE 331.161 ± 54.815, R2 -16.658 ± 5.518, SMAPE 192.163 ± 0.380
+imbalance_volumes - value_t+60min: MAE 7.094 ± 0.089, RMSE 21.932 ± 3.771, R2 -2.984 ± 1.327, SMAPE 131.405 ± 1.442
+imbalance_prices - Long_t+75min: MAE 62.455 ± 1.683, RMSE 362.080 ± 61.850, R2 -8.379 ± 3.010, SMAPE 90.454 ± 3.328
+imbalance_prices - Short_t+75min: MAE 37.539 ± 5.878, RMSE 331.415 ± 57.371, R2 -16.729 ± 5.786, SMAPE 192.211 ± 0.373
+imbalance_volumes - value_t+75min: MAE 7.295 ± 0.116, RMSE 21.811 ± 3.975, R2 -2.954 ± 1.420, SMAPE 133.905 ± 1.568
