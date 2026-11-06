@@ -217,3 +217,4 @@ models/
 
 processed_data/
 figures/*.npy
+era5_raw/

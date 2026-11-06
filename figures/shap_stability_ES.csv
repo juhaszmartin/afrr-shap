@@ -1,0 +1,16 @@
+Target,rank_corr_mean,top10_overlap_mean
+imbalance_prices-Long_t+15min,0.8494029526704298,0.73
+imbalance_prices-Short_t+15min,0.8578593139383413,0.78
+imbalance_volumes-value_t+15min,0.7547329570125922,0.78
+imbalance_prices-Long_t+30min,0.8597047329570126,0.77
+imbalance_prices-Short_t+30min,0.8725575336517586,0.82
+imbalance_volumes-value_t+30min,0.8244897959183672,0.71
+imbalance_prices-Long_t+45min,0.8948871037776811,0.8200000000000001
+imbalance_prices-Short_t+45min,0.881784628745115,0.8099999999999999
+imbalance_volumes-value_t+45min,0.8225032566217976,0.75
+imbalance_prices-Long_t+60min,0.8842379504993486,0.8600000000000001
+imbalance_prices-Short_t+60min,0.8817412071211465,0.8099999999999999
+imbalance_volumes-value_t+60min,0.7915219279201042,0.74
+imbalance_prices-Long_t+75min,0.8838037342596612,0.8300000000000001
+imbalance_prices-Short_t+75min,0.8827941815023881,0.8
+imbalance_volumes-value_t+75min,0.771993052540165,0.76

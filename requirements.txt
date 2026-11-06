@@ -1,10 +1,21 @@
-polars
-pandas
-numpy
-holidays
-torch
-scikit-learn
-shap
-matplotlib
-ipykernel
-pyarrow
+# Tested with Python 3.14.6. Install with: python -m venv venv && venv/bin/pip install -r requirements.txt
+# Pipeline
+polars==1.43.2
+pyarrow==25.0.1
+pandas==3.0.5
+numpy==2.5.2
+holidays==0.103
+torch==2.13.0
+scikit-learn==1.9.0
+shap==0.52.0
+matplotlib==3.11.1
+# Data download (ENTSO-E, ECB, ERA5)
+entsoe-py==0.8.1
+python-dotenv==1.2.4
+requests==2.34.2
+cdsapi==0.7.7
+ecmwf-datastores-client==0.5.3
+xarray==2026.9.0
+netCDF4==1.7.5.1.post1
+# Notebooks in legacy/
+ipykernel==7.3.0

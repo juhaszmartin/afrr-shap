@@ -1,0 +1,7 @@
+Target,rank_corr_mean,top10_overlap_mean
+imbalance_prices-Long_t+1h,0.8803030303030303,0.76
+imbalance_prices-Short_t+1h,0.8408959156785244,0.74
+imbalance_volumes-value_t+1h,0.9395520421607376,0.86
+imbalance_prices-Long_t+2h,0.8871409749670619,0.73
+imbalance_prices-Short_t+2h,0.8533465085638998,0.8200000000000001
+imbalance_volumes-value_t+2h,0.9422529644268774,0.8600000000000001
