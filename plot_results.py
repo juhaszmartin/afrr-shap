@@ -81,7 +81,7 @@ results = (
     unpivot_errors(
         pl.read_csv(
             "results/NN_100_seeds_Huber_*_data.csv", include_file_paths="csv_path"
-        )
+        ).drop("Group")
     )
     .with_columns(
         pl.col("csv_path")
@@ -91,10 +91,11 @@ results = (
     .drop("csv_path")
 )
 print(results)
-HUN_df = results.filter(
-    (pl.col("country_code") == "HU")
-    & pl.col("error measure").is_in(("RMSE", "MAE", "SMAPE"))
-    & pl.col("Target").str.contains("prices")
-).with_columns(pl.col("error") / 360)
-results = results.update(HUN_df, on=["Target", "lag", "country_code"])
+print(results)
+# HUN_df = results.filter(
+#    (pl.col("country_code") == "HU")
+#    & pl.col("error measure").is_in(("RMSE", "MAE", "SMAPE"))
+#    & pl.col("Target").str.contains("prices")
+# ).with_columns(pl.col("error") / 360)
+# results = results.update(HUN_df, on=["Target", "lag", "country_code"])
 compare_results(results)
