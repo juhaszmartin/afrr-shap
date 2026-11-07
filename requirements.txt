@@ -16,6 +16,7 @@ vl-convert-python==1.9.0.post1
 entsoe-py==0.8.1
 python-dotenv==1.2.4
 requests==2.34.2
+PyYAML==6.0.2
 cdsapi==0.7.7
 ecmwf-datastores-client==0.5.3
 xarray==2026.9.0

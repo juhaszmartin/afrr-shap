@@ -8,6 +8,13 @@ version = "0.1.0"
 description = "aFRR imbalance forecasting and SHAP analysis"
 requires-python = ">=3.14"
 readme = "README.md"
+dependencies = [
+    "holidays>=0.108",
+    "pyarrow>=26.0.1",
+    "pyyaml>=6.0.3",
+    "scikit-learn>=1.9.1",
+    "torch>=2.15.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

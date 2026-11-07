@@ -13,6 +13,12 @@ venv/bin/pip install -e .
 ./run_pipeline.sh                          # preprocess -> train -> SHAP -> plots
 ```
 
+Default pipeline settings live in `configs/default.yaml`; country metadata is in
+`configs/countries.yaml`. The baseline experiment is captured in
+`configs/experiments/baseline.yaml`.
+Set `AFRR_CONFIG=configs/experiments/baseline.yaml` to run with another
+configuration file.
+
 `run_pipeline.sh` needs the raw data in `entsoe_data/` and `weather_data/` (see below). On a GPU the full run takes a few hours; most of it is training 100 seeds per country and SHAP. Steps can be run per country, e.g. `venv/bin/python scripts/train_all_100_seeds.py DE,FR`.
 
 ## Data

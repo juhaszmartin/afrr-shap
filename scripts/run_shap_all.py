@@ -11,13 +11,14 @@ import polars.selectors as cs
 import shap
 import torch
 
-from afrr_shap.config import SHAP_SEEDS, TEST_START, TIME_FEATURES
+from afrr_shap.config import DEFAULT_CONFIG, SHAP_SEEDS, TEST_START, TIME_FEATURES
 from afrr_shap.modeling.network import MultiOutputNN
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-N_BACKGROUND = 500  # training rows used as the SHAP reference distribution
-N_EXPLAIN = 1000    # 2025 rows explained, the same rows for every seed
+SHAP_CONFIG = DEFAULT_CONFIG["shap"]
+N_BACKGROUND = SHAP_CONFIG["background_samples"]
+N_EXPLAIN = SHAP_CONFIG["explain_samples"]
 LAG_SUFFIX = re.compile(r"_t([+-]\d+)(min|h)$")
 CYCLIC = re.compile(r"_(sin|cos)$")
 CALENDAR_GROUPS = {CYCLIC.sub("", c) for c in TIME_FEATURES}
@@ -78,7 +79,7 @@ def run_shap_for_country(country_code):
     X_train_scaled = scaler_X.transform(X_df[~is_test])
     X_test_scaled = scaler_X.transform(X_df[is_test])
 
-    rng = np.random.default_rng(42)
+    rng = np.random.default_rng(SHAP_CONFIG["sample_seed"])
     bg_indices = rng.choice(len(X_train_scaled), min(N_BACKGROUND, len(X_train_scaled)), replace=False)
     test_indices = np.sort(rng.choice(len(X_test_scaled), min(N_EXPLAIN, len(X_test_scaled)), replace=False))
     background = torch.tensor(X_train_scaled[bg_indices], dtype=torch.float32, device=device)

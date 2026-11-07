@@ -7,7 +7,7 @@ import holidays
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import numpy as np
-from afrr_shap.config import TEST_START, TIME_FEATURES
+from afrr_shap.config import DEFAULT_CONFIG, TEST_START, TIME_FEATURES
 
 # Mapping from Country Code to ERA5 Country Name
 CC_TO_NAME = {
@@ -312,10 +312,14 @@ def timelag_expressions(lags, cols, is_hourly=False):
     return exprs
 
 # Forward fill bridges at most one hour, e.g. hourly series on the 15-min grid; longer holes stay null
-FFILL_LIMIT = {False: 3, True: 1}
-MAX_NULL_RATIO = 0.10      # per column, checked separately on the train and test portions
-MAX_DOMINANT_SHARE = 0.99  # quasi-constant: one value covers more than 99% of a portion
-GAP_FLAG = timedelta(days=1)
+PREPROCESSING_CONFIG = DEFAULT_CONFIG["preprocessing"]
+FFILL_LIMIT = {
+    False: PREPROCESSING_CONFIG["forward_fill_limit"]["fifteen_minute"],
+    True: PREPROCESSING_CONFIG["forward_fill_limit"]["hourly"],
+}
+MAX_NULL_RATIO = PREPROCESSING_CONFIG["max_null_ratio"]
+MAX_DOMINANT_SHARE = PREPROCESSING_CONFIG["max_dominant_share"]
+GAP_FLAG = timedelta(days=PREPROCESSING_CONFIG["gap_warning_days"])
 
 def report_gaps(df, target_cols, step, country_code, split_ts):
     """Flags holes longer than GAP_FLAG in the target series and writes them to processed_data."""

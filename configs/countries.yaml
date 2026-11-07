@@ -1,0 +1,54 @@
+AT:
+  timezone: Europe/Vienna
+  resolution: 15min
+BE:
+  timezone: Europe/Brussels
+  resolution: 15min
+BA:
+  timezone: Europe/Sarajevo
+  resolution: hourly
+HR:
+  timezone: Europe/Zagreb
+  resolution: 15min
+FI:
+  timezone: Europe/Helsinki
+  resolution: 15min
+FR:
+  timezone: Europe/Paris
+  resolution: hourly
+GR:
+  timezone: Europe/Athens
+  resolution: 15min
+HU:
+  timezone: Europe/Budapest
+  resolution: 15min
+LV:
+  timezone: Europe/Riga
+  resolution: hourly
+LT:
+  timezone: Europe/Vilnius
+  resolution: hourly
+PL:
+  timezone: Europe/Warsaw
+  resolution: 15min
+PT:
+  timezone: Europe/Lisbon
+  resolution: hourly
+RO:
+  timezone: Europe/Bucharest
+  resolution: 15min
+RS:
+  timezone: Europe/Belgrade
+  resolution: hourly
+SK:
+  timezone: Europe/Bratislava
+  resolution: 15min
+ES:
+  timezone: Europe/Madrid
+  resolution: 15min
+CH:
+  timezone: Europe/Zurich
+  resolution: 15min
+DE:
+  timezone: Europe/Berlin
+  resolution: 15min

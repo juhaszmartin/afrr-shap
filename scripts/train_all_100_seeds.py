@@ -16,11 +16,12 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import polars.selectors as cs
 
-from afrr_shap.config import SHAP_SEEDS, TEST_START
+from afrr_shap.config import DEFAULT_CONFIG, SHAP_SEEDS, TEST_START
 from afrr_shap.modeling.metrics import smape, target_groups
 from afrr_shap.modeling.network import MultiOutputNN
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+TRAINING_CONFIG = DEFAULT_CONFIG["training"]
 
 def train_country(country_code, output_txt_file):
     print(f"\n=============================================")
@@ -69,13 +70,13 @@ def train_country(country_code, output_txt_file):
 
     del X_train_scaled, X_test_scaled, y_train_scaled, y_test_scaled, X_np, y_np
 
-    batch_size = 1024
+    batch_size = TRAINING_CONFIG["batch_size"]
     n_samples = len(X_train_gpu)
     n_batches = (n_samples + batch_size - 1) // batch_size
 
     input_dim = X_train_gpu.shape[1]
     output_dim = y_train_gpu.shape[1]
-    num_seeds = 100
+    num_seeds = TRAINING_CONFIG["seeds"]
     num_targets = output_dim
 
     mae_all = np.zeros((num_seeds, num_targets))
@@ -97,15 +98,17 @@ def train_country(country_code, output_txt_file):
             torch.cuda.manual_seed(seed)
 
         model_s = MultiOutputNN(input_dim, output_dim).to(device)
-        optimizer_s = optim.Adam(model_s.parameters(), lr=1e-4)
-        criterion_s = nn.HuberLoss(delta=1.0, reduction='mean')
+        optimizer_s = optim.Adam(model_s.parameters(), lr=TRAINING_CONFIG["learning_rate"])
+        criterion_s = nn.HuberLoss(
+            delta=TRAINING_CONFIG["huber_delta"], reduction="mean"
+        )
 
         best_val_loss = float('inf')
         counter = 0
-        patience = 5
+        patience = TRAINING_CONFIG["early_stopping_patience"]
         best_state = copy.deepcopy(model_s.state_dict())
 
-        epochs = 100
+        epochs = TRAINING_CONFIG["epochs"]
         for epoch in range(1, epochs + 1):
             model_s.train()
             perm = torch.randperm(n_samples, device=device)
