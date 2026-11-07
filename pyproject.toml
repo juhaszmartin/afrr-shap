@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "afrr-shap"
+version = "0.1.0"
+description = "aFRR imbalance forecasting and SHAP analysis"
+requires-python = ">=3.14"
+readme = "README.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -12,25 +12,11 @@ import pandas as pd
 import polars as pl
 import polars.selectors as cs
 import torch
-import torch.nn as nn
 
-from preprocess_all import TEST_START
+from afrr_shap.config import TEST_START
+from afrr_shap.modeling.network import MultiOutputNN
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-class MultiOutputNN(nn.Module):
-    def __init__(self, input_dim, output_dim, lag_groups=None):
-        super().__init__()
-        self.model = nn.Sequential(
-            nn.Linear(input_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.ReLU(),
-            nn.Linear(256, output_dim)
-        )
-
-    def forward(self, x):
-        return self.model(x)
 
 # High-quality visual styling
 plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default")

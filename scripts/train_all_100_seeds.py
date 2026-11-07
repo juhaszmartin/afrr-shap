@@ -16,44 +16,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import polars.selectors as cs
 
-from preprocess_all import TEST_START
-
-SHAP_SEEDS = range(5)  # seeds whose weights are kept for run_shap_all.py
+from afrr_shap.config import SHAP_SEEDS, TEST_START
+from afrr_shap.modeling.metrics import smape, target_groups
+from afrr_shap.modeling.network import MultiOutputNN
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-def smape(y_true, y_pred, eps=1e-8):
-    denom = (np.abs(y_true) + np.abs(y_pred)) + eps
-    return 100.0 * np.mean(2.0 * np.abs(y_pred - y_true) / denom, axis=0)
-
-def target_groups(target_names, y_test):
-    """Groups targets by quantity so that summaries never average EUR/MWh with MWh.
-    Short prices identical to Long (single pricing) are flagged and left out of the summary."""
-    groups = {}
-    for i, t in enumerate(target_names):
-        if "imbalance_volumes" in t:
-            groups[t] = "volume [MWh]"
-        elif "Short" in t:
-            j = target_names.index(t.replace("Short", "Long"))
-            same = np.isclose(y_test[:, i], y_test[:, j]).mean() >= 0.99
-            groups[t] = "price Short = Long (single pricing)" if same else "price Short [EUR/MWh]"
-        else:
-            groups[t] = "price Long [EUR/MWh]"
-    return groups
-
-class MultiOutputNN(nn.Module):
-    def __init__(self, input_dim, output_dim, lag_groups=None):
-        super().__init__()
-        self.model = nn.Sequential(
-            nn.Linear(input_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.ReLU(),
-            nn.Linear(256, output_dim)
-        )
-
-    def forward(self, x):
-        return self.model(x)
 
 def train_country(country_code, output_txt_file):
     print(f"\n=============================================")

@@ -7,6 +7,7 @@ import holidays
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import numpy as np
+from afrr_shap.config import TEST_START, TIME_FEATURES
 
 # Mapping from Country Code to ERA5 Country Name
 CC_TO_NAME = {
@@ -24,7 +25,6 @@ HOURLY_COUNTRIES = {"BA", "LT", "LV", "PT", "RS", "FR"}
 CUTOFF_YEARS = {"ES": 2022, "RO": 2021, "FI": 2023, "HR": 2024, "PL": 2024}
 
 # 2025 is the test year for every country; everything before it is training data
-TEST_START = datetime(2025, 1, 1, tzinfo=timezone.utc)
 # Countries whose market changed so much that older data describes a different system
 TRAIN_START = {
     # PSE balancing market reform: 15-min settlement and new imbalance pricing from 14 June 2024 (local midnight)
@@ -269,9 +269,6 @@ def load_era5_data(country_code):
     if joined_weather is not None:
         joined_weather = joined_weather.sort("timestamp")
     return joined_weather
-
-TIME_FEATURES = ["qh_of_day_sin", "qh_of_day_cos", "qh_of_hour_sin", "qh_of_hour_cos",
-                 "dayofweek_sin", "dayofweek_cos", "is_weekend", "day_of_year_sin", "day_of_year_cos", "is_holiday"]
 
 def add_time_and_holiday_features(df, country_code, is_hourly):
     """Calendar features on the country's local clock, encoded cyclically so 23:45 sits next to 00:00."""

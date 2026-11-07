@@ -7,7 +7,7 @@ from pathlib import Path
 
 import polars as pl
 
-from preprocess_all import TIME_FEATURES
+from afrr_shap.config import TIME_FEATURES
 
 LAG_SUFFIX = re.compile(r"_t[+-]\d+(min|h)$")
 WEATHER = ("temperature", "ssrd", "wind_speed")

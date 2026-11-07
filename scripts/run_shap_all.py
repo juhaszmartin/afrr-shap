@@ -10,10 +10,9 @@ import polars as pl
 import polars.selectors as cs
 import shap
 import torch
-import torch.nn as nn
 
-from preprocess_all import TEST_START, TIME_FEATURES
-from train_all_100_seeds import SHAP_SEEDS
+from afrr_shap.config import SHAP_SEEDS, TEST_START, TIME_FEATURES
+from afrr_shap.modeling.network import MultiOutputNN
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -22,21 +21,6 @@ N_EXPLAIN = 1000    # 2025 rows explained, the same rows for every seed
 LAG_SUFFIX = re.compile(r"_t([+-]\d+)(min|h)$")
 CYCLIC = re.compile(r"_(sin|cos)$")
 CALENDAR_GROUPS = {CYCLIC.sub("", c) for c in TIME_FEATURES}
-
-
-class MultiOutputNN(nn.Module):
-    def __init__(self, input_dim, output_dim):
-        super().__init__()
-        self.model = nn.Sequential(
-            nn.Linear(input_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.ReLU(),
-            nn.Linear(256, output_dim)
-        )
-
-    def forward(self, x):
-        return self.model(x)
 
 
 def feature_groups(feature_names):

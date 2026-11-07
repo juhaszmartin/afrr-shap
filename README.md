@@ -9,6 +9,7 @@ Short-term forecasts of the imbalance price (Long/Short) and imbalance volume fo
 ```bash
 python -m venv venv
 venv/bin/pip install -r requirements.txt   # tested with Python 3.14.6
+venv/bin/pip install -e .
 ./run_pipeline.sh                          # preprocess -> train -> SHAP -> plots
 ```
 

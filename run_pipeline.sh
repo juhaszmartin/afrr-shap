@@ -4,6 +4,7 @@
 set -e
 export PYTHONUNBUFFERED=1
 cd "$(dirname "$0")"
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
 
 echo "Preprocessing..."
 venv/bin/python scripts/preprocess_all.py
