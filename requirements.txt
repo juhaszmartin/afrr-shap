@@ -9,6 +9,9 @@ torch==2.13.0
 scikit-learn==1.9.0
 shap==0.52.0
 matplotlib==3.11.1
+# Performance charts (plot_results.py)
+altair==6.3.0
+vl-convert-python==1.9.0.post1
 # Data download (ENTSO-E, ECB, ERA5)
 entsoe-py==0.8.1
 python-dotenv==1.2.4

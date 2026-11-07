@@ -39,7 +39,7 @@ Package versions are pinned in `requirements.txt` (Python 3.14.6). Superseded sc
    - `results/all_countries_100_seeds_metrics.txt` (appended to when run on a subset);
    - `models/nn_seed{0-4}_{CC}.pt`, `models/nn_100seeds_best_{CC}.pt` and the scalers.
 3. `scripts/run_shap_all.py` writes the SHAP outputs to `figures/` (§7).
-4. `scripts/plot_shap_results.py` and `scripts/plot_sample_days.py` write the plots to `figures/` and `samples/`.
+4. `scripts/plot_shap_results.py` and `scripts/plot_sample_days.py` write the plots to `figures/` and `samples/`. `plot_results.py` (repository root) writes charts comparing every metric and its naive counterpart across countries and horizons to `figures/performance/`.
 
 ## 3. Data sources
 

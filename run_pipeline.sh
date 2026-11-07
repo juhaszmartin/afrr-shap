@@ -18,4 +18,5 @@ venv/bin/python scripts/run_shap_all.py
 echo "Plots..."
 venv/bin/python scripts/plot_shap_results.py
 venv/bin/python scripts/plot_sample_days.py
+venv/bin/python plot_results.py
 echo "PIPELINE COMPLETE."

@@ -79,9 +79,11 @@ def compare_results(df):
 
 results = (
     unpivot_errors(
-        pl.read_csv(
+        pl.scan_csv(
             "results/NN_100_seeds_Huber_*_data.csv", include_file_paths="csv_path"
-        ).drop("Group")
+        )
+        .collect()
+        .drop("Group")
     )
     .with_columns(
         pl.col("csv_path")
