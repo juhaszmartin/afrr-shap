@@ -19,16 +19,16 @@ Default pipeline settings live in `configs/default.yaml`; country metadata is in
 Set `AFRR_CONFIG=configs/experiments/baseline.yaml` to run with another
 configuration file.
 
-`run_pipeline.sh` needs the raw data in `entsoe_data/` and `weather_data/` (see below). On a GPU the full run takes a few hours; most of it is training 100 seeds per country and SHAP. Steps can be run per country, e.g. `venv/bin/python scripts/train_all_100_seeds.py DE,FR`.
+`run_pipeline.sh` needs the raw data in `data/raw/entsoe/` and `data/raw/weather/` (see below). On a GPU the full run takes a few hours; most of it is training 100 seeds per country and SHAP. Steps can be run per country, e.g. `venv/bin/python scripts/train_all_100_seeds.py DE,FR`.
 
 ## Data
 
-The raw data is **not in the repository** (`entsoe_data/` is about 570 MB, `weather_data/` about 270 MB).
+The raw data is **not in the repository** (`data/raw/entsoe/` is about 570 MB, `data/raw/weather/` about 270 MB).
 
 | Source | Folder | Script | Credentials |
 |---|---|---|---|
-| ENTSO-E Transparency Platform | `entsoe_data/` | `scripts/fill_entsoe_gaps.py` fills and checks the stored files | `ENTSOE_API_KEY=...` in `.env` |
-| ERA5 reanalysis (Copernicus CDS) | `weather_data/` | `scripts/era5_download.py` | CDS key in `~/.cdsapirc` |
+| ENTSO-E Transparency Platform | `data/raw/entsoe/` | `scripts/fill_entsoe_gaps.py` fills and checks the stored files | `ENTSOE_API_KEY=...` in `.env` |
+| ERA5 reanalysis (Copernicus CDS) | `data/raw/weather/` | `scripts/era5_download.py` | CDS key in `~/.cdsapirc` |
 | ECB euro reference rates | `fx_data/` (in the repo) | `scripts/get_fx_rates.py` | none |
 
 `.env` is gitignored; never commit it. The script that made the original bulk ENTSO-E download is not part of the repository. `fill_entsoe_gaps.py` only adds missing timestamps to existing files and replaces single years (`refresh`), see PIPELINE.md §3.1.
@@ -38,7 +38,7 @@ The raw data is **not in the repository** (`entsoe_data/` is about 570 MB, `weat
 | Path | Content |
 |---|---|
 | `scripts/` | the pipeline (see PIPELINE.md §2) |
-| `processed_data/` | feature and target matrices per country (generated, gitignored) |
+| `data/processed/` | feature and target matrices per country (generated, gitignored) |
 | `models/` | trained weights and scalers (generated, gitignored) |
 | `results/` | metrics per country and target, and a combined text summary |
 | `figures/` | SHAP tables (`shap_mean_abs_*`, `shap_category_*`, `shap_stability_*`) and summary plots; `figures/performance/` has the metric charts from `plot_results.py` |

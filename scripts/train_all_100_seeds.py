@@ -19,6 +19,7 @@ import polars.selectors as cs
 from afrr_shap.config import DEFAULT_CONFIG, SHAP_SEEDS, TEST_START
 from afrr_shap.modeling.metrics import smape, target_groups
 from afrr_shap.modeling.network import MultiOutputNN
+from afrr_shap.paths import PROCESSED_DIR
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 TRAINING_CONFIG = DEFAULT_CONFIG["training"]
@@ -26,8 +27,8 @@ TRAINING_CONFIG = DEFAULT_CONFIG["training"]
 def train_country(country_code, output_txt_file):
     print(f"\n=============================================")
     print(f"Loading data for {country_code} on device: {device}...")
-    x_path = Path(f"processed_data/X_{country_code}.parquet")
-    y_path = Path(f"processed_data/y_{country_code}.parquet")
+    x_path = PROCESSED_DIR / f"X_{country_code}.parquet"
+    y_path = PROCESSED_DIR / f"y_{country_code}.parquet"
     
     if not x_path.exists() or not y_path.exists():
         print(f"Error: {country_code} parquet files not found.")
@@ -232,7 +233,7 @@ def train_country(country_code, output_txt_file):
 
 if __name__ == "__main__":
     output_txt = Path("results") / "all_countries_100_seeds_metrics.txt"
-    x_files = sorted(glob.glob("processed_data/X_*.parquet"))
+    x_files = sorted(PROCESSED_DIR.glob("X_*.parquet"))
     countries = [Path(f).stem.split("_")[1] for f in x_files]
     if len(sys.argv) > 1:  # optional subset, e.g. DE,FR; appends to the combined metrics file
         countries = sys.argv[1].split(",")

@@ -1,4 +1,4 @@
-"""Fills holes in entsoe_data/ from the ENTSO-E API and spot-checks existing data against it.
+"""Fills holes in data/raw/entsoe/ from the ENTSO-E API and spot-checks existing data against it.
 
     python scripts/fill_entsoe_gaps.py fill     # writes year=YYYY/fill.parquet next to data.parquet
     python scripts/fill_entsoe_gaps.py verify   # re-downloads random days and compares with data.parquet
@@ -32,11 +32,12 @@ client = EntsoePandasClient(api_key=os.environ["ENTSOE_API_KEY"], retry_count=5,
 
 sys.path.insert(0, str(ROOT / "scripts"))
 from preprocess_all import CUTOFF_YEARS, HOURLY_COUNTRIES  # noqa: E402
+from afrr_shap.paths import ENTSOE_DIR
 
 START, END = pd.Timestamp("2019-01-01", tz="UTC"), pd.Timestamp("2026-01-01", tz="UTC")
 GAP = pd.Timedelta(hours=2)          # holes shorter than this are resolution/DST artefacts
 MERGE = pd.Timedelta(days=3)         # neighbouring holes are fetched in one request
-LOG = ROOT / "entsoe_data" / "fill_log.json"
+LOG = ENTSOE_DIR / "fill_log.json"
 
 # Germany is split into control areas for balancing data and uses the DE_LU bidding zone for markets
 DE_AREAS = ["DE_50HZ", "DE_AMPRION", "DE_TENNET", "DE_TRANSNET"]
@@ -98,7 +99,7 @@ def norm(name):
 
 
 def existing_files(cat, cc, name="data"):
-    return sorted(glob.glob(str(ROOT / f"entsoe_data/{cat}/country={cc}/year=*/{name}.parquet")))
+    return sorted(glob.glob(str(ENTSOE_DIR / cat / f"country={cc}" / "year=*" / f"{name}.parquet")))
 
 
 def read_existing(files):
@@ -190,7 +191,7 @@ def fill_series(cc, cat):
         df = pd.concat([filled[filled["timestamp"].dt.year == yr]] + parts, ignore_index=True)
         key = ["timestamp", "ReserveType", "Direction"] if cat in LONG_FORMAT else ["timestamp"]
         df = df.drop_duplicates(subset=key).sort_values("timestamp")
-        out = ROOT / f"entsoe_data/{cat}/country={cc}/year={yr}"
+        out = ENTSOE_DIR / cat / f"country={cc}" / f"year={yr}"
         out.mkdir(parents=True, exist_ok=True)
         pl.from_pandas(df).write_parquet(out / "fill.parquet")
         rep["filled_rows"] += len(df)
@@ -200,7 +201,7 @@ def fill_series(cc, cat):
 def refresh_year(cc, cat, year):
     """Replaces one stored year with the current API version, for series the TSO revised after download.
     The originals are kept as data.parquet.bak / fill.parquet.bak, which the loaders do not read."""
-    out = ROOT / f"entsoe_data/{cat}/country={cc}/year={year}"
+    out = ENTSOE_DIR / cat / f"country={cc}" / f"year={year}"
     lo, hi = pd.Timestamp(f"{year}-01-01", tz="UTC"), pd.Timestamp(f"{year + 1}-01-01", tz="UTC")
     have = read_existing(existing_files(cat, cc))
     df = to_frame(QUERIES[cat](AREA.get(cc, {}).get(cat, cc), lo, hi), cat, list(have.columns))
@@ -252,7 +253,10 @@ def verify_series(cc, cat, n_days=3, seed=0):
 
 
 def run(job, countries=None, cats=None, workers=8):
-    countries = countries or sorted(Path(d).name.split("=")[1] for d in glob.glob(str(ROOT / "entsoe_data/imbalance_prices/country=*")))
+    countries = countries or sorted(
+        Path(d).name.split("=")[1]
+        for d in glob.glob(str(ENTSOE_DIR / "imbalance_prices" / "country=*"))
+    )
     tasks = [(cc, cat) for cc in countries for cat in (cats or QUERIES)]
     results = {}
 

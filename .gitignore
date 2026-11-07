@@ -208,13 +208,12 @@ marimo/_lsp/
 __marimo__/
 
 
-entsoe_data/
-weather_data/
+data/raw/
+data/interim/
+data/processed/
 
 *.pt
 *.pkl
 models/
 
-processed_data/
 figures/*.npy
-era5_raw/

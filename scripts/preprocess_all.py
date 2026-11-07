@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import numpy as np
 from afrr_shap.config import DEFAULT_CONFIG, TEST_START, TIME_FEATURES
+from afrr_shap.paths import ENTSOE_DIR, PROCESSED_DIR, WEATHER_DIR
 
 # Mapping from Country Code to ERA5 Country Name
 CC_TO_NAME = {
@@ -127,9 +128,9 @@ def procured_capacity(df, cat):
 
 def load_entsoe_data(country_code, is_hourly=False):
     """Loads and joins all available ENTSO-E parquet data for a given country."""
-    base_dir = Path("entsoe_data")
+    base_dir = ENTSOE_DIR
     if not base_dir.exists():
-        raise FileNotFoundError("entsoe_data directory not found.")
+        raise FileNotFoundError(f"{base_dir} directory not found.")
         
     categories = [d.name for d in base_dir.iterdir() if d.is_dir() and d.name not in SKIP_CATEGORIES]
     start_year = CUTOFF_YEARS.get(country_code, 2019)
@@ -137,7 +138,7 @@ def load_entsoe_data(country_code, is_hourly=False):
     joined_df = None
     for cat in categories:
         # data.parquet is the original download, fill.parquet holds rows added by fill_entsoe_gaps.py
-        pattern = f"entsoe_data/{cat}/country={country_code}/year=*/*.parquet"
+        pattern = str(ENTSOE_DIR / cat / f"country={country_code}" / "year=*" / "*.parquet")
         files = glob.glob(pattern)
         if not files:
             continue
@@ -238,19 +239,19 @@ def load_era5_data(country_code):
     name = CC_TO_NAME[country_code]
     
     files = {
-        "temp_mean": f"weather_data/{name}_hourly_temperature_2019_2025.csv",
-        "temp_std": f"weather_data/{name}_hourly_temperature_volatility_2019_2025.csv",
-        "ssrd_mean": f"weather_data/{name}_hourly_ssrd_2019_2025.csv",
-        "ssrd_std": f"weather_data/{name}_hourly_ssrd_volatility_2019_2025.csv",
-        "10m_wind_speed_mean": f"weather_data/{name}_hourly_10m_wind_mean_2019_2025.csv",
-        "10m_wind_speed_std": f"weather_data/{name}_hourly_10m_wind_std_2019_2025.csv",
-        "100m_wind_speed_mean": f"weather_data/{name}_hourly_100m_wind_mean_2019_2025.csv",
-        "100m_wind_speed_std": f"weather_data/{name}_hourly_100m_wind_std_2019_2025.csv",
+        "temp_mean": WEATHER_DIR / f"{name}_hourly_temperature_2019_2025.csv",
+        "temp_std": WEATHER_DIR / f"{name}_hourly_temperature_volatility_2019_2025.csv",
+        "ssrd_mean": WEATHER_DIR / f"{name}_hourly_ssrd_2019_2025.csv",
+        "ssrd_std": WEATHER_DIR / f"{name}_hourly_ssrd_volatility_2019_2025.csv",
+        "10m_wind_speed_mean": WEATHER_DIR / f"{name}_hourly_10m_wind_mean_2019_2025.csv",
+        "10m_wind_speed_std": WEATHER_DIR / f"{name}_hourly_10m_wind_std_2019_2025.csv",
+        "100m_wind_speed_mean": WEATHER_DIR / f"{name}_hourly_100m_wind_mean_2019_2025.csv",
+        "100m_wind_speed_std": WEATHER_DIR / f"{name}_hourly_100m_wind_std_2019_2025.csv",
     }
     
     joined_weather = None
     for col_name, filename in files.items():
-        if os.path.exists(filename):
+        if filename.exists():
             df = pl.read_csv(filename)
             if "datetime" in df.columns:
                 df = df.rename({"datetime": "timestamp"})
@@ -322,7 +323,7 @@ MAX_DOMINANT_SHARE = PREPROCESSING_CONFIG["max_dominant_share"]
 GAP_FLAG = timedelta(days=PREPROCESSING_CONFIG["gap_warning_days"])
 
 def report_gaps(df, target_cols, step, country_code, split_ts):
-    """Flags holes longer than GAP_FLAG in the target series and writes them to processed_data."""
+    """Flags holes longer than GAP_FLAG in the target series and writes them to data/processed/."""
     ts = df.filter(pl.all_horizontal([pl.col(c).is_not_null() for c in target_cols])).select("timestamp")
     gaps = (
         ts.with_columns(pl.col("timestamp").shift(1).alias("gap_start"))
@@ -334,9 +335,9 @@ def report_gaps(df, target_cols, step, country_code, split_ts):
     for r in big.iter_rows(named=True):
         where = "TEST" if r["gap_end"] >= split_ts else "train"
         print(f"  WARNING {country_code}: {r['gap']} target gap {r['gap_start']} -> {r['gap_end']} ({where} period)")
-    Path("processed_data").mkdir(exist_ok=True)
+    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     gaps.with_columns((pl.col("gap").dt.total_minutes() / 60).alias("gap_hours")).drop("gap").write_csv(
-        f"processed_data/gaps_{country_code}.csv")
+        PROCESSED_DIR / f"gaps_{country_code}.csv")
     print(f"  {gaps.height} target gaps in total, {big.height} longer than {GAP_FLAG}")
 
 def select_feature_columns(df, feature_cols, split_ts):
@@ -563,14 +564,14 @@ def process_country(country_code):
     X = combined.select(X.columns)
     y = combined.select(y.columns)
     
-    out_dir = Path("processed_data")
-    out_dir.mkdir(exist_ok=True)
+    out_dir = PROCESSED_DIR
+    out_dir.mkdir(parents=True, exist_ok=True)
     X.write_parquet(out_dir / f"X_{country_code}.parquet")
     y.write_parquet(out_dir / f"y_{country_code}.parquet")
     print(f"Saved {country_code}: X shape {X.shape}, y shape {y.shape}")
 
 if __name__ == "__main__":
-    imbalance_dirs = sorted(glob.glob("entsoe_data/imbalance_prices/country=*"))
+    imbalance_dirs = sorted(glob.glob(str(ENTSOE_DIR / "imbalance_prices" / "country=*")))
     countries = [Path(d).name.split("=")[1] for d in imbalance_dirs]
     if len(sys.argv) > 1:  # optional subset: python scripts/preprocess_all.py DE,FR
         countries = sys.argv[1].split(",")

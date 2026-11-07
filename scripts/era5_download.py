@@ -1,4 +1,4 @@
-"""Downloads ERA5 weather and writes weather_data/{country}_hourly_*_2019_2025.csv: the hourly box mean and std
+"""Downloads ERA5 weather and writes data/raw/weather/{country}_hourly_*_2019_2025.csv: the hourly box mean and std
 of 2m temperature, SSRD and 10m/100m wind speed over a lat/lon box per country.
 
 The CDS queue, not the data volume, is the bottleneck. Neighbouring countries therefore share a region: one request
@@ -7,9 +7,10 @@ region, from which each country's box is cropped locally. The crop reproduces th
 original notebook (legacy/era5_eu.ipynb) to float32 precision (checked for BE and CH).
 
 Needs a CDS key in ~/.cdsapirc.
-    python scripts/era5_download.py                    # every country whose CSVs are missing from weather_data/
-    python scripts/era5_download.py germany,france     # these countries (re-download only what is not in era5_raw/)
+    python scripts/era5_download.py                    # every country whose CSVs are missing from data/raw/weather/
+    python scripts/era5_download.py germany,france     # these countries (re-download only what is not in data/interim/era5_raw/)
 """
+
 import sys
 import time
 import zipfile
@@ -20,6 +21,8 @@ import cdsapi
 import numpy as np
 import pandas as pd
 import xarray as xr
+
+from afrr_shap.paths import ERA5_RAW_DIR, WEATHER_DIR
 
 # Bounding boxes [North, West, South, East], mainland only, grouped into download regions
 REGIONS = {
@@ -58,17 +61,31 @@ REGIONS = {
 COUNTRIES = {c: box for boxes in REGIONS.values() for c, box in boxes.items()}
 REGION_OF = {c: r for r, boxes in REGIONS.items() for c in boxes}
 YEARS = range(2019, 2026)
-VARIABLES = ["2m_temperature", "surface_solar_radiation_downwards",
-             "10m_u_component_of_wind", "10m_v_component_of_wind",
-             "100m_u_component_of_wind", "100m_v_component_of_wind"]
-PARTS = {"p1": range(1, 5), "p2": range(5, 9), "p3": range(9, 13)}  # 6 variables x 4 months is just under the CDS limit
-RAW = Path("era5_raw")
-OUT = Path("weather_data")
+VARIABLES = [
+    "2m_temperature",
+    "surface_solar_radiation_downwards",
+    "10m_u_component_of_wind",
+    "10m_v_component_of_wind",
+    "100m_u_component_of_wind",
+    "100m_v_component_of_wind",
+]
+PARTS = {
+    "p1": range(1, 5),
+    "p2": range(5, 9),
+    "p3": range(9, 13),
+}  # 6 variables x 4 months is just under the CDS limit
+RAW = ERA5_RAW_DIR
+OUT = WEATHER_DIR
 
 
 def region_area(region):
     boxes = REGIONS[region].values()
-    return [max(b[0] for b in boxes), min(b[1] for b in boxes), min(b[2] for b in boxes), max(b[3] for b in boxes)]
+    return [
+        max(b[0] for b in boxes),
+        min(b[1] for b in boxes),
+        min(b[2] for b in boxes),
+        max(b[3] for b in boxes),
+    ]
 
 
 def download(job):
@@ -96,7 +113,9 @@ def download(job):
                 str(tmp),
             )
             break
-        except Exception as e:  # CDS rejects jobs when too many are queued; wait and retry
+        except (
+            Exception
+        ) as e:  # CDS rejects jobs when too many are queued; wait and retry
             if "queued requests" not in str(e):
                 raise
             time.sleep(120)
@@ -120,27 +139,52 @@ def country_stats(ds, box):
         "10m_wind": np.sqrt(sub["u10"] ** 2 + sub["v10"] ** 2),
         "100m_wind": np.sqrt(sub["u100"] ** 2 + sub["v100"] ** 2),
     }
-    return {k: (v.mean(dims).to_series(), v.std(dims).to_series()) for k, v in fields.items()}
+    return {
+        k: (v.mean(dims).to_series(), v.std(dims).to_series())
+        for k, v in fields.items()
+    }
 
 
 # File name and column of the mean and std CSVs
 FILES = {
-    "temperature": [("hourly_temperature", "temperature_mean_celsius"), ("hourly_temperature_volatility", "temperature_std_celsius")],
-    "ssrd": [("hourly_ssrd", "ssrd_mean_j_m2"), ("hourly_ssrd_volatility", "ssrd_std_j_m2")],
-    "10m_wind": [("hourly_10m_wind_mean", "10m_wind_speed_mean"), ("hourly_10m_wind_std", "10m_wind_speed_std")],
-    "100m_wind": [("hourly_100m_wind_mean", "100m_wind_speed_mean"), ("hourly_100m_wind_std", "100m_wind_speed_std")],
+    "temperature": [
+        ("hourly_temperature", "temperature_mean_celsius"),
+        ("hourly_temperature_volatility", "temperature_std_celsius"),
+    ],
+    "ssrd": [
+        ("hourly_ssrd", "ssrd_mean_j_m2"),
+        ("hourly_ssrd_volatility", "ssrd_std_j_m2"),
+    ],
+    "10m_wind": [
+        ("hourly_10m_wind_mean", "10m_wind_speed_mean"),
+        ("hourly_10m_wind_std", "10m_wind_speed_std"),
+    ],
+    "100m_wind": [
+        ("hourly_100m_wind_mean", "100m_wind_speed_mean"),
+        ("hourly_100m_wind_std", "100m_wind_speed_std"),
+    ],
 }
 
 
 def csv_paths(country):
-    return [OUT / f"{country}_{name}_2019_2025.csv" for files in FILES.values() for name, _ in files]
+    return [
+        OUT / f"{country}_{name}_2019_2025.csv"
+        for files in FILES.values()
+        for name, _ in files
+    ]
 
 
 def process(countries):
     parts = {c: {k: ([], []) for k in FILES} for c in countries}
     for region in sorted({REGION_OF[c] for c in countries}):
         for year, part in [(y, p) for y in YEARS for p in PARTS]:
-            ds = xr.merge([xr.open_dataset(f) for f in sorted((RAW / region / f"{year}_{part}").glob("*.nc"))], compat="override")
+            ds = xr.merge(
+                [
+                    xr.open_dataset(f)
+                    for f in sorted((RAW / region / f"{year}_{part}").glob("*.nc"))
+                ],
+                compat="override",
+            )
             ds = ds.drop_vars([v for v in ("number", "expver") if v in ds.variables])
             if "valid_time" in ds.dims:
                 ds = ds.rename({"valid_time": "time"})
@@ -155,7 +199,12 @@ def process(countries):
             for (name, column), s in zip(FILES[k], series):
                 s = pd.concat(s).sort_index()
                 s = s[~s.index.duplicated()]
-                df = pd.DataFrame({"datetime": s.index.strftime("%Y-%m-%d %H:%M:%S"), column: s.values})
+                df = pd.DataFrame(
+                    {
+                        "datetime": s.index.strftime("%Y-%m-%d %H:%M:%S"),
+                        column: s.values,
+                    }
+                )
                 df.to_csv(OUT / f"{country}_{name}_2019_2025.csv", index=False)
         print(f"wrote {country}", flush=True)
 
@@ -169,10 +218,14 @@ if __name__ == "__main__":
     else:
         countries = [c for c in COUNTRIES if not all(p.exists() for p in csv_paths(c))]
     if not countries:
-        print("weather_data/ is complete; pass country names to rebuild some")
+        print(f"{WEATHER_DIR} is complete; pass country names to rebuild some")
         sys.exit()
     regions = sorted({REGION_OF[c] for c in countries})
     print(f"countries {countries} -> regions {regions}")
     with ThreadPoolExecutor(3) as pool:
-        list(pool.map(download, [(r, y, p) for r in regions for y in YEARS for p in PARTS]))
+        list(
+            pool.map(
+                download, [(r, y, p) for r in regions for y in YEARS for p in PARTS]
+            )
+        )
     process(countries)

@@ -15,6 +15,7 @@ import torch
 
 from afrr_shap.config import TEST_START
 from afrr_shap.modeling.network import MultiOutputNN
+from afrr_shap.paths import PROCESSED_DIR
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -32,8 +33,8 @@ plt.rcParams.update({
 })
 
 def plot_sample_days_for_country(country_code, samples_dir):
-    x_path = Path(f"processed_data/X_{country_code}.parquet")
-    y_path = Path(f"processed_data/y_{country_code}.parquet")
+    x_path = PROCESSED_DIR / f"X_{country_code}.parquet"
+    y_path = PROCESSED_DIR / f"y_{country_code}.parquet"
     model_path = Path(f"models/nn_100seeds_best_{country_code}.pt")
     scaler_x_path = Path(f"models/scaler_X_100seeds_best_{country_code}.pkl")
     scaler_y_path = Path(f"models/scaler_y_100seeds_best_{country_code}.pkl")
@@ -207,7 +208,7 @@ def main():
     samples_dir = Path("samples")
     samples_dir.mkdir(exist_ok=True)
 
-    x_files = sorted(glob.glob("processed_data/X_*.parquet"))
+    x_files = sorted(PROCESSED_DIR.glob("X_*.parquet"))
     countries = [Path(f).stem.split("_")[1] for f in x_files]
 
     print(f"Generating inference sample plots for {len(countries)} countries in 'samples/'...")

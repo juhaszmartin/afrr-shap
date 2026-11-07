@@ -28,12 +28,12 @@ Run everything from the repository root with the project venv.
    - `fill [CC,..] [category,..]` downloads every gap in the raw ENTSO-E data from the API;
    - `verify [CC,..] [category,..]` compares 3 random stored days per series against the API;
    - `refresh CC category YEAR` replaces one stored year with the current API version.
-3. `scripts/era5_download.py` (needs a CDS key in `~/.cdsapirc`) downloads ERA5 and writes `weather_data/` (§3). Without arguments it handles every country whose CSVs are missing; `era5_download.py germany,france` rebuilds the named countries.
+3. `scripts/era5_download.py` (needs a CDS key in `~/.cdsapirc`) downloads ERA5 and writes `data/raw/weather/` (§3). Without arguments it handles every country whose CSVs are missing; `era5_download.py germany,france` rebuilds the named countries.
 
 Package versions are pinned in `requirements.txt` (Python 3.14.6). Superseded scripts and notebooks are in `legacy/`.
 
 **Pipeline.** [run_pipeline.sh](run_pipeline.sh) runs these steps in order. Steps 1, 2 and 3 accept an optional country list, for example `DE,FR`.
-1. `scripts/preprocess_all.py` writes `processed_data/X_{CC}.parquet`, `processed_data/y_{CC}.parquet` and `processed_data/gaps_{CC}.csv`. `scripts/get_entsoe_info.py` then writes [entsoe_availability.md](entsoe_availability.md), the input series each country ends up with.
+1. `scripts/preprocess_all.py` writes `data/processed/X_{CC}.parquet`, `data/processed/y_{CC}.parquet` and `data/processed/gaps_{CC}.csv`. `scripts/get_entsoe_info.py` then writes [entsoe_availability.md](entsoe_availability.md), the input series each country ends up with.
 2. `scripts/train_all_100_seeds.py` writes:
    - `results/NN_100_seeds_Huber_{CC}_data.csv`;
    - `results/all_countries_100_seeds_metrics.txt` (appended to when run on a subset);
@@ -43,7 +43,7 @@ Package versions are pinned in `requirements.txt` (Python 3.14.6). Superseded sc
 
 ## 3. Data sources
 
-**ENTSO-E Transparency Platform.** The raw files are stored as `entsoe_data/{category}/country={CC}/year={YYYY}/data.parquet`. Gap fills sit next to them as `fill.parquet` (§3.1). The categories are:
+**ENTSO-E Transparency Platform.** The raw files are stored as `data/raw/entsoe/{category}/country={CC}/year={YYYY}/data.parquet`. Gap fills sit next to them as `fill.parquet` (§3.1). The categories are:
 
 | Category | Content | Role |
 |---|---|---|
@@ -65,10 +65,10 @@ For DE, the ENTSO-E areas differ by category:
 - imbalance volume is the sum over the four control areas (50Hertz, Amprion, TenneT, TransnetBW);
 - balancing-energy prices are the mean over the control areas that publish them (Amprion publishes none).
 
-**ERA5 weather.** The files are `weather_data/{country}_hourly_*.csv`. Each one is an hourly mean and standard deviation over a lat/lon box around the country, for 2 m temperature, solar radiation (ssrd), and wind speed at 10 m and 100 m. That gives 8 variables.
+**ERA5 weather.** The files are `data/raw/weather/{country}_hourly_*.csv`. Each one is an hourly mean and standard deviation over a lat/lon box around the country, for 2 m temperature, solar radiation (ssrd), and wind speed at 10 m and 100 m. That gives 8 variables.
 - The boxes are in `REGIONS` in `era5_download.py`. Neighbouring countries share a download region (DE/FR/BE/CH, central Europe, RO/GR, Iberia, the north, UA). There is one CDS request per region and 4 months, over a box covering the whole region, and each country is cropped from it locally.
 - The CDS limits each request to 121,000 fields (variables × days × hours) and also limits how many requests can wait in its queue (each took 2.5–4.5 h in the queue).
-- DE and FR were downloaded with this script. The other countries were downloaded earlier, one request per country and month, by `legacy/era5_eu.ipynb`. The script reproduces those CSVs to float32 precision (checked on the BE and CH boxes, which lie inside the DE/FR region: the largest difference is 0.0003 °C). So `weather_data/` can be rebuilt with the script alone.
+- DE and FR were downloaded with this script. The other countries were downloaded earlier, one request per country and month, by `legacy/era5_eu.ipynb`. The script reproduces those CSVs to float32 precision (checked on the BE and CH boxes, which lie inside the DE/FR region: the largest difference is 0.0003 °C). So `data/raw/weather/` can be rebuilt with the script alone.
 
 **Currency.** ENTSO-E passes prices through in the currency the TSO reports in. `LOCAL_CURRENCY` in `preprocess_all.py` converts the following to EUR, using the most recent ECB rate on or before each timestamp. Every other country already reports in EUR.
 
@@ -83,12 +83,12 @@ Prices are in EUR/MWh and volumes in MWh.
 
 ### 3.1 Gap fill and spot check against the API
 
-The original bulk download of `entsoe_data/` was made by a script that is not in the repository. The data itself is not in the repository either (it is gitignored), and ENTSO-E data is revised after publication (see BA load below), so a fresh download can differ from the stored files.
+The original bulk download of `data/raw/entsoe/` was made by a script that is not in the repository. The data itself is not in the repository either (it is gitignored), and ENTSO-E data is revised after publication (see BA load below), so a fresh download can differ from the stored files.
 
 **Fill (`fill_entsoe_gaps.py fill`).**
 - It looks for every gap longer than 2 h in each stored series, from 2019 (or the 15-min cutoff year) to the end of 2025, and downloads it.
 - Only timestamps that are missing are added. They go into `fill.parquet`; the original `data.parquet` is never changed. The loader reads both.
-- The log is `entsoe_data/fill_log.json`.
+- The log is `data/raw/entsoe/fill_log.json`.
 
 What it filled:
 - **Dec 31 in every year, all countries and categories.** The original downloader treated the end date as exclusive, so every yearly file stopped at Dec 30 23:45 UTC.
@@ -138,7 +138,7 @@ The steps run in this order:
 5. **SK single-price fix.** Where Short is 0 and Long is not, Short is set equal to Long.
 6. **Regular time grid.** A complete 15-min or 1-h timeline is built from the first to the last timestamp that has targets. The data is left-joined onto it, so one row is always exactly one time step and missing periods become empty rows.
    - A country without targets both before and in 2025 is skipped. Currently that is LT.
-7. **Gap report.** Every target gap is written to `processed_data/gaps_{CC}.csv`. Gaps longer than `GAP_FLAG` (1 day) print a warning saying whether they fall in train or test.
+7. **Gap report.** Every target gap is written to `data/processed/gaps_{CC}.csv`. Gaps longer than `GAP_FLAG` (1 day) print a warning saying whether they fall in train or test.
 8. **Calendar features**, see §5.
 9. **Hourly actuals are delayed to the end of their hour** (15-min countries only, `delay_hourly_actuals`). An hourly value labelled hh:00 covers hh:00–hh+1:00. Used from the hh:00 row, it would carry up to 45 minutes of the future, overlapping the t+15 to t+45 targets.
    - It applies to **actual** columns only: generation, load, border flows, balancing prices. Known-in-advance columns (forecasts, day-ahead price, net position) and weather are not delayed. ERA5 temperature and wind are instantaneous, and ssrd accumulates over the preceding hour.

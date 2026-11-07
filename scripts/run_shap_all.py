@@ -13,6 +13,7 @@ import torch
 
 from afrr_shap.config import DEFAULT_CONFIG, SHAP_SEEDS, TEST_START, TIME_FEATURES
 from afrr_shap.modeling.network import MultiOutputNN
+from afrr_shap.paths import PROCESSED_DIR
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -59,8 +60,8 @@ def feature_category(group_name, weather_names):
 
 def run_shap_for_country(country_code):
     print(f"--- Running SHAP ({len(SHAP_SEEDS)} seeds, {N_EXPLAIN} samples) for {country_code} ---")
-    x_path = Path("processed_data") / f"X_{country_code}.parquet"
-    y_path = Path("processed_data") / f"y_{country_code}.parquet"
+    x_path = PROCESSED_DIR / f"X_{country_code}.parquet"
+    y_path = PROCESSED_DIR / f"y_{country_code}.parquet"
     model_paths = [Path("models") / f"nn_seed{s}_{country_code}.pt" for s in SHAP_SEEDS]
     scaler_X_path = Path("models") / f"scaler_X_100seeds_best_{country_code}.pkl"
 
@@ -148,7 +149,7 @@ def run_shap_for_country(country_code):
 
 
 if __name__ == "__main__":
-    x_files = sorted(glob.glob("processed_data/X_*.parquet"))
+    x_files = sorted(PROCESSED_DIR.glob("X_*.parquet"))
     countries = [Path(f).stem.split("_")[1] for f in x_files]
     if len(sys.argv) > 1:  # optional subset, e.g. DE,FR
         countries = sys.argv[1].split(",")
