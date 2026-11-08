@@ -9,11 +9,20 @@ description = "aFRR imbalance forecasting and SHAP analysis"
 requires-python = ">=3.14"
 readme = "README.md"
 dependencies = [
+    "altair>=6.3.0",
+    "cdsapi>=0.7.7",
+    "entsoe-py>=0.8.1",
     "holidays>=0.108",
+    "matplotlib>=3.11.2",
+    "pandas>=3.1.1",
+    "polars>=2.1.0",
     "pyarrow>=26.0.1",
+    "python-dotenv>=1.2.4",
     "pyyaml>=6.0.3",
     "scikit-learn>=1.9.1",
+    "shap>=0.54.1",
     "torch>=2.15.0",
+    "xarray>=2026.9.0",
 ]
 
 [tool.setuptools.packages.find]
