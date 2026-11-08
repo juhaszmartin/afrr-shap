@@ -27,3 +27,6 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.scripts]
+afrr = "afrr_shap.cli:main"

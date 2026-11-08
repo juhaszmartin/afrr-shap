@@ -19,6 +19,16 @@ Default pipeline settings live in `configs/default.yaml`; country metadata is in
 Set `AFRR_CONFIG=configs/experiments/baseline.yaml` to run with another
 configuration file.
 
+The installed `afrr` CLI exposes the same stages:
+
+```bash
+afrr preprocess --countries DE,FR
+afrr train --countries DE,FR
+afrr explain --countries DE,FR
+afrr report
+afrr pipeline
+```
+
 `run_pipeline.sh` needs the raw data in `data/raw/entsoe/` and `data/raw/weather/` (see below). On a GPU the full run takes a few hours; most of it is training 100 seeds per country and SHAP. Steps can be run per country, e.g. `venv/bin/python scripts/train_all_100_seeds.py DE,FR`.
 
 ## Data
