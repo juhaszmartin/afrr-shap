@@ -1,7 +1,7 @@
 """Loading and accessors for versioned pipeline configuration."""
 
-from datetime import datetime, timezone
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
@@ -27,7 +27,7 @@ def load_config(path=None):
 
 
 def test_start(config):
-    return datetime.fromisoformat(config["data"]["test_start"]).astimezone(timezone.utc)
+    return datetime.fromisoformat(config["data"]["test_start"]).astimezone(UTC)
 
 
 def shap_seeds(config):

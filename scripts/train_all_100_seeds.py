@@ -1,20 +1,17 @@
-import sys
-import os
-import glob
 import copy
+import pickle
 import re
+import sys
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import polars as pl
-from pathlib import Path
-import pickle
-
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import polars.selectors as cs
+import torch
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.preprocessing import StandardScaler
+from torch import nn, optim
 
 from afrr_shap.config import DEFAULT_CONFIG, SHAP_SEEDS, TEST_START
 from afrr_shap.modeling.metrics import smape, target_groups
@@ -24,12 +21,13 @@ from afrr_shap.paths import PROCESSED_DIR
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 TRAINING_CONFIG = DEFAULT_CONFIG["training"]
 
+
 def train_country(country_code, output_txt_file):
-    print(f"\n=============================================")
+    print("\n=============================================")
     print(f"Loading data for {country_code} on device: {device}...")
     x_path = PROCESSED_DIR / f"X_{country_code}.parquet"
     y_path = PROCESSED_DIR / f"y_{country_code}.parquet"
-    
+
     if not x_path.exists() or not y_path.exists():
         print(f"Error: {country_code} parquet files not found.")
         return
@@ -37,11 +35,13 @@ def train_country(country_code, output_txt_file):
     X_pl = pl.read_parquet(x_path)
     is_test = (X_pl["timestamp"] >= TEST_START).to_numpy()
     if is_test.sum() == 0 or is_test.all():
-        print(f"Skipping {country_code}: needs data both before and in {TEST_START.year}.")
+        print(
+            f"Skipping {country_code}: needs data both before and in {TEST_START.year}."
+        )
         return
     X_df = X_pl.select(cs.numeric()).to_pandas()
     y_df = pl.read_parquet(y_path).select(cs.numeric()).to_pandas()
-    
+
     feature_names = list(X_df.columns)
     target_names = list(y_df.columns)
 
@@ -85,10 +85,11 @@ def train_country(country_code, output_txt_file):
     r2_all = np.zeros((num_seeds, num_targets))
     smape_all = np.zeros((num_seeds, num_targets))
 
-    best_overall_val_loss = float('inf')
+    best_overall_val_loss = float("inf")
     best_overall_state = None
 
     import time
+
     t0_country = time.time()
 
     for s in range(num_seeds):
@@ -99,12 +100,14 @@ def train_country(country_code, output_txt_file):
             torch.cuda.manual_seed(seed)
 
         model_s = MultiOutputNN(input_dim, output_dim).to(device)
-        optimizer_s = optim.Adam(model_s.parameters(), lr=TRAINING_CONFIG["learning_rate"])
+        optimizer_s = optim.Adam(
+            model_s.parameters(), lr=TRAINING_CONFIG["learning_rate"]
+        )
         criterion_s = nn.HuberLoss(
             delta=TRAINING_CONFIG["huber_delta"], reduction="mean"
         )
 
-        best_val_loss = float('inf')
+        best_val_loss = float("inf")
         counter = 0
         patience = TRAINING_CONFIG["early_stopping_patience"]
         best_state = copy.deepcopy(model_s.state_dict())
@@ -148,7 +151,7 @@ def train_country(country_code, output_txt_file):
             rmse_all[s, i] = np.sqrt(mean_squared_error(y_true[:, i], y_pred[:, i]))
             r2_all[s, i] = r2_score(y_true[:, i], y_pred[:, i])
         smape_all[s, :] = smape(y_true, y_pred)
-        
+
         if s in SHAP_SEEDS:
             out_dir = Path("models")
             out_dir.mkdir(exist_ok=True)
@@ -158,7 +161,9 @@ def train_country(country_code, output_txt_file):
             best_overall_val_loss = best_val_loss
             best_overall_state = copy.deepcopy(best_state)
 
-    print(f"{country_code} 100 seeds finished in {time.time() - t0_country:.2f}s! Best Val Loss: {best_overall_val_loss:.4f}")
+    print(
+        f"{country_code} 100 seeds finished in {time.time() - t0_country:.2f}s! Best Val Loss: {best_overall_val_loss:.4f}"
+    )
 
     out_dir = Path("models")
     out_dir.mkdir(exist_ok=True)
@@ -167,7 +172,7 @@ def train_country(country_code, output_txt_file):
         pickle.dump(scaler_X, f)
     with open(out_dir / f"scaler_y_100seeds_best_{country_code}.pkl", "wb") as f:
         pickle.dump(scaler_y, f)
-        
+
     mae_mean = mae_all.mean(axis=0)
     rmse_mean = rmse_all.mean(axis=0)
     r2_mean = r2_all.mean(axis=0)
@@ -178,23 +183,27 @@ def train_country(country_code, output_txt_file):
     r2_std = r2_all.std(axis=0)
     smape_std = smape_all.std(axis=0)
 
-    metrics_df = pd.DataFrame({
-        "Target": target_names,
-        "MAE": mae_mean,
-        "RMSE": rmse_mean,
-        "R2": r2_mean,
-        "SMAPE": smape_mean,
-        "MAE_STD": mae_std,
-        "RMSE_STD": rmse_std,
-        "R2_STD": r2_std,
-        "SMAPE_STD": smape_std
-    })
+    metrics_df = pd.DataFrame(
+        {
+            "Target": target_names,
+            "MAE": mae_mean,
+            "RMSE": rmse_mean,
+            "R2": r2_mean,
+            "SMAPE": smape_mean,
+            "MAE_STD": mae_std,
+            "RMSE_STD": rmse_std,
+            "R2_STD": r2_std,
+            "SMAPE_STD": smape_std,
+        }
+    )
 
     # Naive baseline: the value known at t, carried forward to every horizon
     naive = {"NAIVE_MAE": [], "NAIVE_RMSE": [], "NAIVE_R2": []}
     for i, t in enumerate(target_names):
         base = re.sub(r"_t\+\d+(min|h)$", "", t)
-        now_col = next(c for c in feature_names if c in (f"{base}_t+0min", f"{base}_t+0h"))
+        now_col = next(
+            c for c in feature_names if c in (f"{base}_t+0min", f"{base}_t+0h")
+        )
         y_naive = X_test[:, feature_names.index(now_col)]
         naive["NAIVE_MAE"].append(mean_absolute_error(y_test[:, i], y_naive))
         naive["NAIVE_RMSE"].append(np.sqrt(mean_squared_error(y_test[:, i], y_naive)))
@@ -206,7 +215,10 @@ def train_country(country_code, output_txt_file):
     metrics_df.insert(1, "Group", [groups[t] for t in target_names])
     group_summary = (
         metrics_df[~metrics_df["Group"].str.startswith("price Short = Long")]
-        .groupby("Group", sort=False)[["MAE", "RMSE", "R2", "SMAPE", "NAIVE_MAE", "NAIVE_RMSE", "NAIVE_R2"]].mean()
+        .groupby("Group", sort=False)[
+            ["MAE", "RMSE", "R2", "SMAPE", "NAIVE_MAE", "NAIVE_RMSE", "NAIVE_R2"]
+        ]
+        .mean()
     )
 
     print(f"Results for {country_code}:")
@@ -215,32 +227,39 @@ def train_country(country_code, output_txt_file):
 
     results_dir = Path("results")
     results_dir.mkdir(exist_ok=True)
-    metrics_df.to_csv(results_dir / f"NN_100_seeds_Huber_{country_code}_data.csv", index=False)
-    
+    metrics_df.to_csv(
+        results_dir / f"NN_100_seeds_Huber_{country_code}_data.csv", index=False
+    )
+
     with open(output_txt_file, "a") as f:
-        f.write(f"\n===============================\n")
+        f.write("\n===============================\n")
         f.write(f"FINAL METRICS FOR {country_code} (100 Seeds)\n")
-        f.write(f"===============================\n")
+        f.write("===============================\n")
         f.write(metrics_df.to_string() + "\n")
-        f.write(f"\nAverages over horizons, per target group:\n")
+        f.write("\nAverages over horizons, per target group:\n")
         f.write(group_summary.to_string() + "\n")
         f.write("\nConcise summary per target (Mean ± Std):\n")
         for i, t in enumerate(target_names):
-            f.write(f"{t}: MAE {mae_mean[i]:.3f} ± {mae_std[i]:.3f}, "
-                    f"RMSE {rmse_mean[i]:.3f} ± {rmse_std[i]:.3f}, "
-                    f"R2 {r2_mean[i]:.3f} ± {r2_std[i]:.3f}, "
-                    f"SMAPE {smape_mean[i]:.3f} ± {smape_std[i]:.3f}\n")
+            f.write(
+                f"{t}: MAE {mae_mean[i]:.3f} ± {mae_std[i]:.3f}, "
+                f"RMSE {rmse_mean[i]:.3f} ± {rmse_std[i]:.3f}, "
+                f"R2 {r2_mean[i]:.3f} ± {r2_std[i]:.3f}, "
+                f"SMAPE {smape_mean[i]:.3f} ± {smape_std[i]:.3f}\n"
+            )
+
 
 if __name__ == "__main__":
     output_txt = Path("results") / "all_countries_100_seeds_metrics.txt"
     x_files = sorted(PROCESSED_DIR.glob("X_*.parquet"))
     countries = [Path(f).stem.split("_")[1] for f in x_files]
-    if len(sys.argv) > 1:  # optional subset, e.g. DE,FR; appends to the combined metrics file
+    if (
+        len(sys.argv) > 1
+    ):  # optional subset, e.g. DE,FR; appends to the combined metrics file
         countries = sys.argv[1].split(",")
     elif output_txt.exists():
         output_txt.unlink()
-    
+
     print(f"Will run 100-seed training for {len(countries)} countries: {countries}")
-    
+
     for cc in countries:
         train_country(cc, output_txt)

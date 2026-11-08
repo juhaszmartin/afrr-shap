@@ -1,12 +1,9 @@
-import os
-import glob
-import re
 import pickle
-from datetime import timedelta
+import re
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -20,17 +17,24 @@ from afrr_shap.paths import PROCESSED_DIR
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # High-quality visual styling
-plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default")
-plt.rcParams.update({
-    "font.size": 11,
-    "axes.labelsize": 12,
-    "axes.titlesize": 13,
-    "xtick.labelsize": 10,
-    "ytick.labelsize": 10,
-    "legend.fontsize": 10,
-    "figure.titlesize": 14,
-    "figure.autolayout": True
-})
+plt.style.use(
+    "seaborn-v0_8-whitegrid"
+    if "seaborn-v0_8-whitegrid" in plt.style.available
+    else "default"
+)
+plt.rcParams.update(
+    {
+        "font.size": 11,
+        "axes.labelsize": 12,
+        "axes.titlesize": 13,
+        "xtick.labelsize": 10,
+        "ytick.labelsize": 10,
+        "legend.fontsize": 10,
+        "figure.titlesize": 14,
+        "figure.autolayout": True,
+    }
+)
+
 
 def plot_sample_days_for_country(country_code, samples_dir):
     x_path = PROCESSED_DIR / f"X_{country_code}.parquet"
@@ -39,7 +43,9 @@ def plot_sample_days_for_country(country_code, samples_dir):
     scaler_x_path = Path(f"models/scaler_X_100seeds_best_{country_code}.pkl")
     scaler_y_path = Path(f"models/scaler_y_100seeds_best_{country_code}.pkl")
 
-    if not all(p.exists() for p in [x_path, y_path, model_path, scaler_x_path, scaler_y_path]):
+    if not all(
+        p.exists() for p in [x_path, y_path, model_path, scaler_x_path, scaler_y_path]
+    ):
         print(f"Skipping {country_code}: missing data or model files.")
         return
 
@@ -128,7 +134,7 @@ def plot_sample_days_for_country(country_code, samples_dir):
                     label=f"Fact ({label_suffix})",
                     color=color_fact,
                     linewidth=2.0,
-                    alpha=0.85
+                    alpha=0.85,
                 )
                 ax.plot(
                     plot_ts,
@@ -137,7 +143,7 @@ def plot_sample_days_for_country(country_code, samples_dir):
                     color=color_pred,
                     linewidth=2.0,
                     linestyle="--",
-                    alpha=0.9
+                    alpha=0.9,
                 )
 
             # Metric on this 3-day sample
@@ -147,7 +153,7 @@ def plot_sample_days_for_country(country_code, samples_dir):
             ax.set_title(
                 f"[{country_code}] Imbalance Price Forecast ({lag_clean}) — Last 3 Days of Test Split\n"
                 f"Sample MAE ({col0}): {mae_sample:.2f}",
-                fontweight="bold"
+                fontweight="bold",
             )
             ax.set_xlabel("Time (UTC)")
             ax.set_ylabel("Price")
@@ -155,7 +161,9 @@ def plot_sample_days_for_country(country_code, samples_dir):
             ax.legend(loc="upper right", frameon=True)
             plt.tight_layout()
 
-            save_file = samples_dir / f"{country_code}_sample_3days_price_{lag_clean}.png"
+            save_file = (
+                samples_dir / f"{country_code}_sample_3days_price_{lag_clean}.png"
+            )
             plt.savefig(save_file, dpi=200)
             plt.close(fig)
 
@@ -171,7 +179,7 @@ def plot_sample_days_for_country(country_code, samples_dir):
                 label="Fact Sysdir / Volume",
                 color="#004c6d",
                 linewidth=2.2,
-                alpha=0.9
+                alpha=0.9,
             )
             ax.plot(
                 plot_ts,
@@ -180,17 +188,24 @@ def plot_sample_days_for_country(country_code, samples_dir):
                 color="#e34a33",
                 linewidth=2.0,
                 linestyle="--",
-                alpha=0.9
+                alpha=0.9,
             )
 
             # Draw zero reference line for system direction balance
-            ax.axhline(0, color="gray", linestyle=":", linewidth=1.2, alpha=0.7, label="System Balanced (0 MW)")
+            ax.axhline(
+                0,
+                color="gray",
+                linestyle=":",
+                linewidth=1.2,
+                alpha=0.7,
+                label="System Balanced (0 MW)",
+            )
 
             mae_vol = np.mean(np.abs(plot_y_true[vol_col] - plot_y_pred[vol_col]))
             ax.set_title(
                 f"[{country_code}] System Direction / Imbalance Volume Forecast ({lag_clean}) — Last 3 Days\n"
                 f"Sample MAE: {mae_vol:.2f} MW",
-                fontweight="bold"
+                fontweight="bold",
             )
             ax.set_xlabel("Time (UTC)")
             ax.set_ylabel("Volume (MW)")
@@ -198,11 +213,14 @@ def plot_sample_days_for_country(country_code, samples_dir):
             ax.legend(loc="upper right", frameon=True)
             plt.tight_layout()
 
-            save_file = samples_dir / f"{country_code}_sample_3days_sysdir_{lag_clean}.png"
+            save_file = (
+                samples_dir / f"{country_code}_sample_3days_sysdir_{lag_clean}.png"
+            )
             plt.savefig(save_file, dpi=200)
             plt.close(fig)
 
     print(f"Finished sample plots for {country_code}.")
+
 
 def main():
     samples_dir = Path("samples")
@@ -211,7 +229,9 @@ def main():
     x_files = sorted(PROCESSED_DIR.glob("X_*.parquet"))
     countries = [Path(f).stem.split("_")[1] for f in x_files]
 
-    print(f"Generating inference sample plots for {len(countries)} countries in 'samples/'...")
+    print(
+        f"Generating inference sample plots for {len(countries)} countries in 'samples/'..."
+    )
     for cc in countries:
         try:
             plot_sample_days_for_country(cc, samples_dir)
@@ -219,6 +239,7 @@ def main():
             print(f"Error plotting {cc}: {e}")
 
     print("\nAll sample plots generated successfully in 'samples/'!")
+
 
 if __name__ == "__main__":
     main()

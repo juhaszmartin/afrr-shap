@@ -1,7 +1,7 @@
-import sys
 import glob
 import pickle
 import re
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -32,7 +32,9 @@ def feature_groups(feature_names):
     groups = {}
     for i, name in enumerate(feature_names):
         if name in TIME_FEATURES:  # a cyclic calendar feature is its sin/cos pair
-            groups.setdefault(CYCLIC.sub("", name), []).append((i, 0, CYCLIC.sub("", name)))
+            groups.setdefault(CYCLIC.sub("", name), []).append(
+                (i, 0, CYCLIC.sub("", name))
+            )
             continue
         m = LAG_SUFFIX.search(name)
         key = (LAG_SUFFIX.sub("", name) if m else name).replace(" ", "")
@@ -59,7 +61,9 @@ def feature_category(group_name, weather_names):
 
 
 def run_shap_for_country(country_code):
-    print(f"--- Running SHAP ({len(SHAP_SEEDS)} seeds, {N_EXPLAIN} samples) for {country_code} ---")
+    print(
+        f"--- Running SHAP ({len(SHAP_SEEDS)} seeds, {N_EXPLAIN} samples) for {country_code} ---"
+    )
     x_path = PROCESSED_DIR / f"X_{country_code}.parquet"
     y_path = PROCESSED_DIR / f"y_{country_code}.parquet"
     model_paths = [Path("models") / f"nn_seed{s}_{country_code}.pt" for s in SHAP_SEEDS]
@@ -81,10 +85,20 @@ def run_shap_for_country(country_code):
     X_test_scaled = scaler_X.transform(X_df[is_test])
 
     rng = np.random.default_rng(SHAP_CONFIG["sample_seed"])
-    bg_indices = rng.choice(len(X_train_scaled), min(N_BACKGROUND, len(X_train_scaled)), replace=False)
-    test_indices = np.sort(rng.choice(len(X_test_scaled), min(N_EXPLAIN, len(X_test_scaled)), replace=False))
-    background = torch.tensor(X_train_scaled[bg_indices], dtype=torch.float32, device=device)
-    test_samples = torch.tensor(X_test_scaled[test_indices], dtype=torch.float32, device=device)
+    bg_indices = rng.choice(
+        len(X_train_scaled), min(N_BACKGROUND, len(X_train_scaled)), replace=False
+    )
+    test_indices = np.sort(
+        rng.choice(
+            len(X_test_scaled), min(N_EXPLAIN, len(X_test_scaled)), replace=False
+        )
+    )
+    background = torch.tensor(
+        X_train_scaled[bg_indices], dtype=torch.float32, device=device
+    )
+    test_samples = torch.tensor(
+        X_test_scaled[test_indices], dtype=torch.float32, device=device
+    )
 
     target_names = list(y_df.columns)
     feature_names = list(X_df.columns)
@@ -96,8 +110,12 @@ def run_shap_for_country(country_code):
         model = MultiOutputNN(len(feature_names), n_targets)
         model.load_state_dict(torch.load(path, map_location=device, weights_only=True))
         model.to(device).eval()
-        sv = shap.DeepExplainer(model, background).shap_values(test_samples, check_additivity=False)
-        sv = np.stack(sv, axis=-1) if isinstance(sv, list) else sv  # (samples, features, targets)
+        sv = shap.DeepExplainer(model, background).shap_values(
+            test_samples, check_additivity=False
+        )
+        sv = (
+            np.stack(sv, axis=-1) if isinstance(sv, list) else sv
+        )  # (samples, features, targets)
         per_seed.append(sv.astype(np.float32))
         print(f"  {path.name} done")
     per_seed = np.stack(per_seed)  # (seeds, samples, features, targets)
@@ -105,13 +123,21 @@ def run_shap_for_country(country_code):
     # Sum each feature's columns (value at t + lags + leads) into one group
     groups = feature_groups(feature_names)
     group_names = list(groups)
-    grouped = np.stack([per_seed[:, :, idx, :].sum(axis=2) for idx, _ in groups.values()], axis=2)
-    group_values = np.stack([X_test_scaled[test_indices][:, nearest] for _, nearest in groups.values()], axis=1)
+    grouped = np.stack(
+        [per_seed[:, :, idx, :].sum(axis=2) for idx, _ in groups.values()], axis=2
+    )
+    group_values = np.stack(
+        [X_test_scaled[test_indices][:, nearest] for _, nearest in groups.values()],
+        axis=1,
+    )
     # A sin/cos pair is coloured by its position in the cycle (0 = start of day/week/year, 1 = end)
     X_test_raw = X_df[is_test].to_numpy()[test_indices]
     for g, name in enumerate(group_names):
         if f"{name}_sin" in feature_names:
-            sin, cos = (X_test_raw[:, feature_names.index(f"{name}_{f}")] for f in ("sin", "cos"))
+            sin, cos = (
+                X_test_raw[:, feature_names.index(f"{name}_{f}")]
+                for f in ("sin", "cos")
+            )
             group_values[:, g] = np.mod(np.arctan2(sin, cos), 2 * np.pi) / (2 * np.pi)
     mean_grouped = grouped.mean(axis=0)  # (samples, groups, targets)
 
@@ -120,8 +146,17 @@ def run_shap_for_country(country_code):
     for old in glob.glob(str(out_dir / f"shap_raw_{country_code}_*.npy")):
         Path(old).unlink()
 
-    weather = {c for c in group_names if any(k in c for k in ("temperature", "ssrd", "wind_speed"))}
-    mean_abs = pd.DataFrame({"Feature": group_names, "Category": [feature_category(g, weather) for g in group_names]})
+    weather = {
+        c
+        for c in group_names
+        if any(k in c for k in ("temperature", "ssrd", "wind_speed"))
+    }
+    mean_abs = pd.DataFrame(
+        {
+            "Feature": group_names,
+            "Category": [feature_category(g, weather) for g in group_names],
+        }
+    )
     stability = []
     for t, target_name in enumerate(target_names):
         mean_abs[target_name] = np.abs(mean_grouped[:, :, t]).mean(axis=0)
@@ -130,22 +165,43 @@ def run_shap_for_country(country_code):
         ranks = imp.argsort(axis=1).argsort(axis=1)
         corr = np.corrcoef(ranks)
         top10 = [set(np.argsort(-imp[s])[:10]) for s in range(len(imp))]
-        stability.append({
-            "Target": target_name,
-            "rank_corr_mean": corr[np.triu_indices(len(imp), 1)].mean(),
-            "top10_overlap_mean": np.mean([len(a & b) / 10 for i, a in enumerate(top10) for b in top10[i + 1:]]),
-        })
-        safe_target_name = "".join(c for c in target_name if c.isalnum() or c in (' ', '_')).rstrip().replace(" ", "_")
-        np.save(out_dir / f"shap_raw_{country_code}_{safe_target_name}.npy", mean_grouped[:, :, t])
+        stability.append(
+            {
+                "Target": target_name,
+                "rank_corr_mean": corr[np.triu_indices(len(imp), 1)].mean(),
+                "top10_overlap_mean": np.mean(
+                    [
+                        len(a & b) / 10
+                        for i, a in enumerate(top10)
+                        for b in top10[i + 1 :]
+                    ]
+                ),
+            }
+        )
+        safe_target_name = (
+            "".join(c for c in target_name if c.isalnum() or c in (" ", "_"))
+            .rstrip()
+            .replace(" ", "_")
+        )
+        np.save(
+            out_dir / f"shap_raw_{country_code}_{safe_target_name}.npy",
+            mean_grouped[:, :, t],
+        )
 
     np.save(out_dir / f"shap_test_features_{country_code}.npy", group_values)
     with open(out_dir / f"shap_feature_names_{country_code}.txt", "w") as f:
         f.write("\n".join(group_names))
     mean_abs.to_csv(out_dir / f"shap_mean_abs_{country_code}.csv", index=False)
-    mean_abs.drop(columns="Feature").groupby("Category").sum().to_csv(out_dir / f"shap_category_{country_code}.csv")
-    pd.DataFrame(stability).to_csv(out_dir / f"shap_stability_{country_code}.csv", index=False)
-    print(f"Saved SHAP for {country_code}: {len(feature_names)} columns in {len(group_names)} groups, "
-          f"seed rank agreement {np.mean([s['rank_corr_mean'] for s in stability]):.2f}")
+    mean_abs.drop(columns="Feature").groupby("Category").sum().to_csv(
+        out_dir / f"shap_category_{country_code}.csv"
+    )
+    pd.DataFrame(stability).to_csv(
+        out_dir / f"shap_stability_{country_code}.csv", index=False
+    )
+    print(
+        f"Saved SHAP for {country_code}: {len(feature_names)} columns in {len(group_names)} groups, "
+        f"seed rank agreement {np.mean([s['rank_corr_mean'] for s in stability]):.2f}"
+    )
 
 
 if __name__ == "__main__":

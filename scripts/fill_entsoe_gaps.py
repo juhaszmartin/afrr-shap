@@ -11,6 +11,7 @@ absent from data.parquet, so existing values always win. Needs ENTSOE_API_KEY in
 import ast
 import functools
 import glob
+import itertools
 import json
 import os
 import random
@@ -25,12 +26,13 @@ import pandas as pd
 import polars as pl
 from entsoe import EntsoePandasClient
 from entsoe.exceptions import NoMatchingDataError
+from preprocess_all import CUTOFF_YEARS, HOURLY_COUNTRIES
 
 from afrr_shap.env import load_env
+from afrr_shap.paths import ENTSOE_DIR
 
 warnings.filterwarnings("ignore")
 load_env()
-ROOT = Path(__file__).resolve().parents[1]
 
 
 @functools.cache
@@ -40,10 +42,6 @@ def client():
         api_key=os.environ["ENTSOE_API_KEY"], retry_count=5, retry_delay=10
     )
 
-
-sys.path.insert(0, str(ROOT / "scripts"))
-from preprocess_all import CUTOFF_YEARS, HOURLY_COUNTRIES  # noqa: E402
-from afrr_shap.paths import ENTSOE_DIR
 
 START, END = pd.Timestamp("2019-01-01", tz="UTC"), pd.Timestamp("2026-01-01", tz="UTC")
 GAP = pd.Timedelta(hours=2)  # holes shorter than this are resolution/DST artefacts
@@ -149,7 +147,7 @@ def read_existing(files):
     out = []
     for f in files:
         df = pl.read_parquet(f).to_pandas()
-        ts = [c for c in df.columns if "timestamp" in c][0]
+        ts = next(c for c in df.columns if "timestamp" in c)
         df = df.rename(columns={ts: "timestamp"})
         df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
         out.append(df)
@@ -205,7 +203,7 @@ def find_holes(ts, start):
     ts = pd.DatetimeIndex(sorted(set(ts)))
     edges = [start] + list(ts) + [END]
     holes = []
-    for a, b in zip(edges[:-1], edges[1:]):
+    for a, b in itertools.pairwise(edges):
         if b - a > GAP:
             lo = (
                 a

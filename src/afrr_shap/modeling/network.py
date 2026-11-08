@@ -1,6 +1,6 @@
 """Neural-network architectures used by the forecasting pipeline."""
 
-import torch.nn as nn
+from torch import nn
 
 
 class MultiOutputNN(nn.Module):
