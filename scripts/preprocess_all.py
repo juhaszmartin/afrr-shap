@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import numpy as np
 from afrr_shap.config import DEFAULT_CONFIG, TEST_START, TIME_FEATURES
-from afrr_shap.paths import ENTSOE_DIR, PROCESSED_DIR, WEATHER_DIR
+from afrr_shap.paths import ENTSOE_DIR, FX_RATES_PATH, PROCESSED_DIR, WEATHER_DIR
 
 # Mapping from Country Code to ERA5 Country Name
 CC_TO_NAME = {
@@ -57,7 +57,7 @@ BAD_DATA = {
 }
 
 # ENTSO-E passes prices through in the TSO's reporting currency. These series are converted
-# to EUR with the ECB daily reference rate (fx_data/ecb_eur_rates.csv, see get_fx_rates.py).
+# to EUR with the ECB daily reference rate (data/reference/ecb_eur_rates.csv, see get_fx_rates.py).
 # category -> (currency, UTC instant from which the series is already published in EUR, or None)
 LOCAL_CURRENCY = {
     "HU": {"imbalance_prices": ("HUF", None), "activated_balancing_energy_prices": ("HUF", None),
@@ -86,7 +86,7 @@ def convert_to_eur(df_cat, cat, country_code):
 
     global _fx_rates
     if _fx_rates is None:
-        _fx_rates = pl.read_csv("fx_data/ecb_eur_rates.csv", try_parse_dates=True)
+        _fx_rates = pl.read_csv(FX_RATES_PATH, try_parse_dates=True)
 
     df_cat = df_cat.with_columns(pl.col("timestamp").dt.convert_time_zone("UTC")).sort("timestamp")
     rates = (

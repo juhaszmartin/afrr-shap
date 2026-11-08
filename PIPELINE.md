@@ -23,7 +23,7 @@ For each European country in the data, forecast the imbalance price (Long and Sh
 Run everything from the repository root with the project venv.
 
 **One-off data steps.** These only need rerunning to extend or repair the data.
-1. `scripts/get_fx_rates.py` downloads ECB daily euro reference rates into `fx_data/ecb_eur_rates.csv`.
+1. `scripts/get_fx_rates.py` downloads ECB daily euro reference rates into `data/reference/ecb_eur_rates.csv`.
 2. `scripts/fill_entsoe_gaps.py` (needs `ENTSOE_API_KEY` in `.env`), see §3.1:
    - `fill [CC,..] [category,..]` downloads every gap in the raw ENTSO-E data from the API;
    - `verify [CC,..] [category,..]` compares 3 random stored days per series against the API;

@@ -2,9 +2,10 @@
 for the currencies some TSOs report ENTSO-E prices in."""
 import io
 import urllib.request
-from pathlib import Path
 
 import polars as pl
+
+from afrr_shap.paths import FX_RATES_PATH
 
 CURRENCIES = ["HUF", "PLN", "RON", "HRK"]
 START, END = "2018-12-01", "2025-12-31"
@@ -22,6 +23,5 @@ if __name__ == "__main__":
         ))
         print(f"{cur}: {df.height} daily rates")
 
-    out = Path("fx_data")
-    out.mkdir(exist_ok=True)
-    pl.concat(frames).sort("currency", "date").write_csv(out / "ecb_eur_rates.csv")
+    FX_RATES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    pl.concat(frames).sort("currency", "date").write_csv(FX_RATES_PATH)

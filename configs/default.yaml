@@ -4,6 +4,7 @@ data:
   raw_dir: data/raw
   interim_dir: data/interim
   processed_dir: data/processed
+  reference_dir: data/reference
   test_start: "2025-01-01T00:00:00+00:00"
 
 preprocessing:
