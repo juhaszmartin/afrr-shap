@@ -7,7 +7,9 @@
 Original data.parquet files are never modified. Rows are only filled for timestamps that are
 absent from data.parquet, so existing values always win. Needs ENTSOE_API_KEY in .env.
 """
+
 import ast
+import functools
 import glob
 import json
 import os
@@ -21,22 +23,31 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import polars as pl
-from dotenv import load_dotenv
 from entsoe import EntsoePandasClient
 from entsoe.exceptions import NoMatchingDataError
 
+from afrr_shap.env import load_env
+
 warnings.filterwarnings("ignore")
+load_env()
 ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(ROOT / ".env")
-client = EntsoePandasClient(api_key=os.environ["ENTSOE_API_KEY"], retry_count=5, retry_delay=10)
+
+
+@functools.cache
+def client():
+    """ENTSO-E client, built on first use; needs ENTSOE_API_KEY in .env."""
+    return EntsoePandasClient(
+        api_key=os.environ["ENTSOE_API_KEY"], retry_count=5, retry_delay=10
+    )
+
 
 sys.path.insert(0, str(ROOT / "scripts"))
 from preprocess_all import CUTOFF_YEARS, HOURLY_COUNTRIES  # noqa: E402
 from afrr_shap.paths import ENTSOE_DIR
 
 START, END = pd.Timestamp("2019-01-01", tz="UTC"), pd.Timestamp("2026-01-01", tz="UTC")
-GAP = pd.Timedelta(hours=2)          # holes shorter than this are resolution/DST artefacts
-MERGE = pd.Timedelta(days=3)         # neighbouring holes are fetched in one request
+GAP = pd.Timedelta(hours=2)  # holes shorter than this are resolution/DST artefacts
+MERGE = pd.Timedelta(days=3)  # neighbouring holes are fetched in one request
 LOG = ENTSOE_DIR / "fill_log.json"
 
 # Germany is split into control areas for balancing data and uses the DE_LU bidding zone for markets
@@ -49,7 +60,9 @@ def _de_volume(s, e):
     parts = []
     for a in DE_AREAS:
         try:
-            parts.append(client.query_imbalance_volumes(a, start=s, end=e).squeeze().rename(a))
+            parts.append(
+                client().query_imbalance_volumes(a, start=s, end=e).squeeze().rename(a)
+            )
         except NoMatchingDataError:
             pass
     if not parts:
@@ -62,29 +75,52 @@ def _de_balancing(s, e):
     parts = []
     for a in DE_AREAS:
         try:
-            parts.append(client.query_activated_balancing_energy_prices(a, start=s, end=e))
+            parts.append(
+                client().query_activated_balancing_energy_prices(a, start=s, end=e)
+            )
         except NoMatchingDataError:
             pass
     if not parts:
         raise NoMatchingDataError
     df = pd.concat(parts).reset_index(names="timestamp")
-    return df.groupby(["timestamp", "ReserveType", "Direction"], as_index=False)["Price"].mean().set_index("timestamp")
+    return (
+        df.groupby(["timestamp", "ReserveType", "Direction"], as_index=False)["Price"]
+        .mean()
+        .set_index("timestamp")
+    )
 
 
 QUERIES = {
-    "imbalance_prices": lambda cc, s, e: client.query_imbalance_prices(cc, start=s, end=e),
-    "imbalance_volumes": lambda cc, s, e: _de_volume(s, e) if cc == "DE" else client.query_imbalance_volumes(cc, start=s, end=e),
-    "activated_balancing_energy_prices": lambda cc, s, e: _de_balancing(s, e) if cc == "DE"
-        else client.query_activated_balancing_energy_prices(cc, start=s, end=e),
-    "prices": lambda cc, s, e: client.query_day_ahead_prices(cc, start=s, end=e),
-    "load": lambda cc, s, e: client.query_load(cc, start=s, end=e),
-    "load_forecast": lambda cc, s, e: client.query_load_forecast(cc, start=s, end=e),
-    "generation": lambda cc, s, e: client.query_generation(cc, start=s, end=e),
-    "generation_forecast": lambda cc, s, e: client.query_generation_forecast(cc, start=s, end=e),
-    "wind_and_solar_forecast": lambda cc, s, e: client.query_wind_and_solar_forecast(cc, start=s, end=e),
-    "intraday_wind_and_solar_forecast": lambda cc, s, e: client.query_intraday_wind_and_solar_forecast(cc, start=s, end=e),
-    "import": lambda cc, s, e: client.query_import(cc, start=s, end=e),
-    "net_position": lambda cc, s, e: client.query_net_position(cc, start=s, end=e, dayahead=True),
+    "imbalance_prices": lambda cc, s, e: client().query_imbalance_prices(
+        cc, start=s, end=e
+    ),
+    "imbalance_volumes": lambda cc, s, e: (
+        _de_volume(s, e)
+        if cc == "DE"
+        else client().query_imbalance_volumes(cc, start=s, end=e)
+    ),
+    "activated_balancing_energy_prices": lambda cc, s, e: (
+        _de_balancing(s, e)
+        if cc == "DE"
+        else client().query_activated_balancing_energy_prices(cc, start=s, end=e)
+    ),
+    "prices": lambda cc, s, e: client().query_day_ahead_prices(cc, start=s, end=e),
+    "load": lambda cc, s, e: client().query_load(cc, start=s, end=e),
+    "load_forecast": lambda cc, s, e: client().query_load_forecast(cc, start=s, end=e),
+    "generation": lambda cc, s, e: client().query_generation(cc, start=s, end=e),
+    "generation_forecast": lambda cc, s, e: client().query_generation_forecast(
+        cc, start=s, end=e
+    ),
+    "wind_and_solar_forecast": lambda cc, s, e: client().query_wind_and_solar_forecast(
+        cc, start=s, end=e
+    ),
+    "intraday_wind_and_solar_forecast": lambda cc, s, e: (
+        client().query_intraday_wind_and_solar_forecast(cc, start=s, end=e)
+    ),
+    "import": lambda cc, s, e: client().query_import(cc, start=s, end=e),
+    "net_position": lambda cc, s, e: client().query_net_position(
+        cc, start=s, end=e, dayahead=True
+    ),
 }
 LONG_FORMAT = {"activated_balancing_energy_prices"}  # several rows per timestamp
 
@@ -95,11 +131,17 @@ def norm(name):
         name = ast.literal_eval(name)
     if isinstance(name, tuple):
         name = " - ".join(str(x) for x in name if x)
-    return name.replace("pondage", "poundage").replace(" - Actual Aggregated", "").strip()
+    return (
+        name.replace("pondage", "poundage").replace(" - Actual Aggregated", "").strip()
+    )
 
 
 def existing_files(cat, cc, name="data"):
-    return sorted(glob.glob(str(ENTSOE_DIR / cat / f"country={cc}" / "year=*" / f"{name}.parquet")))
+    return sorted(
+        glob.glob(
+            str(ENTSOE_DIR / cat / f"country={cc}" / "year=*" / f"{name}.parquet")
+        )
+    )
 
 
 def read_existing(files):
@@ -111,21 +153,42 @@ def read_existing(files):
         df = df.rename(columns={ts: "timestamp"})
         df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
         out.append(df)
-    return pd.concat(out, ignore_index=True) if out else pd.DataFrame({"timestamp": pd.to_datetime([], utc=True)})
+    return (
+        pd.concat(out, ignore_index=True)
+        if out
+        else pd.DataFrame({"timestamp": pd.to_datetime([], utc=True)})
+    )
 
 
 def to_frame(res, cat, existing_cols):
     """API result -> DataFrame with UTC 'timestamp' and column names matching the existing files."""
     if isinstance(res, pd.Series):
         data = [c for c in existing_cols if c != "timestamp"]
-        name = data[0] if len(data) == 1 else ("Scheduled Aggregated" if cat == "generation_forecast" and "Scheduled Aggregated" in data else "value")
+        name = (
+            data[0]
+            if len(data) == 1
+            else (
+                "Scheduled Aggregated"
+                if cat == "generation_forecast" and "Scheduled Aggregated" in data
+                else "value"
+            )
+        )
         res = res.rename(name).to_frame()
     res = res.copy()
     res.columns = [str(c) if isinstance(c, tuple) else c for c in res.columns]
     res.index = pd.to_datetime(res.index, utc=True)
-    res = res.reset_index(names="timestamp") if "timestamp" not in res.columns else res.reset_index(drop=True)
+    res = (
+        res.reset_index(names="timestamp")
+        if "timestamp" not in res.columns
+        else res.reset_index(drop=True)
+    )
     if cat == "generation_forecast":
-        res = res.rename(columns={"Actual Aggregated": "Scheduled Aggregated", "Actual Consumption": "Scheduled Consumption"})
+        res = res.rename(
+            columns={
+                "Actual Aggregated": "Scheduled Aggregated",
+                "Actual Consumption": "Scheduled Consumption",
+            }
+        )
     if cat == "imbalance_volumes":
         res = res.rename(columns={c: "value" for c in res.columns if c != "timestamp"})
     by_norm = {norm(c): c for c in existing_cols if c != "timestamp"}
@@ -144,7 +207,11 @@ def find_holes(ts, start):
     holes = []
     for a, b in zip(edges[:-1], edges[1:]):
         if b - a > GAP:
-            lo = a if a == start and (len(ts) == 0 or a < ts[0]) else a + pd.Timedelta(minutes=15)
+            lo = (
+                a
+                if a == start and (len(ts) == 0 or a < ts[0])
+                else a + pd.Timedelta(minutes=15)
+            )
             holes.append([lo, b])
     merged = []
     for h in holes:
@@ -162,14 +229,24 @@ def find_holes(ts, start):
 
 
 def fill_series(cc, cat):
-    start = pd.Timestamp(f"{CUTOFF_YEARS.get(cc, 2019) if cc not in HOURLY_COUNTRIES else 2019}-01-01", tz="UTC")
+    start = pd.Timestamp(
+        f"{CUTOFF_YEARS.get(cc, 2019) if cc not in HOURLY_COUNTRIES else 2019}-01-01",
+        tz="UTC",
+    )
     files = existing_files(cat, cc)
     have = read_existing(files)
     have = have[have["timestamp"] >= start]
-    filled = read_existing(existing_files(cat, cc, "fill"))  # rows added by an earlier run
+    filled = read_existing(
+        existing_files(cat, cc, "fill")
+    )  # rows added by an earlier run
     known = set(have["timestamp"]) | set(filled["timestamp"])
     holes = find_holes(list(known), start)
-    rep = {"holes": len(holes), "hours_missing": round(sum((b - a).total_seconds() for a, b in holes) / 3600), "filled_rows": 0, "unavailable": []}
+    rep = {
+        "holes": len(holes),
+        "hours_missing": round(sum((b - a).total_seconds() for a, b in holes) / 3600),
+        "filled_rows": 0,
+        "unavailable": [],
+    }
     new_by_year = {}
     for lo, hi in holes:
         try:
@@ -178,18 +255,30 @@ def fill_series(cc, cat):
             rep["unavailable"].append([str(lo), str(hi)])
             continue
         except Exception as ex:  # noqa: BLE001 - keep going, but record it
-            rep["unavailable"].append([str(lo), str(hi), f"{type(ex).__name__}: {str(ex)[:120]}"])
+            rep["unavailable"].append(
+                [str(lo), str(hi), f"{type(ex).__name__}: {str(ex)[:120]}"]
+            )
             continue
         df = to_frame(res, cat, list(have.columns))
-        df = df[(df["timestamp"] >= lo) & (df["timestamp"] < hi) & ~df["timestamp"].isin(known)]
+        df = df[
+            (df["timestamp"] >= lo)
+            & (df["timestamp"] < hi)
+            & ~df["timestamp"].isin(known)
+        ]
         if df.empty:
             rep["unavailable"].append([str(lo), str(hi), "no new rows"])
             continue
         for yr, part in df.groupby(df["timestamp"].dt.year):
             new_by_year.setdefault(yr, []).append(part)
     for yr, parts in new_by_year.items():
-        df = pd.concat([filled[filled["timestamp"].dt.year == yr]] + parts, ignore_index=True)
-        key = ["timestamp", "ReserveType", "Direction"] if cat in LONG_FORMAT else ["timestamp"]
+        df = pd.concat(
+            [filled[filled["timestamp"].dt.year == yr]] + parts, ignore_index=True
+        )
+        key = (
+            ["timestamp", "ReserveType", "Direction"]
+            if cat in LONG_FORMAT
+            else ["timestamp"]
+        )
         df = df.drop_duplicates(subset=key).sort_values("timestamp")
         out = ENTSOE_DIR / cat / f"country={cc}" / f"year={yr}"
         out.mkdir(parents=True, exist_ok=True)
@@ -202,9 +291,14 @@ def refresh_year(cc, cat, year):
     """Replaces one stored year with the current API version, for series the TSO revised after download.
     The originals are kept as data.parquet.bak / fill.parquet.bak, which the loaders do not read."""
     out = ENTSOE_DIR / cat / f"country={cc}" / f"year={year}"
-    lo, hi = pd.Timestamp(f"{year}-01-01", tz="UTC"), pd.Timestamp(f"{year + 1}-01-01", tz="UTC")
+    lo, hi = (
+        pd.Timestamp(f"{year}-01-01", tz="UTC"),
+        pd.Timestamp(f"{year + 1}-01-01", tz="UTC"),
+    )
     have = read_existing(existing_files(cat, cc))
-    df = to_frame(QUERIES[cat](AREA.get(cc, {}).get(cat, cc), lo, hi), cat, list(have.columns))
+    df = to_frame(
+        QUERIES[cat](AREA.get(cc, {}).get(cat, cc), lo, hi), cat, list(have.columns)
+    )
     df = df[(df["timestamp"] >= lo) & (df["timestamp"] < hi)].sort_values("timestamp")
     for name in ("data", "fill"):
         f = out / f"{name}.parquet"
@@ -225,20 +319,35 @@ def verify_series(cc, cat, n_days=3, seed=0):
     rep = {"days": [], "cells": 0, "equal": 0, "examples": []}
     for d in rng.sample(days, min(n_days, len(days))):
         try:
-            res = QUERIES[cat](AREA.get(cc, {}).get(cat, cc), d, d + pd.Timedelta(days=1))
+            res = QUERIES[cat](
+                AREA.get(cc, {}).get(cat, cc), d, d + pd.Timedelta(days=1)
+            )
         except Exception as ex:  # noqa: BLE001
             rep["days"].append([str(d.date()), f"{type(ex).__name__}"])
             continue
         new = to_frame(res, cat, list(have.columns))
-        old = have[(have["timestamp"] >= d) & (have["timestamp"] < d + pd.Timedelta(days=1))]
-        key = ["timestamp", "ReserveType", "Direction"] if cat in LONG_FORMAT else ["timestamp"]
+        old = have[
+            (have["timestamp"] >= d) & (have["timestamp"] < d + pd.Timedelta(days=1))
+        ]
+        key = (
+            ["timestamp", "ReserveType", "Direction"]
+            if cat in LONG_FORMAT
+            else ["timestamp"]
+        )
         m = old.merge(new, on=key, suffixes=("_old", "_new"))
-        cols = [c[:-4] for c in m.columns if c.endswith("_old") and c[:-4] + "_new" in m.columns]
+        cols = [
+            c[:-4]
+            for c in m.columns
+            if c.endswith("_old") and c[:-4] + "_new" in m.columns
+        ]
         if cat in LONG_FORMAT:
             cols = ["Price"]
         n_eq = n = 0
         for c in cols:
-            a, b = pd.to_numeric(m[f"{c}_old"], errors="coerce"), pd.to_numeric(m[f"{c}_new"], errors="coerce")
+            a, b = (
+                pd.to_numeric(m[f"{c}_old"], errors="coerce"),
+                pd.to_numeric(m[f"{c}_new"], errors="coerce"),
+            )
             both = a.notna() & b.notna()
             eq = (np.abs(a - b) <= 1e-3 + 1e-6 * np.abs(a)) | (a.isna() & b.isna())
             n += int((both | a.isna() | b.isna()).sum())
@@ -266,7 +375,10 @@ def run(job, countries=None, cats=None, workers=8):
             r = (fill_series if job == "fill" else verify_series)(*t)
         except Exception as ex:  # noqa: BLE001 - one broken series must not stop the run
             r = {"error": f"{type(ex).__name__}: {str(ex)[:200]}"}
-        print(f"{t[0]} {t[1]}: {json.dumps(r)[:300]} ({time.time() - t0:.0f}s)", flush=True)
+        print(
+            f"{t[0]} {t[1]}: {json.dumps(r)[:300]} ({time.time() - t0:.0f}s)",
+            flush=True,
+        )
         return t, r
 
     with ThreadPoolExecutor(workers) as ex:
@@ -283,8 +395,14 @@ def run(job, countries=None, cats=None, workers=8):
 
 
 if __name__ == "__main__":
+    if not os.environ.get("ENTSOE_API_KEY"):
+        sys.exit("missing ENTSOE_API_KEY: add it to .env (see README)")
     args = sys.argv[1:] + [None] * 3
     if args[0] == "refresh":  # python scripts/fill_entsoe_gaps.py refresh BA load 2025
         print(refresh_year(args[1], args[2], int(args[3])))
         sys.exit()
-    run(args[0] or "fill", args[1] and args[1].split(","), args[2] and args[2].split(","))
+    run(
+        args[0] or "fill",
+        args[1] and args[1].split(","),
+        args[2] and args[2].split(","),
+    )

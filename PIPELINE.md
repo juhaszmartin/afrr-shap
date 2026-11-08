@@ -28,7 +28,7 @@ Run everything from the repository root with the project venv.
    - `fill [CC,..] [category,..]` downloads every gap in the raw ENTSO-E data from the API;
    - `verify [CC,..] [category,..]` compares 3 random stored days per series against the API;
    - `refresh CC category YEAR` replaces one stored year with the current API version.
-3. `scripts/era5_download.py` (needs a CDS key in `~/.cdsapirc`) downloads ERA5 and writes `data/raw/weather/` (§3). Without arguments it handles every country whose CSVs are missing; `era5_download.py germany,france` rebuilds the named countries.
+3. `scripts/era5_download.py` (needs `CDSAPI_URL` and `CDSAPI_KEY` in `.env`) downloads ERA5 and writes `data/raw/weather/` (§3). Without arguments it handles every country whose CSVs are missing; `era5_download.py germany,france` rebuilds the named countries.
 
 Package versions are pinned in `requirements.txt` (Python 3.14.6). Superseded scripts and notebooks are in `legacy/`.
 

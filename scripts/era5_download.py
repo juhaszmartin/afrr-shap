@@ -6,22 +6,23 @@ per region and 4 months (the CDS limit is 121k fields = variables x days x hours
 region, from which each country's box is cropped locally. The crop reproduces the per-country downloads of the
 original notebook (legacy/era5_eu.ipynb) to float32 precision (checked for BE and CH).
 
-Needs a CDS key in ~/.cdsapirc.
+Needs CDSAPI_URL and CDSAPI_KEY in .env.
     python scripts/era5_download.py                    # every country whose CSVs are missing from data/raw/weather/
     python scripts/era5_download.py germany,france     # these countries (re-download only what is not in data/interim/era5_raw/)
 """
 
+import os
 import sys
 import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
 
 import cdsapi
 import numpy as np
 import pandas as pd
 import xarray as xr
 
+from afrr_shap.env import load_env
 from afrr_shap.paths import ERA5_RAW_DIR, WEATHER_DIR
 
 # Bounding boxes [North, West, South, East], mainland only, grouped into download regions
@@ -210,6 +211,11 @@ def process(countries):
 
 
 if __name__ == "__main__":
+    load_env()
+    if not os.environ.get("CDSAPI_KEY"):
+        sys.exit(
+            "missing CDSAPI_KEY: add CDSAPI_URL and CDSAPI_KEY to .env (see README)"
+        )
     if len(sys.argv) > 1:
         countries = sys.argv[1].split(",")
         unknown = set(countries) - set(COUNTRIES)

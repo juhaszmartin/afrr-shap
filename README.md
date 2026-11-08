@@ -28,10 +28,10 @@ The raw data is **not in the repository** (`data/raw/entsoe/` is about 570 MB, `
 | Source | Folder | Script | Credentials |
 |---|---|---|---|
 | ENTSO-E Transparency Platform | `data/raw/entsoe/` | `scripts/fill_entsoe_gaps.py` fills and checks the stored files | `ENTSOE_API_KEY=...` in `.env` |
-| ERA5 reanalysis (Copernicus CDS) | `data/raw/weather/` | `scripts/era5_download.py` | CDS key in `~/.cdsapirc` |
+| ERA5 reanalysis (Copernicus CDS) | `data/raw/weather/` | `scripts/era5_download.py` | `CDSAPI_URL=...` and `CDSAPI_KEY=...` in `.env` |
 | ECB euro reference rates | `data/reference/ecb_eur_rates.csv` (in the repo) | `scripts/get_fx_rates.py` | none |
 
-`.env` is gitignored; never commit it. The script that made the original bulk ENTSO-E download is not part of the repository. `fill_entsoe_gaps.py` only adds missing timestamps to existing files and replaces single years (`refresh`), see PIPELINE.md §3.1.
+`.env` is gitignored; never commit it. Copy `.env.example` to `.env` and fill in the keys from the table; the download scripts load it themselves, so no shell setup is needed. The script that made the original bulk ENTSO-E download is not part of the repository. `fill_entsoe_gaps.py` only adds missing timestamps to existing files and replaces single years (`refresh`), see PIPELINE.md §3.1.
 
 ## Layout
 
