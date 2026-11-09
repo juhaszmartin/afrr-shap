@@ -7,7 +7,7 @@ from pathlib import Path
 
 import polars as pl
 
-from afrr_shap.config import TIME_FEATURES
+from afrr_shap.config import TEST_START, TIME_FEATURES
 from afrr_shap.paths import PROCESSED_DIR
 
 LAG_SUFFIX = re.compile(r"_t[+-]\d+(min|h)$")
@@ -56,13 +56,46 @@ if __name__ == "__main__":
     data = {}
     for f in sorted(PROCESSED_DIR.glob("X_*.parquet")):
         cc = Path(f).stem.split("_")[1]
+        timestamps = pl.read_parquet(f, columns=["timestamp"])["timestamp"]
+        has_training_data = timestamps.lt(TEST_START).any()
+        has_test_data = timestamps.ge(TEST_START).any()
+        if has_training_data and has_test_data:
+            status = "usable"
+        elif has_test_data:
+            status = "excluded: no training data"
+        elif has_training_data:
+            status = "excluded: no test data"
+        else:
+            status = "excluded: empty processed data"
         data[cc] = (
             series_by_category(pl.read_parquet_schema(f)),
             [c for c in pl.read_parquet_schema(PROCESSED_DIR / f"y_{cc}.parquet")],
+            {
+                "rows": timestamps.len(),
+                "first": timestamps.min(),
+                "last": timestamps.max(),
+                "has_training": has_training_data,
+                "has_test": has_test_data,
+                "status": status,
+            },
         )
     countries = list(data)
-    cats = [c for c in CATEGORIES if any(c in d for d, _ in data.values())]
-    cats += sorted({c for d, _ in data.values() for c in d} - set(cats))
+    eligible_countries = [
+        cc for cc in countries if data[cc][2]["status"] == "usable"
+    ]
+    cats = [
+        c
+        for c in CATEGORIES
+        if any(c in data[cc][0] for cc in eligible_countries)
+    ]
+    cats += sorted(
+        {
+            c
+            for cc in eligible_countries
+            for c in data[cc][0]
+        }
+        - set(cats)
+    )
 
     lines = [
         "# Input series per country\n\n",
@@ -71,19 +104,39 @@ if __name__ == "__main__":
             "series that survive the column filters (PIPELINE.md §4). Each series enters the model at t and with its "
             "lags and leads (PIPELINE.md §5). Calendar sin/cos pairs count as one series.\n\n"
         ),
-        "## Number of series\n\n",
-        "| Category | " + " | ".join(countries) + " |\n",
-        "|---|" + "---|" * len(countries) + "\n",
+        "## Data availability\n\n",
+        "| Country | Processed samples | First timestamp | Last timestamp | Training data | 2025 test data | Status |\n",
+        "|---|---:|---|---|---|---|---|\n",
     ]
+    for cc in countries:
+        availability = data[cc][2]
+        lines.append(
+            f"| {cc} | {availability['rows']} | {availability['first']} | "
+            f"{availability['last']} | "
+            f"{'yes' if availability['has_training'] else 'no'} | "
+            f"{'yes' if availability['has_test'] else 'no'} | "
+            f"{availability['status']} |\n"
+        )
+    lines.extend(
+        [
+            "\n",
+            "## Number of series\n\n",
+            "| Category | " + " | ".join(eligible_countries) + " |\n",
+            "|---|" + "---|" * len(eligible_countries) + "\n",
+        ]
+    )
     for cat in cats:
         lines.append(
             f"| {cat} | "
-            + " | ".join(str(len(data[cc][0].get(cat, ()))) or "0" for cc in countries)
+            + " | ".join(
+                str(len(data[cc][0].get(cat, ()))) or "0"
+                for cc in eligible_countries
+            )
             + " |\n"
         )
     lines.append("\n")
-    for cc in countries:
-        series, targets = data[cc]
+    for cc in eligible_countries:
+        series, targets, _ = data[cc]
         lines.append(f"## {cc}\n\n")
         lines.append(f"Targets: {', '.join(f'`{t}`' for t in targets)}\n\n")
         for cat in cats:
