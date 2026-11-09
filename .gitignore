@@ -211,7 +211,7 @@ __marimo__/
 data/raw/
 data/interim/
 data/processed/
-
+legacy/
 *.pt
 *.pkl
 models/
