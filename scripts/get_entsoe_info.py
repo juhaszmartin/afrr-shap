@@ -52,6 +52,11 @@ def series_by_category(columns):
     return out
 
 
+def format_timestamp(value):
+    """Format UTC timestamps without repeating the timezone in every cell."""
+    return "-" if value is None else value.replace(tzinfo=None).isoformat(sep=" ")
+
+
 if __name__ == "__main__":
     data = {}
     for f in sorted(PROCESSED_DIR.glob("X_*.parquet")):
@@ -105,14 +110,15 @@ if __name__ == "__main__":
             "lags and leads (PIPELINE.md §5). Calendar sin/cos pairs count as one series.\n\n"
         ),
         "## Data availability\n\n",
-        "| Country | Processed samples | First timestamp | Last timestamp | Training data | 2025 test data | Status |\n",
+        "| Country | Processed samples | First timestamp (UTC) | Last timestamp (UTC) | Training data | 2025 test data | Status |\n",
         "|---|---:|---|---|---|---|---|\n",
     ]
     for cc in countries:
         availability = data[cc][2]
         lines.append(
-            f"| {cc} | {availability['rows']} | {availability['first']} | "
-            f"{availability['last']} | "
+            f"| {cc} | {availability['rows']} | "
+            f"{format_timestamp(availability['first'])} | "
+            f"{format_timestamp(availability['last'])} | "
             f"{'yes' if availability['has_training'] else 'no'} | "
             f"{'yes' if availability['has_test'] else 'no'} | "
             f"{availability['status']} |\n"
