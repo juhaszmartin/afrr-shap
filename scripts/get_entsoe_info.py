@@ -54,7 +54,7 @@ def series_by_category(columns):
 
 def format_timestamp(value):
     """Format UTC timestamps without repeating the timezone in every cell."""
-    return "-" if value is None else value.replace(tzinfo=None).isoformat(sep=" ")
+    return "-" if value is None else value.replace(tzinfo=None).strftime("%Y-%m-%d %H:%M")
 
 
 if __name__ == "__main__":
