@@ -4,7 +4,7 @@ of 2m temperature, SSRD and 10m/100m wind speed over a lat/lon box per country.
 The CDS queue, not the data volume, is the bottleneck. Neighbouring countries therefore share a region: one request
 per region and 4 months (the CDS limit is 121k fields = variables x days x hours) over a box covering the whole
 region, from which each country's box is cropped locally. The crop reproduces the per-country downloads of the
-original notebook (legacy/era5_eu.ipynb) to float32 precision (checked for BE and CH).
+original notebook (legacy/notebooks/era5_eu.ipynb) to float32 precision (checked for BE and CH).
 
 Needs CDSAPI_URL and CDSAPI_KEY in .env.
     python scripts/era5_download.py                    # every country whose CSVs are missing from data/raw/weather/

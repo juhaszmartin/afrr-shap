@@ -46,8 +46,8 @@ def get_lag_groups(feature_names):
 
 def analyze_country(country_code):
     print(f"--- Running SHAP for {country_code} ---")
-    x_path = Path("processed_data") / f"X_{country_code}.parquet"
-    y_path = Path("processed_data") / f"y_{country_code}.parquet"
+    x_path = Path("data/processed") / f"X_{country_code}.parquet"
+    y_path = Path("data/processed") / f"y_{country_code}.parquet"
     model_path = Path("models") / f"nn_{country_code}.pt"
     scaler_X_path = Path("models") / f"scaler_X_{country_code}.pkl"
     scaler_y_path = Path("models") / f"scaler_y_{country_code}.pkl"
@@ -121,7 +121,7 @@ def analyze_country(country_code):
         plt.close()
 
 if __name__ == "__main__":
-    x_files = glob.glob("processed_data/X_*.parquet")
+    x_files = glob.glob("data/processed/X_*.parquet")
     countries = [Path(f).stem.split("_")[1] for f in x_files]
     
     for cc in countries:
