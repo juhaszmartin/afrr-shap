@@ -25,9 +25,18 @@ Run everything from the repository root with the project venv.
 **One-off data steps.** These only need rerunning to extend or repair the data.
 1. `scripts/get_fx_rates.py` downloads ECB daily euro reference rates into `data/reference/ecb_eur_rates.csv`.
 2. `scripts/fill_entsoe_gaps.py` (needs `ENTSOE_API_KEY` in `.env`), see §3.1:
-   - `fill [CC,..] [category,..]` downloads every gap in the raw ENTSO-E data from the API;
-   - `verify [CC,..] [category,..]` compares 3 random stored days per series against the API;
-   - `refresh CC category YEAR` replaces one stored year with the current API version.
+   - `fill` downloads every gap in the raw ENTSO-E data from the API;
+   - `verify` compares 3 random stored days per series against the API;
+   - `refresh --country CC --category CATEGORY --year YEAR` replaces one stored year with the current API version.
+
+   `fill` and `verify` accept optional `--countries CC,..` and
+   `--categories category,..` filters. For example:
+
+   ```bash
+   python scripts/fill_entsoe_gaps.py fill --countries HU,DE --categories prices,import
+   python scripts/fill_entsoe_gaps.py verify --countries DE --categories load,prices --days 5
+   python scripts/fill_entsoe_gaps.py refresh --country BA --category load --year 2025
+   ```
 3. `scripts/era5_download.py` (needs `CDSAPI_URL` and `CDSAPI_KEY` in `.env`) downloads ERA5 and writes `data/raw/weather/` (§3). Without arguments it handles every country whose CSVs are missing; `era5_download.py germany,france` rebuilds the named countries.
 
 Package versions are pinned in `requirements.txt` (Python 3.14.6). Superseded scripts and notebooks are in `legacy/`.

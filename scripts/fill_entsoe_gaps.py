@@ -1,13 +1,14 @@
-"""Fills holes in data/raw/entsoe/ from the ENTSO-E API and spot-checks existing data against it.
+"""Maintains data/raw/entsoe/ files using the ENTSO-E API.
 
-    python scripts/fill_entsoe_gaps.py fill     # writes year=YYYY/fill.parquet next to data.parquet
-    python scripts/fill_entsoe_gaps.py verify   # re-downloads random days and compares with data.parquet
-    python scripts/fill_entsoe_gaps.py fill HU,DE prices,import   # optional country / category subsets
+    python scripts/fill_entsoe_gaps.py fill
+    python scripts/fill_entsoe_gaps.py verify
+    python scripts/fill_entsoe_gaps.py refresh --country BA --category load --year 2025
 
 Original data.parquet files are never modified. Rows are only filled for timestamps that are
 absent from data.parquet, so existing values always win. Needs ENTSOE_API_KEY in .env.
 """
 
+import argparse
 import ast
 import functools
 import glob
@@ -198,6 +199,21 @@ def to_frame(res, cat, existing_cols):
     return res.rename(columns=rename)
 
 
+def series_key(cat):
+    """Columns that identify one stored observation for a category."""
+    return (
+        ["timestamp", "ReserveType", "Direction"]
+        if cat in LONG_FORMAT
+        else ["timestamp"]
+    )
+
+
+def query_series(cc, cat, start, end, existing_cols):
+    """Query one country/category interval and normalize it to stored columns."""
+    res = QUERIES[cat](AREA.get(cc, {}).get(cat, cc), start, end)
+    return to_frame(res, cat, existing_cols)
+
+
 def find_holes(ts, start):
     """Missing intervals (start, end) in a sorted array of UTC timestamps, merged and split by year."""
     ts = pd.DatetimeIndex(sorted(set(ts)))
@@ -248,7 +264,7 @@ def fill_series(cc, cat):
     new_by_year = {}
     for lo, hi in holes:
         try:
-            res = QUERIES[cat](AREA.get(cc, {}).get(cat, cc), lo, hi)
+            res = query_series(cc, cat, lo, hi, list(have.columns))
         except NoMatchingDataError:
             rep["unavailable"].append([str(lo), str(hi)])
             continue
@@ -272,12 +288,7 @@ def fill_series(cc, cat):
         df = pd.concat(
             [filled[filled["timestamp"].dt.year == yr]] + parts, ignore_index=True
         )
-        key = (
-            ["timestamp", "ReserveType", "Direction"]
-            if cat in LONG_FORMAT
-            else ["timestamp"]
-        )
-        df = df.drop_duplicates(subset=key).sort_values("timestamp")
+        df = df.drop_duplicates(subset=series_key(cat)).sort_values("timestamp")
         out = ENTSOE_DIR / cat / f"country={cc}" / f"year={yr}"
         out.mkdir(parents=True, exist_ok=True)
         pl.from_pandas(df).write_parquet(out / "fill.parquet")
@@ -294,9 +305,7 @@ def refresh_year(cc, cat, year):
         pd.Timestamp(f"{year + 1}-01-01", tz="UTC"),
     )
     have = read_existing(existing_files(cat, cc))
-    df = to_frame(
-        QUERIES[cat](AREA.get(cc, {}).get(cat, cc), lo, hi), cat, list(have.columns)
-    )
+    df = query_series(cc, cat, lo, hi, list(have.columns))
     df = df[(df["timestamp"] >= lo) & (df["timestamp"] < hi)].sort_values("timestamp")
     for name in ("data", "fill"):
         f = out / f"{name}.parquet"
@@ -327,11 +336,7 @@ def verify_series(cc, cat, n_days=3, seed=0):
         old = have[
             (have["timestamp"] >= d) & (have["timestamp"] < d + pd.Timedelta(days=1))
         ]
-        key = (
-            ["timestamp", "ReserveType", "Direction"]
-            if cat in LONG_FORMAT
-            else ["timestamp"]
-        )
+        key = series_key(cat)
         m = old.merge(new, on=key, suffixes=("_old", "_new"))
         cols = [
             c[:-4]
@@ -359,18 +364,25 @@ def verify_series(cc, cat, n_days=3, seed=0):
     return rep
 
 
-def run(job, countries=None, cats=None, workers=8):
-    countries = countries or sorted(
+def available_countries():
+    """Return countries represented in the raw ENTSO-E directory."""
+    return sorted(
         Path(d).name.split("=")[1]
         for d in glob.glob(str(ENTSOE_DIR / "imbalance_prices" / "country=*"))
     )
-    tasks = [(cc, cat) for cc in countries for cat in (cats or QUERIES)]
+
+
+def run_series_job(job, countries=None, cats=None, workers=8, log_path=LOG, **kwargs):
+    """Run a country/category job in parallel and update its log incrementally."""
+    countries = countries or available_countries()
+    cats = cats or list(QUERIES)
+    tasks = [(cc, cat) for cc in countries for cat in cats]
     results = {}
 
     def one(t):
         t0 = time.time()
         try:
-            r = (fill_series if job == "fill" else verify_series)(*t)
+            r = job(*t, **kwargs)
         except Exception as ex:  # noqa: BLE001 - one broken series must not stop the run
             r = {"error": f"{type(ex).__name__}: {str(ex)[:200]}"}
         print(
@@ -382,7 +394,7 @@ def run(job, countries=None, cats=None, workers=8):
     with ThreadPoolExecutor(workers) as ex:
         for (cc, cat), r in ex.map(one, tasks):
             results.setdefault(cc, {})[cat] = r
-    out = LOG if job == "fill" else LOG.with_name("verify_log.json")
+    out = log_path
     if out.exists():  # partial runs update the log instead of replacing it
         old = json.loads(out.read_text())
         for cc, r in results.items():
@@ -392,15 +404,92 @@ def run(job, countries=None, cats=None, workers=8):
     print(f"written {out}")
 
 
-if __name__ == "__main__":
+def csv_values(value):
+    """argparse converter for comma-separated country/category lists."""
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def positive_int(value):
+    """argparse converter for positive integer options."""
+    value = int(value)
+    if value < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return value
+
+
+def add_series_options(parser):
+    """Add options shared by fill and verify."""
+    parser.add_argument(
+        "--countries",
+        type=csv_values,
+        help="comma-separated country codes (default: all available countries)",
+    )
+    parser.add_argument(
+        "--categories",
+        type=csv_values,
+        help="comma-separated ENTSO-E categories (default: all categories)",
+    )
+    parser.add_argument(
+        "--workers",
+        type=positive_int,
+        default=8,
+        help="number of parallel country/category jobs (default: 8)",
+    )
+
+
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="command", required=True)
+
+    fill = commands.add_parser("fill", help="download missing historical intervals")
+    add_series_options(fill)
+
+    verify = commands.add_parser("verify", help="compare random stored days with the API")
+    add_series_options(verify)
+    verify.add_argument(
+        "--days",
+        type=positive_int,
+        default=3,
+        help="random days to check per series (default: 3)",
+    )
+
+    refresh = commands.add_parser("refresh", help="replace one complete stored year")
+    refresh.add_argument("--country", required=True, help="country code")
+    refresh.add_argument("--category", required=True, choices=list(QUERIES))
+    refresh.add_argument("--year", required=True, type=int)
+
+    args = parser.parse_args(argv)
+    if args.command in {"fill", "verify"} and args.categories:
+        invalid = sorted(set(args.categories) - set(QUERIES))
+        if invalid:
+            parser.error(f"unknown category/categories: {', '.join(invalid)}")
+    return args
+
+
+def main(argv=None):
+    args = parse_args(argv)
     if not os.environ.get("ENTSOE_API_KEY"):
         sys.exit("missing ENTSOE_API_KEY: add it to .env (see README)")
-    args = sys.argv[1:] + [None] * 3
-    if args[0] == "refresh":  # python scripts/fill_entsoe_gaps.py refresh BA load 2025
-        print(refresh_year(args[1], args[2], int(args[3])))
-        sys.exit()
-    run(
-        args[0] or "fill",
-        args[1] and args[1].split(","),
-        args[2] and args[2].split(","),
-    )
+
+    if args.command == "fill":
+        run_series_job(
+            fill_series,
+            countries=args.countries,
+            cats=args.categories,
+            workers=args.workers,
+        )
+    elif args.command == "verify":
+        run_series_job(
+            verify_series,
+            countries=args.countries,
+            cats=args.categories,
+            workers=args.workers,
+            log_path=LOG.with_name("verify_log.json"),
+            n_days=args.days,
+        )
+    else:
+        print(refresh_year(args.country, args.category, args.year))
+
+
+if __name__ == "__main__":
+    main()
