@@ -26,6 +26,7 @@ Run everything from the repository root with the project venv.
 1. `scripts/get_fx_rates.py` downloads ECB daily euro reference rates into `data/reference/ecb_eur_rates.csv`.
 2. `scripts/fill_entsoe_gaps.py` (needs `ENTSOE_API_KEY` in `.env`), see §3.1:
    - `fill` downloads every gap in the raw ENTSO-E data from the API;
+   - `update` refreshes a recent rolling window through the last UTC midnight that is at least one day old;
    - `verify` compares 3 random stored days per series against the API;
    - `refresh --country CC --category CATEGORY --year YEAR` replaces one stored year with the current API version.
 
@@ -34,6 +35,7 @@ Run everything from the repository root with the project venv.
 
    ```bash
    python scripts/fill_entsoe_gaps.py fill --countries HU,DE --categories prices,import
+   python scripts/fill_entsoe_gaps.py update --countries DE,FR --categories load,prices
    python scripts/fill_entsoe_gaps.py verify --countries DE --categories load,prices --days 5
    python scripts/fill_entsoe_gaps.py refresh --country BA --category load --year 2025
    ```
@@ -98,6 +100,14 @@ The original bulk download of `data/raw/entsoe/` was made by a script that is no
 - It looks for every gap longer than 2 h in each stored series, from 2019 (or the 15-min cutoff year) to the end of 2025, and downloads it.
 - Only timestamps that are missing are added. They go into `fill.parquet`; the original `data.parquet` is never changed. The loader reads both.
 - The log is `data/raw/entsoe/fill_log.json`.
+
+**Update (`fill_entsoe_gaps.py update`).**
+- It refreshes the last `UPDATE_LOOKBACK_DAYS` days before the delayed UTC cutoff in `scripts/fill_entsoe_gaps.py`.
+- The cutoff is the UTC midnight at least one day old, so the latest incomplete or still-changing day is not used.
+- New and revised rows are merged directly into `data.parquet`; historical `fill.parquet` files remain separate.
+- The behavior for rows inside the rolling window is controlled by `UPDATE_LOOKBACK_POLICY` in `scripts/fill_entsoe_gaps.py`: `override` replaces stored values and `keep` preserves them.
+- Series more than `UPDATE_MAX_CATCHUP_YEARS` calendar year behind the cutoff are skipped without an API request and recorded in the update log.
+- The log is `data/raw/entsoe/update_log.json`.
 
 What it filled:
 - **Dec 31 in every year, all countries and categories.** The original downloader treated the end date as exclusive, so every yearly file stopped at Dec 30 23:45 UTC.

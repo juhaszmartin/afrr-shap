@@ -1,11 +1,12 @@
 """Maintains data/raw/entsoe/ files using the ENTSO-E API.
 
     python scripts/fill_entsoe_gaps.py fill
+    python scripts/fill_entsoe_gaps.py update
     python scripts/fill_entsoe_gaps.py verify
     python scripts/fill_entsoe_gaps.py refresh --country BA --category load --year 2025
 
-Original data.parquet files are never modified. Rows are only filled for timestamps that are
-absent from data.parquet, so existing values always win. Needs ENTSOE_API_KEY in .env.
+Historical gap fills go into fill.parquet. The update command adds recent API data directly
+to data.parquet according to the configured lookback policy. Needs ENTSOE_API_KEY in .env.
 """
 
 import argparse
@@ -16,6 +17,7 @@ import itertools
 import json
 import os
 import random
+import shutil
 import sys
 import time
 import warnings
@@ -48,6 +50,11 @@ START, END = pd.Timestamp("2019-01-01", tz="UTC"), pd.Timestamp("2026-01-01", tz
 GAP = pd.Timedelta(hours=2)  # holes shorter than this are resolution/DST artefacts
 MERGE = pd.Timedelta(days=3)  # neighbouring holes are fetched in one request
 LOG = ENTSOE_DIR / "fill_log.json"
+UPDATE_LOG = ENTSOE_DIR / "update_log.json"
+UPDATE_LOOKBACK_DAYS = 0
+UPDATE_DELAY_DAYS = 1  # only update through a UTC midnight at least one day old
+UPDATE_MAX_CATCHUP_YEARS = 1
+UPDATE_LOOKBACK_POLICY = "override"  # "override" or "keep"
 
 # Germany is split into control areas for balancing data and uses the DE_LU bidding zone for markets
 DE_AREAS = ["DE_50HZ", "DE_AMPRION", "DE_TENNET", "DE_TRANSNET"]
@@ -143,6 +150,11 @@ def existing_files(cat, cc, name="data"):
     )
 
 
+def read_series_files(cat, cc, name):
+    """Read one overlay's files for a country/category."""
+    return read_existing(existing_files(cat, cc, name))
+
+
 def read_existing(files):
     """Existing rows as pandas with a UTC 'timestamp' column (original column names kept)."""
     out = []
@@ -150,6 +162,7 @@ def read_existing(files):
         df = pl.read_parquet(f).to_pandas()
         ts = next(c for c in df.columns if "timestamp" in c)
         df = df.rename(columns={ts: "timestamp"})
+        df = coalesce_duplicate_columns(df)
         df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
         out.append(df)
     return (
@@ -157,6 +170,17 @@ def read_existing(files):
         if out
         else pd.DataFrame({"timestamp": pd.to_datetime([], utc=True)})
     )
+
+
+def coalesce_duplicate_columns(df):
+    """Combine duplicate source headers, keeping the first non-null value per row."""
+    if not df.columns.duplicated().any():
+        return df
+    result = pd.DataFrame(index=df.index)
+    for name in pd.unique(df.columns):
+        columns = df.loc[:, df.columns == name]
+        result[name] = columns.bfill(axis=1).iloc[:, 0]
+    return result
 
 
 def to_frame(res, cat, existing_cols):
@@ -196,7 +220,7 @@ def to_frame(res, cat, existing_cols):
         if c == "timestamp":
             continue
         rename[c] = by_norm.get(norm(c), str(c) if isinstance(c, tuple) else c)
-    return res.rename(columns=rename)
+    return coalesce_duplicate_columns(res.rename(columns=rename))
 
 
 def series_key(cat):
@@ -250,9 +274,7 @@ def fill_series(cc, cat):
     files = existing_files(cat, cc)
     have = read_existing(files)
     have = have[have["timestamp"] >= start]
-    filled = read_existing(
-        existing_files(cat, cc, "fill")
-    )  # rows added by an earlier run
+    filled = read_series_files(cat, cc, "fill")  # rows added by an earlier run
     known = set(have["timestamp"]) | set(filled["timestamp"])
     holes = find_holes(list(known), start)
     rep = {
@@ -273,11 +295,10 @@ def fill_series(cc, cat):
                 [str(lo), str(hi), f"{type(ex).__name__}: {str(ex)[:120]}"]
             )
             continue
-        df = to_frame(res, cat, list(have.columns))
-        df = df[
-            (df["timestamp"] >= lo)
-            & (df["timestamp"] < hi)
-            & ~df["timestamp"].isin(known)
+        df = res[
+            (res["timestamp"] >= lo)
+            & (res["timestamp"] < hi)
+            & ~res["timestamp"].isin(known)
         ]
         if df.empty:
             rep["unavailable"].append([str(lo), str(hi), "no new rows"])
@@ -294,6 +315,181 @@ def fill_series(cc, cat):
         pl.from_pandas(df).write_parquet(out / "fill.parquet")
         rep["filled_rows"] += len(df)
     return rep
+
+
+def update_end(now=None):
+    """Return the exclusive UTC cutoff for stable, published data."""
+    now = now if now is not None else pd.Timestamp.now(tz="UTC")
+    now = pd.Timestamp(now)
+    if now.tzinfo is None:
+        now = now.tz_localize("UTC")
+    else:
+        now = now.tz_convert("UTC")
+    return now.floor("D") - pd.Timedelta(days=UPDATE_DELAY_DAYS)
+
+
+def update_interval(cc):
+    """Return the expected settlement interval for a country."""
+    return pd.Timedelta(hours=1) if cc in HOURLY_COUNTRIES else pd.Timedelta(minutes=15)
+
+
+def _missing(value):
+    return bool(pd.isna(value))
+
+
+def _key(row, columns):
+    return tuple(row[column] for column in columns)
+
+
+def _merge_update_rows(data, stored, new, key, policy):
+    """Merge API rows into data, using stored rows for lookback conflicts."""
+    result = data.copy()
+    all_columns = list(dict.fromkeys([*result.columns, *stored.columns, *new.columns]))
+    result = result.reindex(columns=all_columns)
+    stored = stored.reindex(columns=all_columns)
+    new = new.reindex(columns=all_columns)
+    data_indices = {_key(row, key): index for index, row in result.iterrows()}
+    stored_rows = {
+        _key(row, key): row
+        for _, row in stored.drop_duplicates(subset=key, keep="first").iterrows()
+    }
+    added = overridden = kept = 0
+    rows_to_append = []
+
+    for _, incoming in new.iterrows():
+        observation_key = _key(incoming, key)
+        old = stored_rows.get(observation_key)
+        if old is not None and policy == "keep":
+            kept += 1
+            continue
+
+        if old is None:
+            merged = incoming.copy()
+            added += 1
+        else:
+            merged = old.copy()
+            for column in all_columns:
+                if column not in key and not _missing(incoming[column]):
+                    merged[column] = incoming[column]
+            overridden += 1
+
+        if observation_key in data_indices:
+            index = data_indices[observation_key]
+            for column in all_columns:
+                result.at[index, column] = merged[column]
+        else:
+            rows_to_append.append(merged)
+
+    if rows_to_append:
+        result = pd.concat([result, pd.DataFrame(rows_to_append)], ignore_index=True)
+    return result, added, overridden, kept
+
+
+def _write_data_partition(df, cat, cc, year):
+    """Atomically replace one data partition and preserve the pre-update file."""
+    out = ENTSOE_DIR / cat / f"country={cc}" / f"year={year}"
+    out.mkdir(parents=True, exist_ok=True)
+    target = out / "data.parquet"
+    backup = out / "data.parquet.pre_update.bak"
+    temporary = out / "data.parquet.update.tmp"
+    if target.exists() and not backup.exists():
+        shutil.copy2(target, backup)
+    pl.from_pandas(df.sort_values("timestamp")).write_parquet(temporary)
+    temporary.replace(target)
+
+
+def update_series(cc, cat):
+    """Refresh a recent rolling window directly in data.parquet."""
+    if UPDATE_LOOKBACK_POLICY not in {"override", "keep"}:
+        raise ValueError("UPDATE_LOOKBACK_POLICY must be either 'override' or 'keep'")
+    data = read_series_files(cat, cc, "data")
+    filled = read_series_files(cat, cc, "fill")
+    existing = pd.concat(
+        [df for df in (data, filled) if not df.empty], ignore_index=True
+    )
+    if existing.empty:
+        return {"status": "no_existing_data"}
+
+    existing_cols = list(data.columns)
+    if len(existing_cols) == 1 and not filled.empty:
+        existing_cols = list(filled.columns)
+
+    latest = existing["timestamp"].max()
+    end = update_end()
+    interval = update_interval(cc)
+    next_expected = latest + interval
+    if end <= next_expected:
+        return {
+            "status": "already_current",
+            "latest": str(latest),
+            "end": str(end),
+            "rows_added": 0,
+            "rows_replaced": 0,
+        }
+    oldest_allowed = end - pd.DateOffset(years=UPDATE_MAX_CATCHUP_YEARS)
+    if latest < oldest_allowed:
+        lag_days = (end - latest).total_seconds() / (24 * 60 * 60)
+        return {
+            "status": "skipped_too_far_behind",
+            "latest": str(latest),
+            "end": str(end),
+            "lag_days": round(lag_days, 2),
+            "max_catchup_years": UPDATE_MAX_CATCHUP_YEARS,
+        }
+
+    start = latest - pd.Timedelta(days=UPDATE_LOOKBACK_DAYS)
+    key = series_key(cat)
+    try:
+        new = query_series(cc, cat, start, end, existing_cols)
+    except NoMatchingDataError:
+        return {
+            "status": "unavailable",
+            "start": str(start),
+            "end": str(end),
+            "rows_added": 0,
+            "rows_replaced": 0,
+        }
+    except Exception as ex:  # noqa: BLE001 - report this series and continue others
+        return {
+            "status": "error",
+            "start": str(start),
+            "end": str(end),
+            "error": f"{type(ex).__name__}: {str(ex)[:200]}",
+        }
+
+    new = new[(new["timestamp"] >= start) & (new["timestamp"] < end)]
+    new = coalesce_duplicate_columns(new)
+    new = new.drop_duplicates(subset=key).sort_values("timestamp")
+    if new.empty:
+        return {
+            "status": "empty_response",
+            "start": str(start),
+            "end": str(end),
+            "rows_added": 0,
+            "rows_replaced": 0,
+        }
+
+    merged, added, overridden, kept = _merge_update_rows(
+        data, existing, new, key, UPDATE_LOOKBACK_POLICY
+    )
+    if added or overridden:
+        affected_years = set(new["timestamp"].dt.year)
+        for year in affected_years:
+            _write_data_partition(
+                merged[merged["timestamp"].dt.year == year], cat, cc, year
+            )
+
+    return {
+        "status": "updated",
+        "latest_before": str(latest),
+        "start": str(start),
+        "end": str(end),
+        "rows_downloaded": len(new),
+        "policy": UPDATE_LOOKBACK_POLICY,
+        "rows_added": added,
+        "rows_overridden": overridden,
+        "rows_kept": kept,
+    }
 
 
 def refresh_year(cc, cat, year):
@@ -418,7 +614,7 @@ def positive_int(value):
 
 
 def add_series_options(parser):
-    """Add options shared by fill and verify."""
+    """Add options shared by series-wide commands."""
     parser.add_argument(
         "--countries",
         type=csv_values,
@@ -444,7 +640,14 @@ def parse_args(argv=None):
     fill = commands.add_parser("fill", help="download missing historical intervals")
     add_series_options(fill)
 
-    verify = commands.add_parser("verify", help="compare random stored days with the API")
+    update = commands.add_parser(
+        "update", help="refresh the recent rolling window from the API"
+    )
+    add_series_options(update)
+
+    verify = commands.add_parser(
+        "verify", help="compare random stored days with the API"
+    )
     add_series_options(verify)
     verify.add_argument(
         "--days",
@@ -459,7 +662,7 @@ def parse_args(argv=None):
     refresh.add_argument("--year", required=True, type=int)
 
     args = parser.parse_args(argv)
-    if args.command in {"fill", "verify"} and args.categories:
+    if args.command in {"fill", "update", "verify"} and args.categories:
         invalid = sorted(set(args.categories) - set(QUERIES))
         if invalid:
             parser.error(f"unknown category/categories: {', '.join(invalid)}")
@@ -477,6 +680,14 @@ def main(argv=None):
             countries=args.countries,
             cats=args.categories,
             workers=args.workers,
+        )
+    elif args.command == "update":
+        run_series_job(
+            update_series,
+            countries=args.countries,
+            cats=args.categories,
+            workers=args.workers,
+            log_path=UPDATE_LOG,
         )
     elif args.command == "verify":
         run_series_job(
