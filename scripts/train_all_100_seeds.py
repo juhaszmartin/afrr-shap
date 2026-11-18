@@ -32,19 +32,18 @@ def train_country(country_code, output_txt_file):
         print(f"Error: {country_code} parquet files not found.")
         return
 
-    X_pl = pl.read_parquet(x_path)
-    is_test = (X_pl["timestamp"] >= TEST_START).to_numpy()
-    if is_test.sum() == 0 or is_test.all():
+    X_df = pl.read_parquet(x_path).select(cs.numeric())
+    y_df = pl.read_parquet(y_path).select(cs.numeric())
+
+    feature_names = X_df.columns
+    target_names = y_df.columns
+
+    is_test = (X_df["timestamp"] >= TEST_START).to_numpy()
+    if (not is_test.any()) or is_test.all():
         print(
             f"Skipping {country_code}: needs data both before and in {TEST_START.year}."
         )
         return
-    X_df = X_pl.select(cs.numeric()).to_pandas()
-    y_df = pl.read_parquet(y_path).select(cs.numeric()).to_pandas()
-
-    feature_names = list(X_df.columns)
-    target_names = list(y_df.columns)
-
     X_np = X_df.to_numpy()
     y_np = y_df.to_numpy()
 
