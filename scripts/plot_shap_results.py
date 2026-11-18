@@ -28,7 +28,7 @@ def plot_all_shap_results():
             continue
 
         with open(names_file, "r") as f:
-            feature_names = [line.strip() for line in f.readlines()]
+            feature_names = [line.strip() for line in f]
 
         # Find all target SHAP arrays for this country
         shap_files = glob.glob(str(out_dir / f"shap_raw_{country_code}_*.npy"))

@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import polars as pl
 
@@ -8,7 +8,7 @@ from scripts.preprocess_all import select_feature_columns
 
 class FeatureFilterTests(unittest.TestCase):
     def test_drops_missing_and_constant_features_per_split(self):
-        split = datetime(2025, 1, 1, tzinfo=timezone.utc)
+        split = datetime(2025, 1, 1, tzinfo=UTC)
         timestamps = [
             split - timedelta(days=2),
             split - timedelta(days=1),

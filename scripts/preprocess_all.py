@@ -258,7 +258,9 @@ def load_entsoe_data(country_code, is_hourly=False):
                         procured_capacity(df_cat, cat), cat, country_code
                     )
                     dfs.append(
-                        processed.with_columns(pl.lit(priority).alias("_source_priority"))
+                        processed.with_columns(
+                            pl.lit(priority).alias("_source_priority")
+                        )
                     )
                     continue
                 df_cat = convert_to_eur(df_cat, cat, country_code)
@@ -331,7 +333,7 @@ def load_entsoe_data(country_code, is_hourly=False):
                                 f"{cat} - "
                                 + " - ".join([str(x) for x in c_tuple if x]).strip()
                             )
-                        except:
+                        except ValueError, SyntaxError:
                             new_cols.append(f"{cat} - {c}")
                     elif c != "timestamp":
                         new_cols.append(f"{cat} - {c}")
