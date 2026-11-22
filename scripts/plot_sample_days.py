@@ -5,7 +5,6 @@ from pathlib import Path
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import polars as pl
 import polars.selectors as cs
 import torch
@@ -55,19 +54,20 @@ def plot_sample_days_for_country(country_code, samples_dir):
     X_full = pl.read_parquet(x_path)
     y_full = pl.read_parquet(y_path)
 
-    timestamps = X_full["timestamp"].to_list()
-    X_num = X_full.select(cs.numeric()).to_pandas()
-    y_num = y_full.select(cs.numeric()).to_pandas()
+    # Filter test data in polars
+    X_test_full = X_full.filter(pl.col("timestamp") >= TEST_START)
+    y_test_full = y_full.filter(pl.col("timestamp") >= TEST_START)
 
-    target_names = list(y_num.columns)
-    is_test = (X_full["timestamp"] >= TEST_START).to_numpy()
-    if not is_test.any():
+    if X_test_full.height == 0:
         print(f"Skipping {country_code}: no test-year data.")
         return
 
-    X_test = X_num[is_test]
-    y_test = y_num[is_test]
-    ts_test = [t for t, m in zip(timestamps, is_test) if m]
+    # Select numeric columns (excluding timestamp)
+    X_num = X_test_full.select(cs.numeric())
+    y_num = y_test_full.select(cs.numeric())
+
+    target_names = y_num.columns
+    ts_test = X_test_full["timestamp"].to_list()
 
     # Load scalers and model
     with open(scaler_x_path, "rb") as f:
@@ -75,35 +75,36 @@ def plot_sample_days_for_country(country_code, samples_dir):
     with open(scaler_y_path, "rb") as f:
         scaler_y = pickle.load(f)
 
-    input_dim = X_test.shape[1]
-    output_dim = y_test.shape[1]
+    input_dim = X_num.width
+    output_dim = y_num.width
 
     model = MultiOutputNN(input_dim, output_dim).to(device)
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()
 
     # Calculate inference on test split
-    X_test_scaled = scaler_X.transform(X_test.to_numpy())
+    X_test_scaled = scaler_X.transform(X_num.to_numpy())
     with torch.no_grad():
         X_test_tensor = torch.tensor(X_test_scaled, dtype=torch.float32, device=device)
         y_pred_scaled = model(X_test_tensor).cpu().numpy()
 
     y_pred = scaler_y.inverse_transform(y_pred_scaled)
-    pred_df = pd.DataFrame(y_pred, columns=target_names, index=y_test.index)
+    pred_df = pl.DataFrame(y_pred, schema=target_names)
 
-    # Determine last 3 days of the test split
-    ts_test_series = pd.Series(pd.to_datetime(ts_test))
-    max_time = ts_test_series.max()
-    min_3days = max_time - pd.Timedelta(days=3)
+    # Determine last 3 days of the test split using polars
+    ts_series = pl.Series("timestamp", ts_test).cast(pl.Datetime)
+    max_time = ts_series.max()
+    min_3days = max_time - pl.duration(days=3)
 
-    mask_3days = (ts_test_series >= min_3days).to_numpy()
+    mask_3days = (ts_series >= min_3days).to_numpy()
     if mask_3days.sum() < 10:  # Fallback if timestamps are sparse
         mask_3days = np.zeros(len(ts_test), dtype=bool)
         mask_3days[-72:] = True
 
-    plot_ts = ts_test_series[mask_3days].dt.tz_localize(None)
-    plot_y_true = y_test.iloc[mask_3days]
-    plot_y_pred = pred_df.iloc[mask_3days]
+    # Filter timestamps and data for plotting
+    plot_ts = ts_series.filter(pl.Series(mask_3days)).dt.replace_time_zone(None)
+    plot_y_true = y_num.filter(pl.Series(mask_3days))
+    plot_y_pred = pred_df.filter(pl.Series(mask_3days))
 
     # Extract distinct timelags from target names
     # e.g. '_t+15min', '_t+30min', '_t+1h', '_t+2h'
@@ -130,7 +131,7 @@ def plot_sample_days_for_country(country_code, samples_dir):
 
                 ax.plot(
                     plot_ts,
-                    plot_y_true[col],
+                    plot_y_true[col].to_numpy(),
                     label=f"Fact ({label_suffix})",
                     color=color_fact,
                     linewidth=2.0,
@@ -138,7 +139,7 @@ def plot_sample_days_for_country(country_code, samples_dir):
                 )
                 ax.plot(
                     plot_ts,
-                    plot_y_pred[col],
+                    plot_y_pred[col].to_numpy(),
                     label=f"Model Est ({label_suffix})",
                     color=color_pred,
                     linewidth=2.0,
@@ -148,7 +149,7 @@ def plot_sample_days_for_country(country_code, samples_dir):
 
             # Metric on this 3-day sample
             col0 = price_cols[0]
-            mae_sample = np.mean(np.abs(plot_y_true[col0] - plot_y_pred[col0]))
+            mae_sample = np.mean(np.abs(plot_y_true[col0].to_numpy() - plot_y_pred[col0].to_numpy()))
 
             ax.set_title(
                 f"[{country_code}] Imbalance Price Forecast ({lag_clean}) — Last 3 Days of Test Split\n"
@@ -175,7 +176,7 @@ def plot_sample_days_for_country(country_code, samples_dir):
 
             ax.plot(
                 plot_ts,
-                plot_y_true[vol_col],
+                plot_y_true[vol_col].to_numpy(),
                 label="Fact Sysdir / Volume",
                 color="#004c6d",
                 linewidth=2.2,
@@ -183,7 +184,7 @@ def plot_sample_days_for_country(country_code, samples_dir):
             )
             ax.plot(
                 plot_ts,
-                plot_y_pred[vol_col],
+                plot_y_pred[vol_col].to_numpy(),
                 label="Model Est Sysdir / Volume",
                 color="#e34a33",
                 linewidth=2.0,
@@ -201,7 +202,7 @@ def plot_sample_days_for_country(country_code, samples_dir):
                 label="System Balanced (0 MW)",
             )
 
-            mae_vol = np.mean(np.abs(plot_y_true[vol_col] - plot_y_pred[vol_col]))
+            mae_vol = np.mean(np.abs(plot_y_true[vol_col].to_numpy() - plot_y_pred[vol_col].to_numpy()))
             ax.set_title(
                 f"[{country_code}] System Direction / Imbalance Volume Forecast ({lag_clean}) — Last 3 Days\n"
                 f"Sample MAE: {mae_vol:.2f} MW",

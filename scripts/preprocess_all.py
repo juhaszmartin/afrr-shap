@@ -223,11 +223,19 @@ def load_entsoe_data(country_code, is_hourly=False):
 
     joined_df = None
     for cat in categories:
-        # data.parquet is the original download, fill.parquet holds rows added by fill_entsoe_gaps.py
+        # data.parquet is the original/updateable download; fill.parquet holds historical
+        # rows added by fill_entsoe_gaps.py.
         pattern = str(
             ENTSOE_DIR / cat / f"country={country_code}" / "year=*" / "*.parquet"
         )
-        files = glob.glob(pattern)
+        files = sorted(
+            (
+                f
+                for f in glob.glob(pattern)
+                if Path(f).name in {"data.parquet", "fill.parquet"}
+            ),
+            key=lambda f: {"fill.parquet": 0, "data.parquet": 1}[Path(f).name],
+        )
         if not files:
             continue
 
@@ -237,14 +245,21 @@ def load_entsoe_data(country_code, is_hourly=False):
             yr = int(f.split("/")[-2].split("=")[1])
             if not is_hourly and yr < start_year:
                 continue
+            priority = {
+                "fill.parquet": 0,
+                "data.parquet": 1,
+            }.get(Path(f).name, -1)
 
             # A file that cannot be read stops the run instead of silently dropping a category
             try:
                 df_cat = pl.read_parquet(f)
                 if cat == "procured_balancing_capacity":
+                    processed = convert_to_eur(
+                        procured_capacity(df_cat, cat), cat, country_code
+                    )
                     dfs.append(
-                        convert_to_eur(
-                            procured_capacity(df_cat, cat), cat, country_code
+                        processed.with_columns(
+                            pl.lit(priority).alias("_source_priority")
                         )
                     )
                     continue
@@ -294,7 +309,11 @@ def load_entsoe_data(country_code, is_hourly=False):
                         df_cat = df_cat.with_columns(
                             pl.col("timestamp").dt.convert_time_zone("UTC")
                         )
-                        dfs.append(df_cat)
+                        dfs.append(
+                            df_cat.with_columns(
+                                pl.lit(priority).alias("_source_priority")
+                            )
+                        )
                         continue
 
                 new_cols = []
@@ -314,7 +333,7 @@ def load_entsoe_data(country_code, is_hourly=False):
                                 f"{cat} - "
                                 + " - ".join([str(x) for x in c_tuple if x]).strip()
                             )
-                        except:
+                        except ValueError, SyntaxError:
                             new_cols.append(f"{cat} - {c}")
                     elif c != "timestamp":
                         new_cols.append(f"{cat} - {c}")
@@ -329,12 +348,16 @@ def load_entsoe_data(country_code, is_hourly=False):
                     pl.col("timestamp").dt.convert_time_zone("UTC")
                 )
                 df_cat = df_cat.unique(subset=["timestamp"], keep="first")
-                dfs.append(df_cat)
+                dfs.append(
+                    df_cat.with_columns(pl.lit(priority).alias("_source_priority"))
+                )
             except Exception as e:
                 raise RuntimeError(f"Cannot read {f}: {e}") from e
 
         if dfs:
-            combined_cat_df = pl.concat(dfs, how="diagonal").sort("timestamp")
+            combined_cat_df = pl.concat(dfs, how="diagonal").sort(
+                ["timestamp", "_source_priority"]
+            )
             # Some TSOs switch header layout between years (PL generation: "Biomass" until 2024,
             # ("Biomass", "Actual Aggregated") from 2025); merge both into one column
             for c in [
@@ -347,7 +370,9 @@ def load_entsoe_data(country_code, is_hourly=False):
                         f"{c} - Actual Aggregated"
                     )
                 ).drop(c)
-            combined_cat_df = combined_cat_df.unique(subset=["timestamp"], keep="last")
+            combined_cat_df = combined_cat_df.unique(
+                subset=["timestamp"], keep="last"
+            ).drop("_source_priority")
 
             if joined_df is None:
                 joined_df = combined_cat_df

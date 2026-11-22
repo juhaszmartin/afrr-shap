@@ -1,5 +1,5 @@
 import unittest
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import polars as pl
 
@@ -23,8 +23,8 @@ class CurrencyConversionTests(unittest.TestCase):
         frame = pl.DataFrame(
             {
                 "timestamp": [
-                    datetime(2025, 1, 3, 12, tzinfo=timezone.utc),
-                    datetime(2025, 1, 4, 12, tzinfo=timezone.utc),
+                    datetime(2025, 1, 3, 12, tzinfo=UTC),
+                    datetime(2025, 1, 4, 12, tzinfo=UTC),
                 ],
                 "Long": [800.0, 400.0],
             }
@@ -40,7 +40,7 @@ class CurrencyConversionTests(unittest.TestCase):
         )
         frame = pl.DataFrame(
             {
-                "timestamp": [datetime(2025, 1, 3, tzinfo=timezone.utc)],
+                "timestamp": [datetime(2025, 1, 3, tzinfo=UTC)],
                 "Long": [800.0],
             }
         )

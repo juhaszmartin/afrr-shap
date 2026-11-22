@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import polars as pl
 import polars.selectors as cs
 import torch
@@ -32,19 +31,18 @@ def train_country(country_code, output_txt_file):
         print(f"Error: {country_code} parquet files not found.")
         return
 
-    X_pl = pl.read_parquet(x_path)
-    is_test = (X_pl["timestamp"] >= TEST_START).to_numpy()
-    if is_test.sum() == 0 or is_test.all():
+    X_df = pl.read_parquet(x_path).select(cs.numeric())
+    y_df = pl.read_parquet(y_path).select(cs.numeric())
+
+    feature_names = X_df.columns
+    target_names = y_df.columns
+
+    is_test = (X_df["timestamp"] >= TEST_START).to_numpy()
+    if (not is_test.any()) or is_test.all():
         print(
             f"Skipping {country_code}: needs data both before and in {TEST_START.year}."
         )
         return
-    X_df = X_pl.select(cs.numeric()).to_pandas()
-    y_df = pl.read_parquet(y_path).select(cs.numeric()).to_pandas()
-
-    feature_names = list(X_df.columns)
-    target_names = list(y_df.columns)
-
     X_np = X_df.to_numpy()
     y_np = y_df.to_numpy()
 
@@ -183,7 +181,7 @@ def train_country(country_code, output_txt_file):
     r2_std = r2_all.std(axis=0)
     smape_std = smape_all.std(axis=0)
 
-    metrics_df = pd.DataFrame(
+    metrics_df = pl.DataFrame(
         {
             "Target": target_names,
             "MAE": mae_mean,
@@ -208,16 +206,15 @@ def train_country(country_code, output_txt_file):
         naive["NAIVE_MAE"].append(mean_absolute_error(y_test[:, i], y_naive))
         naive["NAIVE_RMSE"].append(np.sqrt(mean_squared_error(y_test[:, i], y_naive)))
         naive["NAIVE_R2"].append(r2_score(y_test[:, i], y_naive))
-    for k, v in naive.items():
-        metrics_df[k] = v
+
+    metrics_df = metrics_df.hstack(pl.DataFrame(naive))
 
     groups = target_groups(target_names, y_test)
-    metrics_df.insert(1, "Group", [groups[t] for t in target_names])
+    metrics_df.insert_column(1, pl.Series("Group", [groups[t] for t in target_names]))
     group_summary = (
-        metrics_df[~metrics_df["Group"].str.startswith("price Short = Long")]
-        .groupby("Group", sort=False)[
-            ["MAE", "RMSE", "R2", "SMAPE", "NAIVE_MAE", "NAIVE_RMSE", "NAIVE_R2"]
-        ]
+        metrics_df.drop("Target")
+        .filter(~pl.col("Group").str.starts_with("price Short = Long"))
+        .group_by("Group", maintain_order=True)
         .mean()
     )
 
@@ -227,17 +224,15 @@ def train_country(country_code, output_txt_file):
 
     results_dir = Path("results")
     results_dir.mkdir(exist_ok=True)
-    metrics_df.to_csv(
-        results_dir / f"NN_100_seeds_Huber_{country_code}_data.csv", index=False
-    )
+    metrics_df.write_csv(results_dir / f"NN_100_seeds_Huber_{country_code}_data.csv")
 
     with open(output_txt_file, "a") as f:
         f.write("\n===============================\n")
         f.write(f"FINAL METRICS FOR {country_code} (100 Seeds)\n")
         f.write("===============================\n")
-        f.write(metrics_df.to_string() + "\n")
+        f.write(str(metrics_df) + "\n")
         f.write("\nAverages over horizons, per target group:\n")
-        f.write(group_summary.to_string() + "\n")
+        f.write(str(group_summary) + "\n")
         f.write("\nConcise summary per target (Mean ± Std):\n")
         for i, t in enumerate(target_names):
             f.write(

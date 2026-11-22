@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import polars as pl
 import polars.selectors as cs
 import shap
@@ -75,14 +74,15 @@ def run_shap_for_country(country_code):
 
     X_pl = pl.read_parquet(x_path)
     is_test = (X_pl["timestamp"] >= TEST_START).to_numpy()
-    X_df = X_pl.select(cs.numeric()).to_pandas()
-    y_df = pl.read_parquet(y_path).select(cs.numeric()).to_pandas()
+    X_num = X_pl.select(cs.numeric())
+    y_pl = pl.read_parquet(y_path).select(cs.numeric())
 
     with open(scaler_X_path, "rb") as f:
         scaler_X = pickle.load(f)
 
-    X_train_scaled = scaler_X.transform(X_df[~is_test])
-    X_test_scaled = scaler_X.transform(X_df[is_test])
+    X_np = X_num.to_numpy()
+    X_train_scaled = scaler_X.transform(X_np[~is_test])
+    X_test_scaled = scaler_X.transform(X_np[is_test])
 
     rng = np.random.default_rng(SHAP_CONFIG["sample_seed"])
     bg_indices = rng.choice(
@@ -100,8 +100,8 @@ def run_shap_for_country(country_code):
         X_test_scaled[test_indices], dtype=torch.float32, device=device
     )
 
-    target_names = list(y_df.columns)
-    feature_names = list(X_df.columns)
+    target_names = y_pl.columns
+    feature_names = X_num.columns
     n_targets = len(target_names)
 
     # SHAP values are linear in the model, so the mean over seeds explains the seed ensemble
@@ -131,13 +131,12 @@ def run_shap_for_country(country_code):
         axis=1,
     )
     # A sin/cos pair is coloured by its position in the cycle (0 = start of day/week/year, 1 = end)
-    X_test_raw = X_df[is_test].to_numpy()[test_indices]
+    X_test_raw = X_np[is_test][test_indices]
+    feat_idx = {name: i for i, name in enumerate(feature_names)}
     for g, name in enumerate(group_names):
-        if f"{name}_sin" in feature_names:
-            sin, cos = (
-                X_test_raw[:, feature_names.index(f"{name}_{f}")]
-                for f in ("sin", "cos")
-            )
+        if f"{name}_sin" in feat_idx:
+            sin = X_test_raw[:, feat_idx[f"{name}_sin"]]
+            cos = X_test_raw[:, feat_idx[f"{name}_cos"]]
             group_values[:, g] = np.mod(np.arctan2(sin, cos), 2 * np.pi) / (2 * np.pi)
     mean_grouped = grouped.mean(axis=0)  # (samples, groups, targets)
 
@@ -151,7 +150,7 @@ def run_shap_for_country(country_code):
         for c in group_names
         if any(k in c for k in ("temperature", "ssrd", "wind_speed"))
     }
-    mean_abs = pd.DataFrame(
+    mean_abs = pl.DataFrame(
         {
             "Feature": group_names,
             "Category": [feature_category(g, weather) for g in group_names],
@@ -159,7 +158,9 @@ def run_shap_for_country(country_code):
     )
     stability = []
     for t, target_name in enumerate(target_names):
-        mean_abs[target_name] = np.abs(mean_grouped[:, :, t]).mean(axis=0)
+        mean_abs = mean_abs.with_columns(
+            pl.Series(target_name, np.abs(mean_grouped[:, :, t]).mean(axis=0))
+        )
         # Agreement between seeds: Spearman correlation of the per-seed feature rankings
         imp = np.abs(grouped[:, :, :, t]).mean(axis=1)  # (seeds, groups)
         ranks = imp.argsort(axis=1).argsort(axis=1)
@@ -191,13 +192,11 @@ def run_shap_for_country(country_code):
     np.save(out_dir / f"shap_test_features_{country_code}.npy", group_values)
     with open(out_dir / f"shap_feature_names_{country_code}.txt", "w") as f:
         f.write("\n".join(group_names))
-    mean_abs.to_csv(out_dir / f"shap_mean_abs_{country_code}.csv", index=False)
-    mean_abs.drop(columns="Feature").groupby("Category").sum().to_csv(
+    mean_abs.write_csv(out_dir / f"shap_mean_abs_{country_code}.csv")
+    mean_abs.drop("Feature").group_by("Category").sum().write_csv(
         out_dir / f"shap_category_{country_code}.csv"
     )
-    pd.DataFrame(stability).to_csv(
-        out_dir / f"shap_stability_{country_code}.csv", index=False
-    )
+    pl.DataFrame(stability).write_csv(out_dir / f"shap_stability_{country_code}.csv")
     print(
         f"Saved SHAP for {country_code}: {len(feature_names)} columns in {len(group_names)} groups, "
         f"seed rank agreement {np.mean([s['rank_corr_mean'] for s in stability]):.2f}"

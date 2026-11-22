@@ -1,9 +1,13 @@
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import polars as pl
 
-from scripts.preprocess_all import delay_hourly_actuals, hourly_energy, timelag_expressions
+from scripts.preprocess_all import (
+    delay_hourly_actuals,
+    hourly_energy,
+    timelag_expressions,
+)
 
 
 class ResamplingTests(unittest.TestCase):
@@ -11,7 +15,7 @@ class ResamplingTests(unittest.TestCase):
         frame = pl.DataFrame(
             {
                 "timestamp": [
-                    datetime(2025, 1, 1, 0, minute, tzinfo=timezone.utc)
+                    datetime(2025, 1, 1, 0, minute, tzinfo=UTC)
                     for minute in (0, 15, 30, 45)
                 ],
                 "volume": [1.0, 2.0, 3.0, 4.0],
@@ -35,14 +39,13 @@ class ResamplingTests(unittest.TestCase):
 
     def test_hourly_actuals_are_available_from_last_quarter(self):
         timestamps = [
-            datetime(2025, 1, 1, 0, minute, tzinfo=timezone.utc)
-            for minute in (0, 15, 30, 45)
-        ] + [
-            datetime(2025, 1, 1, 1, minute, tzinfo=timezone.utc)
-            for minute in (0, 15, 30, 45)
-        ]
+            datetime(2025, 1, 1, 0, minute, tzinfo=UTC) for minute in (0, 15, 30, 45)
+        ] + [datetime(2025, 1, 1, 1, minute, tzinfo=UTC) for minute in (0, 15, 30, 45)]
         frame = pl.DataFrame(
-            {"timestamp": timestamps, "actual": [10.0, None, None, None, 20.0, None, None, None]}
+            {
+                "timestamp": timestamps,
+                "actual": [10.0, None, None, None, 20.0, None, None, None],
+            }
         )
 
         result = delay_hourly_actuals(frame, ["actual"])
