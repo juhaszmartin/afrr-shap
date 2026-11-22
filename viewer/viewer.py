@@ -15,11 +15,12 @@ error by hour of day) · Drivers (what the MLP's forecasts depend on) · About.
 import json
 import os
 import re
+from datetime import UTC, datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import numpy as np
-import pandas as pd
 import plotly.graph_objects as go
 import polars as pl
 import yaml
@@ -191,6 +192,11 @@ def _metric_files():
     return sorted(RESULTS.glob("*/metrics_*.csv")) + sorted(ZOO.glob("metrics/*.csv"))
 
 
+def missing(v):
+    """True for None and NaN."""
+    return v is None or bool(np.isnan(v))
+
+
 def data():
     """All metrics, reloaded when any metrics file is added or changed."""
     files = _metric_files()
@@ -200,41 +206,66 @@ def data():
     frames = []
     for f in files:
         try:
-            frames.append(pd.read_csv(f, usecols=["Country", "Split", "Model", "Series", "Horizon", "Group", "MAE",
-                                                  "RMSE", "R2"]))
+            frames.append(pl.read_csv(f, columns=["Country", "Split", "Model", "Series", "Horizon", "Group", "MAE",
+                                                  "RMSE"], schema_overrides={"MAE": pl.Float64, "RMSE": pl.Float64}))
         except Exception:  # noqa: BLE001  (file being written)
             continue
-    m = pd.concat(frames, ignore_index=True)
-    m = m[~m["Group"].str.contains("single")].copy()
-    m["Kind"] = m["Series"].map(kind_of)
-    m = m.drop_duplicates(["Country", "Split", "Model", "Series", "Horizon"], keep="last")
-    per = m.pivot_table(index=["Split", "Country", "Kind", "Horizon"], columns="Model", values=["MAE", "RMSE"])
-    models = sorted(per["MAE"].columns, key=model_order)
-    horizons = sorted(m["Horizon"].unique(), key=lambda h: (h.endswith("h"), horizon_minutes(h)))
-    _STATE.update(stamp=stamp, metrics=m, per=per, models=models, horizons=horizons,
-                  countries=sorted(m["Country"].unique()), updated=pd.Timestamp(stamp[1], unit="s"))
+    series = pl.col("Series")
+    m = (pl.concat(frames, how="vertical_relaxed")
+         .filter(~pl.col("Group").str.contains("single"))
+         .with_columns(pl.col("MAE", "RMSE").fill_nan(None),
+                       Kind=pl.when(series.str.contains("volume")).then(pl.lit("volume"))
+                       .when(series.str.contains("long")).then(pl.lit("long")).otherwise(pl.lit("short")))
+         .unique(["Country", "Split", "Model", "Series", "Horizon"], keep="last", maintain_order=True))
+    columns = sorted(m.filter(pl.col("MAE").is_not_null())["Model"].unique().to_list())
+    horizons = sorted(m["Horizon"].unique().to_list(), key=lambda h: (h.endswith("h"), horizon_minutes(h)))
+    _STATE.update(stamp=stamp, metrics=m, model_columns=columns, models=sorted(columns, key=model_order),
+                  horizons=horizons, countries=sorted(m["Country"].unique().to_list()),
+                  updated=datetime.fromtimestamp(stamp[1], UTC))
     return _STATE
 
 
 def group_values(split, kinds, metric, horizon="all"):
-    """Metric per country/target group and model: one horizon, or the mean over a group's horizons."""
-    p = data()["per"][metric].loc[split]
-    p = p[p.index.get_level_values("Kind").isin(kinds)]
-    if horizon == "all":
-        return p.groupby(level=["Country", "Kind"]).mean()
-    if horizon not in p.index.get_level_values("Horizon"):
-        return p.iloc[:0].droplevel("Horizon")
-    return p.xs(horizon, level="Horizon")
+    """Metric per country/target group (rows: Country, Kind, sorted) and model (one column each, null where a model
+    has no result): one horizon, or the mean over a group's horizons."""
+    d = data()
+    m = d["metrics"].filter((pl.col("Split") == split) & pl.col("Kind").is_in(list(kinds)))
+    if horizon != "all":
+        m = m.filter(pl.col("Horizon") == horizon)
+    wide = (m.group_by("Country", "Kind", "Model").agg(pl.col(metric).mean())
+            .pivot(on="Model", index=["Country", "Kind"], values=metric))
+    if "Country" not in wide.columns:  # nothing selected
+        wide = pl.DataFrame(schema={"Country": pl.String, "Kind": pl.String})
+    wide = wide.with_columns(pl.lit(None, pl.Float64).alias(c) for c in d["model_columns"] if c not in wide.columns)
+    return wide.select("Country", "Kind", *d["model_columns"]).sort("Country", "Kind")
 
 
 def kinds_for(cc):
-    m = data()["metrics"]
-    return [k for k in KINDS if ((m["Country"] == cc) & (m["Kind"] == k)).any()]
+    have = set(data()["metrics"].filter(pl.col("Country") == cc)["Kind"].unique().to_list())
+    return [k for k in KINDS if k in have]
 
 
 def horizons_for(cc):
-    m = data()["metrics"]
-    return sorted(m.loc[m["Country"] == cc, "Horizon"].unique(), key=horizon_minutes)
+    m = data()["metrics"].filter(pl.col("Country") == cc)
+    return sorted(m["Horizon"].unique().to_list(), key=horizon_minutes)
+
+
+def row_ranks(a):
+    """Average ranks (1 = smallest, ties share their mean rank) along each row of a 2-D array."""
+    n, k = a.shape
+    long = pl.DataFrame({"row": np.repeat(np.arange(n), k), "v": a.ravel()})
+    return long.select(pl.col("v").rank("average").over("row"))["v"].to_numpy().reshape(n, k)
+
+
+def vs_naive(g, cols):
+    """Rows of g where naive and every model in cols have a value: (naive, model values, is-volume mask)."""
+    complete = g.select("Kind", "naive", *cols).drop_nulls()
+    a = complete.select("naive", *cols).to_numpy()
+    return a[:, 0], a[:, 1:], (complete["Kind"] == "volume").to_numpy()
+
+
+def col_median(a, mask):
+    return np.median(a[mask], axis=0) if mask.any() else np.full(a.shape[1], np.nan)
 
 
 def default_models(models, single_seed=False):
@@ -252,32 +283,39 @@ def default_models(models, single_seed=False):
 
 def leaderboard(split, kinds, models, metric="MAE", horizon="all"):
     """Per model, over the groups where every model has results: relative skill (median, mean, 10th percentile),
-    share of groups beating naive, absolute reduction of the metric vs naive (prices and volumes apart), wins, rank."""
+    share of groups beating naive, absolute reduction of the metric vs naive (prices and volumes apart), wins, rank.
+
+    Returns (stats, coverage, groups, scored, naive_error): stats maps model -> row dict, ordered by median skill with
+    naive last; coverage maps model -> groups with a result; scored is the number of groups every model has;
+    naive_error is the median naive error of the scored price and volume groups."""
     g = group_values(split, kinds, metric, horizon)
     cols = [mdl for mdl in models if mdl in g.columns]
-    complete = g[["naive", *cols]].dropna()
-    coverage = g[cols].notna().sum()
-    if complete.empty or not cols:
-        return None, coverage, len(g), complete
-    skill = 1 - complete[cols].div(complete["naive"], axis=0)
-    reduction = -complete[cols].sub(complete["naive"], axis=0)
-    is_vol = complete.index.get_level_values("Kind") == "volume"
-    best = complete.idxmin(axis=1)
-    rank = complete.rank(axis=1)
-    stats = pd.DataFrame({
-        "median": skill.median(),
-        "mean": skill.mean(),
-        "p10": skill.quantile(0.1),
-        "beats": (skill > 0).mean() * 100,
-        "red_price": reduction[~is_vol].median() if (~is_vol).any() else np.nan,
-        "red_volume": reduction[is_vol].median() if is_vol.any() else np.nan,
-        "wins": best.value_counts().reindex(cols).fillna(0).astype(int),
-        "rank": rank[cols].mean(),
-    }).sort_values("median", ascending=False)
-    stats.loc["naive"] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, int((best == "naive").sum()), rank["naive"].mean()]
-    stats.attrs["naive_price"] = complete.loc[~is_vol, "naive"].median() if (~is_vol).any() else np.nan
-    stats.attrs["naive_volume"] = complete.loc[is_vol, "naive"].median() if is_vol.any() else np.nan
-    return stats, coverage, len(g), complete
+    coverage = {c: g[c].count() for c in cols}
+    naive, vals, is_vol = vs_naive(g, cols)
+    if not len(naive) or not cols:
+        return None, coverage, g.height, len(naive), None
+    skill = 1 - vals / naive[:, None]
+    reduction = naive[:, None] - vals
+    both = np.column_stack([naive, vals])
+    best = both.argmin(axis=1)  # 0 = naive
+    rank = row_ranks(both)
+    stats = pl.DataFrame({
+        "model": cols,
+        "median": np.median(skill, axis=0),
+        "mean": skill.mean(axis=0),
+        "p10": np.quantile(skill, 0.1, axis=0),
+        "beats": (skill > 0).mean(axis=0) * 100,
+        "red_price": col_median(reduction, ~is_vol),
+        "red_volume": col_median(reduction, is_vol),
+        "wins": np.bincount(best, minlength=len(cols) + 1)[1:],
+        "rank": rank[:, 1:].mean(axis=0),
+    }).sort("median", descending=True, maintain_order=True)
+    rows = {r["model"]: r for r in stats.iter_rows(named=True)}
+    rows["naive"] = {"model": "naive", "median": 0.0, "mean": 0.0, "p10": 0.0, "beats": 0.0, "red_price": 0.0,
+                     "red_volume": 0.0, "wins": int((best == 0).sum()), "rank": float(rank[:, 0].mean())}
+    naive_error = {"price": float(np.median(naive[~is_vol])) if (~is_vol).any() else np.nan,
+                   "volume": float(np.median(naive[is_vol])) if is_vol.any() else np.nan}
+    return rows, coverage, g.height, len(naive), naive_error
 
 
 # ------------------------------------------------------------------------------------------------ predictions
@@ -297,41 +335,50 @@ def _pred_column(cc, target, model, stamp):
     for path in (main, zoo):
         if col in _schema(path):
             df = pl.read_parquet(path, columns=["timestamp", "split", col])
-            ts = df["timestamp"]
-            if getattr(ts.dtype, "time_zone", None):
+            ts = pl.col("timestamp")
+            if getattr(df.schema["timestamp"], "time_zone", None):
                 ts = ts.dt.convert_time_zone("UTC").dt.replace_time_zone(None)
-            return pd.DataFrame({"timestamp": ts.cast(pl.Datetime("us")).to_numpy(), "split": df["split"].to_numpy(),
-                                 "value": df[col].to_numpy()})
+            return df.select(ts.cast(pl.Datetime("us")), "split", pl.col(col).cast(pl.Float64).fill_nan(None)
+                             .alias("value"))
     if model in COMBO_MEMBERS:
         parts = [_pred_column(cc, target, mm, stamp) for mm in COMBO_MEMBERS[model]]
         if all(p is not None for p in parts):
-            out = parts[0][["timestamp", "split"]].copy()
-            merged = parts[0].set_index("timestamp")[["value"]]
+            out = parts[0].rename({"value": "v0"})
             for i, p in enumerate(parts[1:], 1):
-                merged = merged.join(p.set_index("timestamp")["value"].rename(f"v{i}"), how="left")
-            out["value"] = merged.mean(axis=1, skipna=False).to_numpy()
-            return out
+                out = out.join(p.select("timestamp", pl.col("value").alias(f"v{i}")), on="timestamp", how="left",
+                               maintain_order="left")
+            # missing in any member -> missing average
+            total = pl.sum_horizontal(f"v{i}" for i in range(len(parts)))
+            any_missing = pl.any_horizontal(pl.col(f"v{i}").is_null() for i in range(len(parts)))
+            return out.select("timestamp", "split",
+                              pl.when(any_missing).then(None).otherwise(total / len(parts)).alias("value"))
     return None
 
 
 def predictions(cc, target, models, split):
-    """Wide frame: target time (local), actual, one column per model with predictions."""
+    """Frame of target time (local, column 'time'), actual and one column per model with predictions."""
     stamp = data()["stamp"]
     actual = _pred_column(cc, target, "actual", stamp)
     if actual is None:
         return None, []
-    df = actual[actual["split"] == split].set_index("timestamp")[["value"]].rename(columns={"value": "actual"})
+    df = actual.filter(pl.col("split") == split).select("timestamp", pl.col("value").alias("actual"))
     have = []
-    for mdl in models:
+    for mdl in dict.fromkeys(models):
         p = _pred_column(cc, target, mdl, stamp)
         if p is None:
             continue
-        df[mdl] = p.set_index("timestamp")["value"].reindex(df.index)
+        df = df.join(p.select("timestamp", pl.col("value").alias(mdl)), on="timestamp", how="left",
+                     maintain_order="left")
         have.append(mdl)
     h = horizon_minutes(target.rsplit("_", 1)[1])
-    t = (df.index + pd.Timedelta(minutes=h)).tz_localize("UTC").tz_convert(timezones().get(cc, "UTC"))
-    df.index = t.rename("time")
+    time = (pl.col("timestamp") + pl.duration(minutes=h)).dt.replace_time_zone("UTC")
+    df = df.select(time.dt.convert_time_zone(timezones().get(cc, "UTC")).alias("time"), pl.exclude("timestamp"))
     return df, have
+
+
+def shift_days(t, days):
+    """An aware datetime moved by an exact number of 24 h days, kept in its own time zone."""
+    return (t.astimezone(UTC) + timedelta(days=days)).astimezone(t.tzinfo)
 
 
 # ------------------------------------------------------------------------------------------------ SHAP files
@@ -358,7 +405,7 @@ def shap_countries(model="nn"):
 
 @lru_cache(maxsize=256)
 def _csv(path, mtime):
-    return pd.read_csv(path)
+    return pl.read_csv(path, infer_schema_length=None)
 
 
 def shap_table(kind, cc, model="nn"):
@@ -440,7 +487,7 @@ def radio(id_, options, value):
 
 
 def fmt_skill(v):
-    return "–" if pd.isna(v) else f"{v:+.3f}"
+    return "–" if missing(v) else f"{v:+.3f}"
 
 
 SPLITS = [{"label": "Test · 2026", "value": "test"}, {"label": "Dev · 2025", "value": "dev"}]
@@ -638,28 +685,25 @@ def show_page(tab):
 
 # ------------------------------------------------------------------------------------------------ leaderboard
 def fmt_red(v, unit):
-    return "–" if pd.isna(v) else f"{v:+.1f} {unit}"
+    return "–" if missing(v) else f"{v:+.1f} {unit}"
 
 
 def horizon_profile(split, kinds, models, metric):
-    """Median skill and median absolute reduction per horizon and model, over the groups each model has."""
-    p = data()["per"][metric].loc[split]
-    p = p[p.index.get_level_values("Kind").isin(kinds)]
+    """Per horizon, model -> median skill, share beating naive and median absolute reduction, over the groups where
+    naive and every model have a result."""
     out = {}
     for h in data()["horizons"]:
-        if h not in p.index.get_level_values("Horizon"):
-            continue
-        g = p.xs(h, level="Horizon")
+        g = group_values(split, kinds, metric, h)
         cols = [m for m in models if m in g.columns]
-        g = g[["naive", *cols]].dropna()
-        if g.empty:
+        naive, vals, vol = vs_naive(g, cols)
+        if not len(naive):
             continue
-        sk = 1 - g[cols].div(g["naive"], axis=0)
-        red = -g[cols].sub(g["naive"], axis=0)
-        vol = g.index.get_level_values("Kind") == "volume"
-        out[h] = pd.DataFrame({"skill": sk.median(), "beats": (sk > 0).mean() * 100,
-                               "red_price": red[~vol].median() if (~vol).any() else np.nan,
-                               "red_volume": red[vol].median() if vol.any() else np.nan, "n": len(g)})
+        sk = 1 - vals / naive[:, None]
+        red = naive[:, None] - vals
+        med, beats = np.median(sk, axis=0), (sk > 0).mean(axis=0) * 100
+        rp, rv = col_median(red, ~vol), col_median(red, vol)
+        out[h] = {m: {"skill": med[j], "beats": beats[j], "red_price": rp[j], "red_volume": rv[j], "n": len(naive)}
+                  for j, m in enumerate(cols)}
     return out
 
 
@@ -676,44 +720,45 @@ def update_leaderboard(split, kinds, families, single, metric, horizon):
         e = empty("Nothing selected")
         return [], "Select at least one target and one model family.", "", None, e, "", e
     # models still running (results for under half the groups) would shrink the common set; set them aside
-    _, coverage, n_groups, _ = leaderboard(split, kinds, models, metric, horizon)
-    sparse = coverage[coverage < 0.5 * coverage.max()].sort_values()
-    models = [m for m in models if m not in sparse.index]
-    stats, coverage, n_groups, complete = leaderboard(split, kinds, models, metric, horizon)
+    _, coverage, n_groups, _, _ = leaderboard(split, kinds, models, metric, horizon)
+    most = max(coverage.values(), default=0)
+    sparse = sorted(((m, c) for m, c in coverage.items() if c < 0.5 * most), key=lambda x: x[1])
+    models = [m for m in models if m not in dict(sparse)]
+    stats, coverage, n_groups, n_scored, naive_error = leaderboard(split, kinds, models, metric, horizon)
     if stats is None:
         e = empty("No common groups")
         return [], "No country/target group has results for every selected model at this horizon.", "", None, e, "", e
 
-    partial = coverage[coverage < n_groups].sort_values()
+    partial = sorted(((m, c) for m, c in coverage.items() if c < n_groups), key=lambda x: x[1])
     note = []
-    if len(complete) < n_groups:
-        note.append(f"Scored on the {len(complete)} of {n_groups} country/target groups where every model shown has "
+    if n_scored < n_groups:
+        note.append(f"Scored on the {n_scored} of {n_groups} country/target groups where every model shown has "
                     "results" + (" (missing: " + ", ".join(f"{model_label(m)} {int(c)}/{n_groups}"
-                                                          for m, c in partial.items()) + ")" if len(partial) else "")
+                                                          for m, c in partial) + ")" if partial else "")
                     + ". ")
-    if len(sparse):
+    if sparse:
         note.append("Not shown yet, too few results: " + ", ".join(
-            f"{model_label(m)} ({int(c)}/{n_groups})" for m, c in sparse.items()) + ".")
+            f"{model_label(m)} ({int(c)}/{n_groups})" for m, c in sparse) + ".")
 
     hz_txt = "mean over horizons" if horizon == "all" else horizon_label(horizon)
-    learned = stats.drop(index="naive")
-    top = learned.index[0]
-    most_wins = learned["wins"].idxmax()
+    learned = {m: r for m, r in stats.items() if m != "naive"}
+    top = next(iter(learned))
+    most_wins = max(learned, key=lambda m: learned[m]["wins"])
     has_price, has_vol = any(k != "volume" for k in kinds), "volume" in kinds
     red_sub = " · ".join(x for x in [
-        f"{learned.loc[top, 'red_price']:+.1f} EUR/MWh on prices" if has_price else "",
-        f"{learned.loc[top, 'red_volume']:+.1f} MWh on volumes" if has_vol else ""] if x)
-    n_naive = int(stats.loc["naive", "wins"])
+        f"{learned[top]['red_price']:+.1f} EUR/MWh on prices" if has_price else "",
+        f"{learned[top]['red_volume']:+.1f} MWh on volumes" if has_vol else ""] if x)
+    n_naive = int(stats["naive"]["wins"])
     kpis = [
         kpi(f"Best by median {metric} skill", model_label(top),
-            f"{learned.loc[top, 'median'] * 100:+.1f} % {metric} vs naive · {red_sub}", "good"),
-        kpi("Most often best", model_label(most_wins), f"lowest {metric} in {int(learned.loc[most_wins, 'wins'])} of "
-            f"{len(complete)} groups"),
+            f"{learned[top]['median'] * 100:+.1f} % {metric} vs naive · {red_sub}", "good"),
+        kpi("Most often best", model_label(most_wins), f"lowest {metric} in {int(learned[most_wins]['wins'])} of "
+            f"{n_scored} groups"),
         kpi("Naive is best in", f"{n_naive} group" + ("" if n_naive == 1 else "s"), "no model beats persistence there",
             "bad" if n_naive else "good"),
         kpi("Naive error (median group)", " · ".join(x for x in [
-            f"{stats.attrs['naive_price']:.0f} EUR/MWh" if has_price else "",
-            f"{stats.attrs['naive_volume']:.0f} MWh" if has_vol else ""] if x), f"{metric}, {hz_txt}, {split}"),
+            f"{naive_error['price']:.0f} EUR/MWh" if has_price else "",
+            f"{naive_error['volume']:.0f} MWh" if has_vol else ""] if x), f"{metric}, {hz_txt}, {split}"),
     ]
     caption = (f"{metric} skill = 1 − {metric} / {metric}(naive) per country/target group ({hz_txt}); "
                f"+10 % means a {metric} 10 % below persistence. ‘Worst 10 %’ is the 10th percentile of skill over groups "
@@ -721,14 +766,14 @@ def update_leaderboard(split, kinds, families, single, metric, horizon):
                f"in EUR/MWh (price groups) or MWh (volume groups). ‘Best in’ counts groups where the model has the lowest "
                f"{metric} of those shown.")
 
-    vmax = max(0.05, learned["median"].abs().max())
+    vmax = max(0.05, max(abs(r["median"]) for r in learned.values()))
     heads = ["#", "Model", "Family", f"Median {metric} skill", "Mean", "Worst 10 %", "Beats naive"]
     heads += ["Reduction, prices"] if has_price else []
     heads += ["Reduction, volumes"] if has_vol else []
     heads += ["Best in", "Mean rank"]
     head = html.Tr([html.Th(h, className="w-bar" if h.startswith("Median") else "") for h in heads])
     body = []
-    for i, (m, r) in enumerate(stats.iterrows(), 1):
+    for i, (m, r) in enumerate(stats.items(), 1):
         w = abs(r["median"]) / vmax * 100
         bar = html.Div([html.Div(className="bar " + ("pos" if r["median"] >= 0 else "neg"),
                                  style={"width": f"{w * 0.75:.0f}%"}),
@@ -747,21 +792,21 @@ def update_leaderboard(split, kinds, families, single, metric, horizon):
     table = html.Table([html.Thead(head), html.Tbody(body)], className="table nowrap")
 
     # skill by horizon across all countries: 15-min horizons left, hourly right
-    prof = horizon_profile(split, kinds, list(learned.index), metric)
+    prof = horizon_profile(split, kinds, list(learned), metric)
     hs15 = [h for h in prof if h.endswith("min")]
     hs60 = [h for h in prof if h.endswith("h")]
     from plotly.subplots import make_subplots
     hfig = make_subplots(rows=1, cols=2, shared_yaxes=True, column_widths=[0.68, 0.32], horizontal_spacing=0.04,
                          subplot_titles=("15-min countries", "hourly countries"))
-    shown = list({model_family(m_): m_ for m_ in learned.index[::-1]}.values())  # best model of each family
-    for mdl in learned.index:
+    shown = list({model_family(m_): m_ for m_ in list(learned)[::-1]}.values())  # best model of each family
+    for mdl in learned:
         vis = True if mdl in shown else "legendonly"
         for col, hs in ((1, hs15), (2, hs60)):
             if not hs:
                 continue
-            y = [prof[h].loc[mdl, "skill"] if mdl in prof[h].index else None for h in hs]
-            cd = [[prof[h].loc[mdl, "red_price"], prof[h].loc[mdl, "red_volume"], prof[h].loc[mdl, "beats"],
-                   prof[h].loc[mdl, "n"]] if mdl in prof[h].index else [None] * 4 for h in hs]
+            y = [prof[h][mdl]["skill"] if mdl in prof[h] else None for h in hs]
+            cd = [[prof[h][mdl][k] for k in ("red_price", "red_volume", "beats", "n")] if mdl in prof[h]
+                  else [None] * 4 for h in hs]
             hfig.add_trace(go.Scatter(
                 x=[horizon_label(h) for h in hs], y=y, name=model_label(mdl), legendgroup=mdl, showlegend=col == 1,
                 mode="lines+markers", visible=vis, line=dict(color=model_color(mdl), width=2.4), marker=dict(size=7),
@@ -779,18 +824,19 @@ def update_leaderboard(split, kinds, families, single, metric, horizon):
 
     # heatmap over every group (blank where a model has no result), columns in ranking order
     g = group_values(split, kinds, metric, horizon)
-    cols = ["naive", *[m for m in learned.index if m in g.columns]]
-    skill = 1 - g[cols].div(g["naive"], axis=0)
-    best = g[cols].idxmin(axis=1)
-    ylab = [f"{cc} · {KINDS[k]}" for cc, k in skill.index]
+    cols = ["naive", *[m for m in learned if m in g.columns]]
+    vals = g.select(cols).to_numpy()  # missing results are NaN
+    skill = 1 - vals / vals[:, [0]]
+    best = [None if np.isnan(r).all() else cols[int(np.nanargmin(r))] for r in vals]
+    groups = list(zip(g["Country"], g["Kind"]))
+    ylab = [f"{cc} · {KINDS[k]}" for cc, k in groups]
     xlab = [model_label(m) for m in cols]
-    text = [[("★ " if best.iloc[i] == m else "") + ("" if pd.isna(v) else f"{v:.2f}") for m, v in zip(cols, row)]
-            for i, row in enumerate(skill.to_numpy())]
-    units = [UNITS[k] for _, k in skill.index]
-    custom = [[[cc, k, m, g.iloc[i][m], g.iloc[i]["naive"], units[i]] for m in cols]
-              for i, (cc, k) in enumerate(skill.index)]
+    text = [[("★ " if best[i] == m else "") + ("" if missing(v) else f"{v:.2f}") for m, v in zip(cols, row)]
+            for i, row in enumerate(skill)]
+    custom = [[[cc, k, m, vals[i, j], vals[i, 0], UNITS[k]] for j, m in enumerate(cols)]
+              for i, (cc, k) in enumerate(groups)]
     fig = go.Figure(go.Heatmap(
-        z=skill.to_numpy(), x=xlab, y=ylab, text=text, texttemplate="%{text}", textfont=dict(size=10),
+        z=skill, x=xlab, y=ylab, text=text, texttemplate="%{text}", textfont=dict(size=10),
         customdata=custom, zmid=0, zmin=-0.3, zmax=0.3, xgap=1, ygap=1,
         colorscale=[[0, "#c0392b"], [0.35, "#7a2f35"], [0.5, "#262a38"], [0.65, "#22577a"], [1, "#4ea8de"]],
         colorbar=dict(title=dict(text=f"{metric} skill", side="right"), thickness=12, len=0.5, y=1, yanchor="top"),
@@ -836,17 +882,20 @@ def country_options(cc, horizon):
               Input("cx-models", "value"), Input("cx-metric", "value"), Input("cx-view", "value"))
 def country_summary(cc, kind, split, models, metric, view):
     metric = metric or "MAE"
-    m = data()["metrics"]
-    sel = m[(m["Country"] == cc) & (m["Kind"] == kind) & (m["Split"] == split)]
-    if sel.empty:
+    sel = data()["metrics"].filter((pl.col("Country") == cc) & (pl.col("Kind") == kind) & (pl.col("Split") == split))
+    if sel.is_empty():
         msg = f"No {KINDS[kind].lower()} results for {cc}" + (" (single-priced: short = long)" if kind == "short" else "")
         return [], empty(msg), None
-    val = sel.pivot_table(index="Horizon", columns="Model", values=metric)
-    val = val.loc[sorted(val.index, key=horizon_minutes)]
-    skill = 1 - val.div(val["naive"], axis=0)
-    avg = val.mean()
-    best = avg.drop("naive").idxmin()
-    shown = [x for x in (models or []) if x in val.columns]
+    wide = (sel.group_by("Horizon", "Model").agg(pl.col(metric).mean()).drop_nulls(metric)
+            .pivot(on="Model", index="Horizon", values=metric))
+    hz = sorted(wide["Horizon"].to_list(), key=horizon_minutes)
+    wide = wide.sort(pl.col("Horizon").replace_strict(hz, list(range(len(hz)))))  # rows in horizon order
+    # model -> metric per horizon (NaN where missing), columns in alphabetical order
+    val = {c: wide[c].to_numpy() for c in sorted(c for c in wide.columns if c != "Horizon")}
+    skill = {c: 1 - v / val["naive"] for c, v in val.items()}
+    avg = {c: float(np.nanmean(v)) for c, v in val.items()}
+    best = min((c for c in avg if c != "naive"), key=avg.get)
+    shown = [x for x in (models or []) if x in val]
     sel_best = min(shown, key=lambda x: avg[x]) if shown else None
     unit = UNITS[kind]
 
@@ -862,7 +911,7 @@ def country_summary(cc, kind, split, models, metric, view):
     kpis.append(kpi("Models with results", str(len(avg) - 1), f"{cc} · {KINDS[kind].lower()} · {split}"))
 
     fig = go.Figure()
-    x = [horizon_label(h) for h in skill.index]
+    x = [horizon_label(h) for h in hz]
     if view == "abs":
         fig.add_trace(go.Scatter(x=x, y=val["naive"], name="Naive", mode="lines+markers",
                                  line=dict(color=model_color("naive"), width=2, dash="dot"),
@@ -885,15 +934,15 @@ def country_summary(cc, kind, split, models, metric, view):
     fig = styled(fig, 380, hovermode="x unified", legend={"orientation": "h", "y": -0.12, "x": 0, "yanchor": "top"})
 
     # table: every horizon, metric and change vs naive
-    head = html.Tr([html.Th("Model")] + [html.Th(horizon_label(h)) for h in val.index] + [html.Th("Mean")])
+    head = html.Tr([html.Th("Model")] + [html.Th(horizon_label(h)) for h in hz] + [html.Th("Mean")])
     rows = [html.Tr([html.Td("Naive", className="muted")]
                     + [html.Td(f"{v:.1f}", className="muted") for v in val["naive"]]
                     + [html.Td(f"{avg['naive']:.1f}", className="muted")], className="ref")]
     for mdl in sorted(shown, key=lambda x: avg[x]):
         cells = [html.Td(html.Span(model_label(mdl), className="model-name", style={"borderColor": model_color(mdl)}))]
-        for h in [*val.index, None]:
-            v = avg[mdl] if h is None else val.loc[h, mdl]
-            n = avg["naive"] if h is None else val.loc[h, "naive"]
+        for j in [*range(len(hz)), None]:
+            v = avg[mdl] if j is None else val[mdl][j]
+            n = avg["naive"] if j is None else val["naive"][j]
             sk = 1 - v / n
             cells.append(html.Td([html.Span(f"{v:.1f} "),
                                   html.Span(f"{sk * 100:+.1f} %", className="good-text" if sk > 0 else "neg-text")]))
@@ -917,9 +966,10 @@ def series_range(cc, kind, split, horizon, _a, _b, _c, window, date):
     if not horizon:
         return no_update, no_update, no_update
     df = _jump_targets(cc, kind, horizon, split)
-    if df is None or df.empty:
+    if df is None or df.is_empty():
         return None, None, None
-    lo, hi = df.index.min().date(), df.index.max().date()
+    first, last = df["time"].min(), df["time"].max()
+    lo, hi = first.date(), last.date()
     try:
         trig = ctx.triggered_id
     except Exception:  # noqa: BLE001  (called outside a request)
@@ -927,12 +977,12 @@ def series_range(cc, kind, split, horizon, _a, _b, _c, window, date):
     if trig == "cx-jump-start":
         start = lo
     elif trig == "cx-jump-spike":
-        err = (df["naive"] - df["actual"]).abs()
-        start = (err.idxmax() - pd.Timedelta(days=window / 2)).date()
+        worst = df["time"][(df["naive"] - df["actual"]).abs().arg_max()]
+        start = shift_days(worst, -window / 2).date()
     elif trig == "cx-jump-end" or not date:
-        start = (df.index.max() - pd.Timedelta(days=window)).date()
+        start = shift_days(last, -window).date()
     else:
-        start = pd.Timestamp(date).date()
+        start = datetime.fromisoformat(date).date()
     start = min(max(start, lo), hi)
     return str(lo), str(hi), str(start)
 
@@ -947,19 +997,21 @@ def country_series(cc, kind, split, models, horizon, start, window, metric="MAE"
         return empty(msg, 420), empty(msg, 380)
     target = f"{SERIES[kind]}_{horizon}"
     df, have = predictions(cc, target, ["naive", *(models or [])], split)
-    if df is None or df.empty:
+    if df is None or df.is_empty():
         return empty("No predictions saved for this country", 420), empty("No predictions", 380)
     unit = UNITS[kind]
     tz = timezones().get(cc, "UTC")
 
     # time series window
-    t0 = pd.Timestamp(start).tz_localize(tz) if start else df.index.max() - pd.Timedelta(days=window)
-    w = df[(df.index >= t0) & (df.index < t0 + pd.Timedelta(days=window))]
+    t0 = (datetime.fromisoformat(start).replace(tzinfo=ZoneInfo(tz)) if start
+          else shift_days(df["time"].max(), -window))
+    w = df.filter((pl.col("time") >= t0) & (pl.col("time") < shift_days(t0, window)))
+    x = w["time"].to_list()  # aware datetimes, so the axis shows local time
     ts = go.Figure()
-    ts.add_trace(go.Scatter(x=w.index, y=w["actual"], name="Actual", line=dict(color="#ffffff", width=2.2)))
+    ts.add_trace(go.Scatter(x=x, y=w["actual"].to_numpy(), name="Actual", line=dict(color="#ffffff", width=2.2)))
     for mdl in have:
         dash_ = "dot" if mdl == "naive" else "solid"
-        ts.add_trace(go.Scatter(x=w.index, y=w[mdl], name=model_label(mdl),
+        ts.add_trace(go.Scatter(x=x, y=w[mdl].to_numpy(), name=model_label(mdl),
                                 line=dict(color=model_color(mdl), width=1.6, dash=dash_), opacity=0.9))
     ts.update_yaxes(title=f"{KINDS[kind]} [{unit}]")
     ts.update_xaxes(title=None)
@@ -969,13 +1021,12 @@ def country_series(cc, kind, split, models, horizon, start, window, metric="MAE"
                                 font=dict(size=13, color=MUTED), x=0.01))
 
     # error by hour of day, whole split
-    hours = df.index.hour
+    by_hour = df.with_columns(hour=pl.col("time").dt.hour()).group_by("hour")
     hourly = go.Figure()
     for mdl in have:
-        err = df[mdl] - df["actual"]
-        e = (err.abs().groupby(hours).mean() if metric != "RMSE"
-             else np.sqrt((err ** 2).groupby(hours).mean()))
-        hourly.add_trace(go.Scatter(x=e.index, y=e.values, name=model_label(mdl), mode="lines",
+        err = pl.col(mdl) - pl.col("actual")
+        e = by_hour.agg((err.abs().mean() if metric != "RMSE" else (err ** 2).mean().sqrt()).alias("e")).sort("hour")
+        hourly.add_trace(go.Scatter(x=e["hour"].to_numpy(), y=e["e"].to_numpy(), name=model_label(mdl), mode="lines",
                                     line=dict(color=model_color(mdl), width=2, dash="dot" if mdl == "naive" else "solid")))
     hourly.update_xaxes(title="hour of day (local)", dtick=3, range=[-0.5, 23.5])
     hourly.update_yaxes(title=f"{metric or 'MAE'} [{unit}]", rangemode="tozero")
@@ -989,8 +1040,18 @@ def _shares(cc, kind, pos, model="nn"):
     if t is None or not cols:
         return None
     use = cols if pos == "avg" else [cols[0] if pos == "first" else cols[-1]]
-    v = t.set_index("Category")[use].mean(axis=1)
-    return v / v.sum()
+    v = t.select("Category", pl.mean_horizontal(use).alias("v"))
+    return dict(zip(v["Category"].to_list(), (v["v"] / v["v"].sum()).to_list()))
+
+
+def union(keys):
+    """Keys of several dicts: their common order when they all agree, else sorted."""
+    lists = [list(k) for k in keys]
+    return lists[0] if all(x == lists[0] for x in lists) else sorted(set().union(*lists))
+
+
+def ordered_categories(cats):
+    return [c for c in CATEGORIES if c in cats] + [c for c in cats if c not in CATEGORIES]
 
 
 @app.callback(Output("sh-countries", "figure"), Input("sh-kind", "value"), Input("sh-hpos", "value"),
@@ -1005,18 +1066,15 @@ def shap_countries_fig(kind, pos, sort_by, model="nn"):
             shares[cc] = s
     if not shares:
         return empty("No SHAP results")
-    df = pd.DataFrame(shares).T.fillna(0)
-    order = df.get(sort_by, pd.Series(0, index=df.index)).sort_values().index
-    df = df.loc[order]
-    cats = [c for c in CATEGORIES if c in df.columns] + [c for c in df.columns if c not in CATEGORIES]
+    ccs = sorted(shares, key=lambda cc: shares[cc].get(sort_by, 0.0))
     fig = go.Figure()
-    for c in cats:
-        fig.add_trace(go.Bar(y=df.index, x=df[c] * 100, name=cat_label(c), orientation="h",
-                             marker=dict(color=cat_color(c), line=dict(width=0)), customdata=df.index,
+    for c in ordered_categories(union(s.keys() for s in shares.values())):
+        fig.add_trace(go.Bar(y=ccs, x=np.array([shares[cc].get(c, 0.0) for cc in ccs]) * 100, name=cat_label(c),
+                             orientation="h", marker=dict(color=cat_color(c), line=dict(width=0)), customdata=ccs,
                              hovertemplate=f"<b>%{{y}}</b> · {cat_label(c)}: %{{x:.1f}} %<extra></extra>"))
     fig.update_xaxes(range=[0, 100], ticksuffix=" %")
     pos_txt = {"avg": "averaged over horizons", "first": "shortest horizon", "last": "longest horizon"}[pos]
-    styled(fig, max(380, 26 * len(df) + 120), barmode="stack", bargap=0.25,
+    styled(fig, max(380, 26 * len(ccs) + 120), barmode="stack", bargap=0.25,
            legend={"orientation": "h", "y": -0.06, "x": 0, "yanchor": "top", "traceorder": "normal"},
            margin={"l": 10, "r": 20, "t": 30, "b": 20})
     fig.update_layout(title=dict(text=f"{SHAP_MODELS[model][0]} · {KINDS[kind]} · {pos_txt} · sorted by "
@@ -1056,19 +1114,17 @@ def shap_detail(cc, kind, horizon, top_n, model="nn"):
              + (" · single-priced (same as long)" if single else ""))
 
     # top features
-    means = shap_table("mean_abs", cc, model)
-    imp = means.set_index("Feature")[use].mean(axis=1)
-    cat = means.set_index("Feature")["Category"]
-    top = imp.sort_values(ascending=False).head(top_n)[::-1]
+    top = (shap_table("mean_abs", cc, model).select("Feature", "Category", pl.mean_horizontal(use).alias("imp"))
+           .sort("imp", descending=True, maintain_order=True).head(top_n).reverse())
     feat = go.Figure()
-    for c in dict.fromkeys(cat[top.index]):
-        sel = top[cat[top.index] == c]
-        feat.add_trace(go.Bar(x=sel.values, y=sel.index, orientation="h", name=cat_label(c),
+    for c in dict.fromkeys(top["Category"].to_list()):
+        sel = top.filter(pl.col("Category") == c)
+        feat.add_trace(go.Bar(x=sel["imp"].to_numpy(), y=sel["Feature"].to_list(), orientation="h", name=cat_label(c),
                               marker_color=cat_color(c),
                               hovertemplate="%{y}<br>mean |SHAP| %{x:.4f}<extra>" + cat_label(c) + "</extra>"))
-    feat.update_yaxes(categoryorder="array", categoryarray=list(top.index))
+    feat.update_yaxes(categoryorder="array", categoryarray=top["Feature"].to_list())
     feat.update_xaxes(title="mean |SHAP|")
-    styled(feat, max(380, 24 * len(top) + 120), barmode="stack", showlegend=False,
+    styled(feat, max(380, 24 * top.height + 120), barmode="stack", showlegend=False,
            title=dict(text=title, font=dict(size=13, color=MUTED), x=0.01))
 
     # beeswarm: signed SHAP per row (mean over the chosen horizons), coloured by the feature's rank at t
@@ -1083,7 +1139,8 @@ def shap_detail(cc, kind, horizon, top_n, model="nn"):
         xs, ys, cs, hs = [], [], [], []
         for j, fi in enumerate(order):
             v = values[:, fi]
-            rank = pd.Series(v).rank(pct=True).to_numpy()
+            s = pl.Series(v, dtype=pl.Float64).fill_nan(None)
+            rank = (s.rank("average") / s.count()).to_numpy()  # percentile rank, NaN stays NaN
             x = raw[:, fi]
             # jitter scaled by local density so dense regions spread out
             hist, edges = np.histogram(x, bins=40)
@@ -1106,12 +1163,13 @@ def shap_detail(cc, kind, horizon, top_n, model="nn"):
         bees = empty("No per-row SHAP values saved")
 
     # horizon profile
-    t = shap_table("category", cc, model).set_index("Category")[cols]
-    sh = t / t.sum()
+    t = shap_table("category", cc, model)
+    sh = t.select("Category", *(pl.col(c) / pl.col(c).sum() for c in cols))  # share of each horizon's total
     prof = go.Figure()
     x = [horizon_label(c.rsplit("_", 1)[1]) for c in cols]
-    for c in [c for c in CATEGORIES if c in sh.index] + [c for c in sh.index if c not in CATEGORIES]:
-        prof.add_trace(go.Bar(x=x, y=sh.loc[c] * 100, name=cat_label(c), marker_color=cat_color(c),
+    rows = {r[0]: np.array(r[1:], dtype=float) for r in sh.iter_rows()}
+    for c in ordered_categories(rows):
+        prof.add_trace(go.Bar(x=x, y=rows[c] * 100, name=cat_label(c), marker_color=cat_color(c),
                               hovertemplate=f"{cat_label(c)}: %{{y:.1f}} %<extra>%{{x}}</extra>"))
     prof.update_yaxes(title="share of mean |SHAP| (%)", ticksuffix=" %", range=[0, 100])
     styled(prof, 420, barmode="stack", bargap=0.3, legend={"orientation": "h", "y": -0.1, "x": 0, "yanchor": "top"})
@@ -1121,10 +1179,15 @@ def shap_detail(cc, kind, horizon, top_n, model="nn"):
     method = f"{SHAP_MODELS[model][0]}: {SHAP_MODELS[model][2]}, {info.get('explained_rows', '?')} {info.get('split', '')} rows"
     badge = html.Span(method)
     if stab is not None:
-        s = stab[stab["Target"].isin(use)]
-        badge = html.Span([method, html.Br(), f"Seed stability: rank corr {s['rank_corr_mean'].mean():.2f}, "
-                                              f"top-10 overlap {s['top10_overlap_mean'].mean() * 100:.0f} %"])
+        s = stab.filter(pl.col("Target").is_in(use)).select("rank_corr_mean", "top10_overlap_mean").mean()
+        corr, overlap = (np.nan if missing(v) else v for v in s.row(0))
+        badge = html.Span([method, html.Br(), f"Seed stability: rank corr {corr:.2f}, top-10 overlap {overlap * 100:.0f} %"])
     return feat, bees, prof, badge
+
+
+def ranks(x, descending=False):
+    """Average ranks of a 1-D array (1 = smallest, or largest when descending)."""
+    return pl.Series(x).rank("average", descending=descending).to_numpy()
 
 
 @app.callback(Output("sh-cmp-inputs", "figure"), Output("sh-cmp-cats", "figure"), Output("sh-cmp-table", "children"),
@@ -1137,21 +1200,22 @@ def shap_compare(cc, kind, horizon, top_n):
         return e, e, None
     shares, cats = {}, {}
     for m in models:
-        t = shap_table("mean_abs", cc, m).set_index("Feature")
         use = shap_targets(cc, kind, m) if horizon == "avg" else [f"{SERIES[kind]}_{horizon}"]
-        v = t[use].mean(axis=1)
-        shares[m] = v / v.sum()
-        cats[m] = shares[m].groupby(t["Category"]).sum()
-    S = pd.DataFrame(shares).fillna(0)
+        t = (shap_table("mean_abs", cc, m).select("Feature", "Category", pl.mean_horizontal(use).alias("v"))
+             .with_columns(share=pl.col("v") / pl.col("v").sum()))
+        shares[m] = dict(zip(t["Feature"].to_list(), t["share"].to_list()))
+        cats[m] = dict(t.group_by("Category").agg(pl.col("share").sum()).sort("Category").iter_rows())
+    feats = union(s.keys() for s in shares.values())
+    S = np.array([[shares[m].get(f, 0.0) for m in models] for f in feats])  # input x model, 0 where absent
     k = min(top_n or 15, 25)
-    order = S.mean(axis=1).sort_values(ascending=False).index[:k]
-    R = S.rank(ascending=False).loc[order]
+    order = np.argsort(-S.mean(axis=1), kind="stable")[:k]
+    R = np.column_stack([ranks(S[:, j], descending=True) for j in range(len(models))])[order]
     labels = [SHAP_MODELS[m][0] for m in models]
-    z = S.loc[order].to_numpy() * 100
-    text = [[f"#{int(r)}" for r in row] for row in R.to_numpy()]
+    z = S[order] * 100
+    text = [[f"#{int(r)}" for r in row] for row in R]
     hz_txt = "average of horizons" if horizon == "avg" else horizon_label(horizon)
     f1 = go.Figure(go.Heatmap(
-        z=z, x=labels, y=list(order), text=text, texttemplate="%{text}", textfont=dict(size=10),
+        z=z, x=labels, y=[feats[i] for i in order], text=text, texttemplate="%{text}", textfont=dict(size=10),
         colorscale=[[0, "#20232f"], [0.15, "#22577a"], [1, "#4ea8de"]], zmin=0, xgap=2, ygap=2,
         colorbar=dict(title=dict(text="share %", side="right"), thickness=10, len=0.7),
         hovertemplate="%{y}<br>%{x}: %{z:.1f} % of total, rank %{text}<extra></extra>"))
@@ -1160,10 +1224,10 @@ def shap_compare(cc, kind, horizon, top_n):
     styled(f1, max(380, 24 * len(order) + 110), margin={"l": 10, "r": 10, "t": 60, "b": 10},
            title=dict(text=f"{cc} · {KINDS[kind]} · {hz_txt}", font=dict(size=13, color=MUTED), x=0.01, y=0.99))
 
-    C = pd.DataFrame(cats).fillna(0)
     f2 = go.Figure()
-    for c in [c for c in CATEGORIES if c in C.index] + [c for c in C.index if c not in CATEGORIES]:
-        f2.add_trace(go.Bar(y=labels, x=C.loc[c] * 100, name=cat_label(c), orientation="h", marker_color=cat_color(c),
+    for c in ordered_categories(union(x.keys() for x in cats.values())):
+        f2.add_trace(go.Bar(y=labels, x=np.array([cats[m].get(c, 0.0) for m in models]) * 100, name=cat_label(c),
+                            orientation="h", marker_color=cat_color(c),
                             hovertemplate=f"%{{y}} · {cat_label(c)}: %{{x:.1f}} %<extra></extra>"))
     f2.update_xaxes(range=[0, 100], ticksuffix=" %")
     f2.update_yaxes(autorange="reversed")
@@ -1172,14 +1236,15 @@ def shap_compare(cc, kind, horizon, top_n):
 
     head = html.Tr([html.Th("")] + [html.Th(lab) for lab in labels])
     body = []
-    for a_ in models:
+    top10 = [set(np.argsort(-S[:, j], kind="stable")[:10]) for j in range(len(models))]  # ties: first listed
+    for a, a_ in enumerate(models):
         cells = [html.Td(SHAP_MODELS[a_][0], className="muted")]
-        for b_ in models:
+        for b, b_ in enumerate(models):
             if a_ == b_:
                 cells.append(html.Td("–", className="muted"))
                 continue
-            rc = S[a_].rank().corr(S[b_].rank())
-            ov = len(set(S[a_].nlargest(10).index) & set(S[b_].nlargest(10).index))
+            rc = np.corrcoef(ranks(S[:, a]), ranks(S[:, b]))[0, 1]  # Spearman
+            ov = len(top10[a] & top10[b])
             cells.append(html.Td(f"ρ {rc:.2f} · top-10 {ov}/10",
                                  className="good-text" if rc >= 0.8 else ("neg-text" if rc < 0.5 else "")))
         body.append(html.Tr(cells))
