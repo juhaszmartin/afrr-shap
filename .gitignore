@@ -150,3 +150,13 @@ legacy/
 models/
 
 figures/*.npy
+
+archive/
+
+# scratch outputs
+temp/
+
+experiments/
+samples/
+figures/
+
