@@ -10,6 +10,12 @@ PROCESSED_DIR = DATA_DIR / "processed"
 REFERENCE_DIR = DATA_DIR / "reference"
 
 ENTSOE_DIR = RAW_DIR / "entsoe"
+BALTIC_DIR = RAW_DIR / "baltic"
 WEATHER_DIR = RAW_DIR / "weather"
 ERA5_RAW_DIR = INTERIM_DIR / "era5_raw"
 FX_RATES_PATH = REFERENCE_DIR / "ecb_eur_rates.csv"
+
+RESULTS_DIR = PROJECT_ROOT / "results"
+MODELS_DIR = PROJECT_ROOT / "models"
+FIGURES_DIR = PROJECT_ROOT / "figures"
+SAMPLES_DIR = PROJECT_ROOT / "samples"

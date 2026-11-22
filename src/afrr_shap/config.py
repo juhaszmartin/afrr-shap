@@ -26,6 +26,11 @@ def load_config(path=None):
     return config
 
 
+def dev_start(config):
+    dev_str = config["data"].get("dev_start", "2025-01-01T00:00:00+00:00")
+    return datetime.fromisoformat(dev_str).astimezone(UTC)
+
+
 def test_start(config):
     return datetime.fromisoformat(config["data"]["test_start"]).astimezone(UTC)
 
@@ -36,6 +41,7 @@ def shap_seeds(config):
 
 
 DEFAULT_CONFIG = load_config()
+DEV_START = dev_start(DEFAULT_CONFIG)
 TEST_START = test_start(DEFAULT_CONFIG)
 TIME_FEATURES = [
     "qh_of_day_sin",

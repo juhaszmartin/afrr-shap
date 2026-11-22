@@ -4,6 +4,7 @@
     python scripts/fill_entsoe_gaps.py update
     python scripts/fill_entsoe_gaps.py verify
     python scripts/fill_entsoe_gaps.py refresh --country BA --category load --year 2025
+    python scripts/fill_entsoe_gaps.py download --countries CZ,SI,EE   # a new country: every category, 2019 to DOWNLOAD_END
 
 Historical gap fills go into fill.parquet. The update command adds recent API data directly
 to data.parquet according to the configured lookback policy. Needs ENTSOE_API_KEY in .env.
@@ -492,6 +493,39 @@ def update_series(cc, cat):
     }
 
 
+DOWNLOAD_END = pd.Timestamp("2026-11-10", tz="UTC")  # in line with the end of the stored 2026 data
+
+
+def download_series(cc, cat):
+    """Downloads a series of a country that is not stored yet, one data.parquet per calendar year (UTC),
+    2019 up to DOWNLOAD_END. Years that already have a data.parquet are left alone."""
+    rep = {"years": [], "rows": 0, "unavailable": []}
+    for year in range(2019, DOWNLOAD_END.year + 1):
+        out = ENTSOE_DIR / cat / f"country={cc}" / f"year={year}"
+        if (out / "data.parquet").exists():
+            continue
+        lo = pd.Timestamp(f"{year}-01-01", tz="UTC")
+        hi = min(pd.Timestamp(f"{year + 1}-01-01", tz="UTC"), DOWNLOAD_END)
+        try:
+            df = query_series(cc, cat, lo, hi, ["timestamp"])
+        except NoMatchingDataError:
+            rep["unavailable"].append(year)
+            continue
+        except Exception as ex:  # noqa: BLE001 - keep going, but record it
+            rep["unavailable"].append([year, f"{type(ex).__name__}: {str(ex)[:120]}"])
+            continue
+        df = df[(df["timestamp"] >= lo) & (df["timestamp"] < hi)]
+        df = df.drop_duplicates(subset=series_key(cat)).sort_values("timestamp")
+        if df.empty:
+            rep["unavailable"].append(year)
+            continue
+        out.mkdir(parents=True, exist_ok=True)
+        pl.from_pandas(df).write_parquet(out / "data.parquet")
+        rep["years"].append(year)
+        rep["rows"] += len(df)
+    return rep
+
+
 def refresh_year(cc, cat, year):
     """Replaces one stored year with the current API version, for series the TSO revised after download.
     The originals are kept as data.parquet.bak / fill.parquet.bak, which the loaders do not read."""
@@ -656,13 +690,20 @@ def parse_args(argv=None):
         help="random days to check per series (default: 3)",
     )
 
+    download = commands.add_parser(
+        "download", help="download every category of a new country, 2019 to DOWNLOAD_END"
+    )
+    add_series_options(download)
+
     refresh = commands.add_parser("refresh", help="replace one complete stored year")
     refresh.add_argument("--country", required=True, help="country code")
     refresh.add_argument("--category", required=True, choices=list(QUERIES))
     refresh.add_argument("--year", required=True, type=int)
 
     args = parser.parse_args(argv)
-    if args.command in {"fill", "update", "verify"} and args.categories:
+    if args.command == "download" and not args.countries:
+        parser.error("download needs --countries (new countries are not on disk yet)")
+    if args.command in {"fill", "update", "verify", "download"} and args.categories:
         invalid = sorted(set(args.categories) - set(QUERIES))
         if invalid:
             parser.error(f"unknown category/categories: {', '.join(invalid)}")
@@ -697,6 +738,14 @@ def main(argv=None):
             workers=args.workers,
             log_path=LOG.with_name("verify_log.json"),
             n_days=args.days,
+        )
+    elif args.command == "download":
+        run_series_job(
+            download_series,
+            countries=args.countries,
+            cats=args.categories,
+            workers=args.workers,
+            log_path=LOG.with_name("download_log.json"),
         )
     else:
         print(refresh_year(args.country, args.category, args.year))

@@ -7,8 +7,8 @@ import polars as pl
 
 from afrr_shap.paths import FX_RATES_PATH
 
-CURRENCIES = ["HUF", "PLN", "RON", "HRK"]
-START, END = "2018-12-01", "2025-12-31"
+CURRENCIES = ["HUF", "PLN", "RON", "HRK", "CZK"]
+START, END = "2018-12-01", "2026-12-31"
 URL = "https://data-api.ecb.europa.eu/service/data/EXR/D.{cur}.EUR.SP00.A?format=csvdata&startPeriod={start}&endPeriod={end}"
 
 if __name__ == "__main__":

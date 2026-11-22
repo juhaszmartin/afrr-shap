@@ -52,3 +52,12 @@ CH:
 DE:
   timezone: Europe/Berlin
   resolution: 15min
+CZ:
+  timezone: Europe/Prague
+  resolution: 15min
+SI:
+  timezone: Europe/Ljubljana
+  resolution: 15min
+EE:
+  timezone: Europe/Tallinn
+  resolution: hourly

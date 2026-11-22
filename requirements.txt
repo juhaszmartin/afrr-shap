@@ -7,6 +7,7 @@ numpy==2.5.2
 holidays==0.103
 torch==2.13.0
 scikit-learn==1.9.0
+lightgbm==4.7.0
 shap==0.52.0
 matplotlib==3.11.1
 # Performance charts (plot_results.py)
@@ -21,5 +22,10 @@ cdsapi==0.7.7
 ecmwf-datastores-client==0.5.3
 xarray==2026.9.0
 netCDF4==1.7.5.1.post1
+# Results viewer (viewer/viewer.py)
+dash==4.5.0
+plotly==7.1.0
 # Notebooks in legacy/
 ipykernel==7.3.0
+# Tests
+pytest==9.2.0

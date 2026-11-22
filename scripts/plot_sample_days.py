@@ -1,245 +1,95 @@
-import pickle
-import re
-from pathlib import Path
+"""3-day plots of actuals against every model's forecast, from results/predictions/{CC}.parquet
+(written by train_models.py), for the last three days of the dev and the test split.
+
+Usage: python scripts/plot_sample_days.py [--split dev|test|all] [CC,CC,...]
+"""
+
+import argparse
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
-import numpy as np
 import polars as pl
-import polars.selectors as cs
-import torch
 
-from afrr_shap.config import TEST_START
-from afrr_shap.modeling.network import MultiOutputNN
-from afrr_shap.paths import PROCESSED_DIR
+from afrr_shap.modeling.metrics import base_series, horizon
+from afrr_shap.paths import RESULTS_DIR, SAMPLES_DIR
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# High-quality visual styling
 plt.style.use(
-    "seaborn-v0_8-whitegrid"
-    if "seaborn-v0_8-whitegrid" in plt.style.available
-    else "default"
+    "seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default"
 )
-plt.rcParams.update(
-    {
-        "font.size": 11,
-        "axes.labelsize": 12,
-        "axes.titlesize": 13,
-        "xtick.labelsize": 10,
-        "ytick.labelsize": 10,
-        "legend.fontsize": 10,
-        "figure.titlesize": 14,
-        "figure.autolayout": True,
-    }
-)
+plt.rcParams.update({"font.size": 11, "axes.titlesize": 13, "legend.fontsize": 10})
+
+MODEL_STYLE = {
+    "naive": {"color": "#9e9e9e", "linestyle": ":", "linewidth": 1.4},
+    "ridge": {"color": "#1f77b4", "linestyle": "--", "linewidth": 1.6},
+    "lightgbm": {"color": "#2ca02c", "linestyle": "--", "linewidth": 1.6},
+    "nn_ensemble": {"color": "#d62728", "linestyle": "-", "linewidth": 1.8},
+}
+SERIES_LABEL = {
+    "imbalance_price_long": "long price",
+    "imbalance_price_short": "short price",
+    "imbalance_volume": "volume",
+}
 
 
-def plot_sample_days_for_country(country_code, samples_dir):
-    x_path = PROCESSED_DIR / f"X_{country_code}.parquet"
-    y_path = PROCESSED_DIR / f"y_{country_code}.parquet"
-    model_path = Path(f"models/nn_100seeds_best_{country_code}.pt")
-    scaler_x_path = Path(f"models/scaler_X_100seeds_best_{country_code}.pkl")
-    scaler_y_path = Path(f"models/scaler_y_100seeds_best_{country_code}.pkl")
-
-    if not all(
-        p.exists() for p in [x_path, y_path, model_path, scaler_x_path, scaler_y_path]
-    ):
-        print(f"Skipping {country_code}: missing data or model files.")
+def plot_country(country_code, split):
+    path = RESULTS_DIR / "predictions" / f"{country_code}.parquet"
+    if not path.exists():
+        print(f"Skipping {country_code}: {path} not found.")
         return
-
-    print(f"\nGenerating sample inference plots for {country_code}...")
-
-    # Load data
-    X_full = pl.read_parquet(x_path)
-    y_full = pl.read_parquet(y_path)
-
-    # Filter test data in polars
-    X_test_full = X_full.filter(pl.col("timestamp") >= TEST_START)
-    y_test_full = y_full.filter(pl.col("timestamp") >= TEST_START)
-
-    if X_test_full.height == 0:
-        print(f"Skipping {country_code}: no test-year data.")
+    df = pl.read_parquet(path).filter(pl.col("split") == split)
+    if df.height == 0:
+        print(f"Skipping {country_code}: no {split} rows.")
         return
+    last = df["timestamp"].max()
+    df = df.filter(pl.col("timestamp") > last - pl.duration(days=3)).sort("timestamp")
+    ts = df["timestamp"].dt.replace_time_zone(None).to_numpy()
 
-    # Select numeric columns (excluding timestamp)
-    X_num = X_test_full.select(cs.numeric())
-    y_num = y_test_full.select(cs.numeric())
+    targets = [c for c in df.columns if c not in ("timestamp", "split") and "|" not in c]
+    models = [m for m in MODEL_STYLE if f"{targets[0]}|{m}" in df.columns]
+    out_dir = SAMPLES_DIR / split
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for old in out_dir.glob(f"{country_code}_*.png"):
+        old.unlink()
 
-    target_names = y_num.columns
-    ts_test = X_test_full["timestamp"].to_list()
-
-    # Load scalers and model
-    with open(scaler_x_path, "rb") as f:
-        scaler_X = pickle.load(f)
-    with open(scaler_y_path, "rb") as f:
-        scaler_y = pickle.load(f)
-
-    input_dim = X_num.width
-    output_dim = y_num.width
-
-    model = MultiOutputNN(input_dim, output_dim).to(device)
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model.eval()
-
-    # Calculate inference on test split
-    X_test_scaled = scaler_X.transform(X_num.to_numpy())
-    with torch.no_grad():
-        X_test_tensor = torch.tensor(X_test_scaled, dtype=torch.float32, device=device)
-        y_pred_scaled = model(X_test_tensor).cpu().numpy()
-
-    y_pred = scaler_y.inverse_transform(y_pred_scaled)
-    pred_df = pl.DataFrame(y_pred, schema=target_names)
-
-    # Determine last 3 days of the test split using polars
-    ts_series = pl.Series("timestamp", ts_test).cast(pl.Datetime)
-    max_time = ts_series.max()
-    min_3days = max_time - pl.duration(days=3)
-
-    mask_3days = (ts_series >= min_3days).to_numpy()
-    if mask_3days.sum() < 10:  # Fallback if timestamps are sparse
-        mask_3days = np.zeros(len(ts_test), dtype=bool)
-        mask_3days[-72:] = True
-
-    # Filter timestamps and data for plotting
-    plot_ts = ts_series.filter(pl.Series(mask_3days)).dt.replace_time_zone(None)
-    plot_y_true = y_num.filter(pl.Series(mask_3days))
-    plot_y_pred = pred_df.filter(pl.Series(mask_3days))
-
-    # Extract distinct timelags from target names
-    # e.g. '_t+15min', '_t+30min', '_t+1h', '_t+2h'
-    timelags = []
-    for col in target_names:
-        m = re.search(r"(_t\+[0-9]+(?:min|h))", col)
-        if m and m.group(1) not in timelags:
-            timelags.append(m.group(1))
-
-    # For each forecasted timelag, plot Price and Sysdir (Volume)
-    for lag in timelags:
-        lag_clean = lag.lstrip("_")
-
-        # 1. PRICE PLOT (Long and Short)
-        price_cols = [c for c in target_names if "imbalance_prices" in c and lag in c]
-        if price_cols:
-            fig, ax = plt.subplots(figsize=(14, 6))
-
-            for col in price_cols:
-                is_short = "Short" in col
-                color_fact = "#1f77b4" if not is_short else "#ff7f0e"
-                color_pred = "#2ca02c" if not is_short else "#d62728"
-                label_suffix = "Short" if is_short else "Long"
-
-                ax.plot(
-                    plot_ts,
-                    plot_y_true[col].to_numpy(),
-                    label=f"Fact ({label_suffix})",
-                    color=color_fact,
-                    linewidth=2.0,
-                    alpha=0.85,
-                )
-                ax.plot(
-                    plot_ts,
-                    plot_y_pred[col].to_numpy(),
-                    label=f"Model Est ({label_suffix})",
-                    color=color_pred,
-                    linewidth=2.0,
-                    linestyle="--",
-                    alpha=0.9,
-                )
-
-            # Metric on this 3-day sample
-            col0 = price_cols[0]
-            mae_sample = np.mean(np.abs(plot_y_true[col0].to_numpy() - plot_y_pred[col0].to_numpy()))
-
-            ax.set_title(
-                f"[{country_code}] Imbalance Price Forecast ({lag_clean}) — Last 3 Days of Test Split\n"
-                f"Sample MAE ({col0}): {mae_sample:.2f}",
-                fontweight="bold",
-            )
-            ax.set_xlabel("Time (UTC)")
-            ax.set_ylabel("Price")
-            ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d\n%H:%M"))
-            ax.legend(loc="upper right", frameon=True)
-            plt.tight_layout()
-
-            save_file = (
-                samples_dir / f"{country_code}_sample_3days_price_{lag_clean}.png"
-            )
-            plt.savefig(save_file, dpi=200)
-            plt.close(fig)
-
-        # 2. SYSDIR / VOLUME PLOT
-        vol_cols = [c for c in target_names if "imbalance_volumes" in c and lag in c]
-        if vol_cols:
-            vol_col = vol_cols[0]
-            fig, ax = plt.subplots(figsize=(14, 6))
-
-            ax.plot(
-                plot_ts,
-                plot_y_true[vol_col].to_numpy(),
-                label="Fact Sysdir / Volume",
-                color="#004c6d",
-                linewidth=2.2,
-                alpha=0.9,
-            )
-            ax.plot(
-                plot_ts,
-                plot_y_pred[vol_col].to_numpy(),
-                label="Model Est Sysdir / Volume",
-                color="#e34a33",
-                linewidth=2.0,
-                linestyle="--",
-                alpha=0.9,
-            )
-
-            # Draw zero reference line for system direction balance
-            ax.axhline(
-                0,
-                color="gray",
-                linestyle=":",
-                linewidth=1.2,
-                alpha=0.7,
-                label="System Balanced (0 MW)",
-            )
-
-            mae_vol = np.mean(np.abs(plot_y_true[vol_col].to_numpy() - plot_y_pred[vol_col].to_numpy()))
-            ax.set_title(
-                f"[{country_code}] System Direction / Imbalance Volume Forecast ({lag_clean}) — Last 3 Days\n"
-                f"Sample MAE: {mae_vol:.2f} MW",
-                fontweight="bold",
-            )
-            ax.set_xlabel("Time (UTC)")
-            ax.set_ylabel("Volume (MW)")
-            ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d\n%H:%M"))
-            ax.legend(loc="upper right", frameon=True)
-            plt.tight_layout()
-
-            save_file = (
-                samples_dir / f"{country_code}_sample_3days_sysdir_{lag_clean}.png"
-            )
-            plt.savefig(save_file, dpi=200)
-            plt.close(fig)
-
-    print(f"Finished sample plots for {country_code}.")
+    for target in targets:
+        series = base_series(target)
+        # Single-priced short prices repeat the long price; skip them
+        if series == "imbalance_price_short" and (
+            df[target] - df[target.replace("_short", "_long")]
+        ).abs().max() < 1e-6:
+            continue
+        fig, ax = plt.subplots(figsize=(14, 5.5))
+        ax.plot(ts, df[target].to_numpy(), color="black", linewidth=2.0, label="actual")
+        for m in models:
+            pred = df[f"{target}|{m}"].to_numpy()
+            mae = abs(pred - df[target].to_numpy()).mean()
+            ax.plot(ts, pred, label=f"{m} (MAE {mae:.1f})", **MODEL_STYLE[m])
+        if series == "imbalance_volume":
+            ax.axhline(0, color="gray", linewidth=0.8)
+        unit = "MWh" if series == "imbalance_volume" else "EUR/MWh"
+        ax.set_title(
+            f"{country_code} {SERIES_LABEL[series]}, {horizon(target)} ahead: last 3 days of the {split} split"
+        )
+        ax.set_xlabel("Time (UTC)")
+        ax.set_ylabel(f"{SERIES_LABEL[series]} [{unit}]")
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %d\n%H:%M"))
+        ax.legend(loc="upper right", frameon=True)
+        fig.tight_layout()
+        fig.savefig(out_dir / f"{country_code}_{series}_{horizon(target)}.png", dpi=150)
+        plt.close(fig)
+    print(f"Plotted {country_code} ({split}).")
 
 
 def main():
-    samples_dir = Path("samples")
-    samples_dir.mkdir(exist_ok=True)
-
-    x_files = sorted(PROCESSED_DIR.glob("X_*.parquet"))
-    countries = [Path(f).stem.split("_")[1] for f in x_files]
-
-    print(
-        f"Generating inference sample plots for {len(countries)} countries in 'samples/'..."
-    )
-    for cc in countries:
-        try:
-            plot_sample_days_for_country(cc, samples_dir)
-        except Exception as e:
-            print(f"Error plotting {cc}: {e}")
-
-    print("\nAll sample plots generated successfully in 'samples/'!")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--split", choices=["dev", "test", "all"], default="all")
+    parser.add_argument("countries", nargs="?", default=None)
+    args = parser.parse_args()
+    files = sorted((RESULTS_DIR / "predictions").glob("*.parquet"))
+    countries = args.countries.split(",") if args.countries else [f.stem for f in files]
+    for split in ["dev", "test"] if args.split == "all" else [args.split]:
+        for cc in countries:
+            plot_country(cc, split)
 
 
 if __name__ == "__main__":

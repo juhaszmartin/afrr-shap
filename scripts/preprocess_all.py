@@ -7,8 +7,14 @@ import holidays
 import numpy as np
 import polars as pl
 
-from afrr_shap.config import DEFAULT_CONFIG, TEST_START, TIME_FEATURES
-from afrr_shap.paths import ENTSOE_DIR, FX_RATES_PATH, PROCESSED_DIR, WEATHER_DIR
+from afrr_shap.config import DEFAULT_CONFIG, DEV_START, TEST_START, TIME_FEATURES
+from afrr_shap.paths import (
+    BALTIC_DIR,
+    ENTSOE_DIR,
+    FX_RATES_PATH,
+    PROCESSED_DIR,
+    WEATHER_DIR,
+)
 
 # Mapping from Country Code to ERA5 Country Name
 CC_TO_NAME = {
@@ -31,13 +37,24 @@ CC_TO_NAME = {
     "UA": "ukraine",
     "DE": "germany",
     "FR": "france",
+    "CZ": "czechia",
+    "SI": "slovenia",
+    "EE": "estonia",
 }
 
 # Countries where imbalance settlement / aFRR is natively hourly (or 30-min in FR) for most of the data
-HOURLY_COUNTRIES = {"BA", "LT", "LV", "PT", "RS", "FR"}
+# EE: hourly until 2024; its 15-min volumes only start on 2025-05-27
+HOURLY_COUNTRIES = {"BA", "LT", "LV", "PT", "RS", "FR", "EE"}
+
+# Countries left out of the study, with the reason (checked against the TSO's and regulator's own data)
+EXCLUDED_COUNTRIES = {
+    "BA": "the ENTSO-E imbalance volume is not the system imbalance (2019-21 unsigned and mostly zero, "
+    "2022-25 18-63x the regulator's annual BRP imbalance totals, uncorrelated with NOSBiH's published "
+    "deviation); prices are administered and in BAM; no ENTSO-E data after 8 Dec 2025, so no test year",
+}
 
 # Cutoff years for countries that transitioned to 15-min settlement under EU EBGL
-CUTOFF_YEARS = {"ES": 2022, "RO": 2021, "FI": 2023, "HR": 2024, "PL": 2024}
+CUTOFF_YEARS = {"ES": 2022, "RO": 2021, "FI": 2023, "HR": 2024, "PL": 2024, "SI": 2021, "CZ": 2024}
 
 # 2025 is the test year for every country; everything before it is training data
 # Countries whose market changed so much that older data describes a different system
@@ -46,6 +63,9 @@ TRAIN_START = {
     "PL": datetime(2024, 6, 13, 22, tzinfo=UTC),
     # Before March 2021 the published RS volume is almost always one-signed and ~10x larger
     "RS": datetime(2021, 3, 1, tzinfo=UTC),
+    # CZ (OTE) settles every 15 min with a single imbalance price from 1 July 2024 (local midnight). Before, ENTSO-E
+    # "Long" held the imbalance price in the system's direction and "Short" the counter-imbalance price, hourly
+    "CZ": datetime(2024, 6, 30, 22, tzinfo=UTC),
 }
 # Local clock per country for calendar features
 LOCAL_TZ = {
@@ -67,12 +87,28 @@ LOCAL_TZ = {
     "RO": "Europe/Bucharest",
     "RS": "Europe/Belgrade",
     "SK": "Europe/Bratislava",
+    "CZ": "Europe/Prague",
+    "SI": "Europe/Ljubljana",
+    "EE": "Europe/Tallinn",
 }
 # generation_import repeats the generation and import categories column for column
 SKIP_CATEGORIES = {"generation_import"}
 # Harmonised technical price limit of the European balancing platforms (PICASSO/MARI);
 # balancing-energy prices beyond it are publication errors (e.g. SK aFRR Up -529,189 EUR/MWh on 2025-09-21)
 BALANCING_PRICE_LIMIT = 15_000
+# Target series: raw ENTSO-E column -> name used everywhere downstream (features, targets, results, figures).
+# ENTSO-E "Long" is the price for a balance responsible party that is long (surplus), "Short" the price for
+# one that is short (deficit). Under dual pricing short >= long; under single pricing they are equal.
+TARGET_RENAME = {
+    "imbalance_prices - Long": "imbalance_price_long",
+    "imbalance_prices - Short": "imbalance_price_short",
+    "imbalance_volumes - value": "imbalance_volume",
+}
+LONG_PRICE, SHORT_PRICE, VOLUME = TARGET_RENAME.values()
+# Periods in which the TSO published Long and Short the wrong way round. HU until 1 May 2021 (local midnight):
+# 'Long' is above 'Short' in every quarter-hour of 2019-2020, which dual pricing rules out; from that day HU is
+# single-priced and the two are equal. The two columns are swapped back before this instant (UTC).
+SWAPPED_LONG_SHORT = {"HU": datetime(2021, 4, 30, 22, tzinfo=UTC)}
 # Periods judged to be publication errors; every value of the category is blanked, so these rows drop out.
 # ES volumes on the local days 9 Feb and 18-24 Feb 2025 swing to +-1,800 MWh per quarter-hour (2022-24 max: 715),
 # flat for hours and starting/ending on local midnight, while the imbalance price stays normal. The API serves the same values.
@@ -87,7 +123,133 @@ BAD_DATA = {
             datetime(2025, 2, 24, 23, tzinfo=UTC),
         ),
     ],
+    # HU volumes in Jan-Mar 2019 are all positive (absolute values without a sign); signed from 1 April 2019
+    ("HU", "imbalance_volumes"): [
+        (
+            datetime(2018, 12, 31, 23, tzinfo=UTC),
+            datetime(2019, 3, 31, 22, tzinfo=UTC),
+        ),
+    ],
+    # RS volumes for 30-31 Dec 2024 are published quarter-hourly while EMS still settled hourly, at the
+    # inflated 15-min magnitude and not alignable with the EMS balancing data at any time shift
+    ("RS", "imbalance_volumes"): [
+        (
+            datetime(2024, 12, 30, 0, tzinfo=UTC),
+            datetime(2025, 1, 1, 0, tzinfo=UTC),
+        ),
+    ],
 }
+
+# Imbalance volume sign convention, for every country: positive = system long (surplus), negative = short
+# (deficit), as the EB GL 'imbalance' (Art. 2(8)) and as published by most TSOs. Periods in which the
+# published volume has the opposite sign are multiplied by -1. Bounds are local dates [start, end); None = open.
+VOLUME_SIGN_FLIP = {
+    # Checked against APG's own control-area imbalance (DRZ, positive = surplus; transparency.apg.at API
+    # from 2023, Deltaregelzone archive before): ENTSO-E AT = -APG/4 in every month except May 2020,
+    # Nov 2022, Jan 2023, Jul 2024 and from Dec 2024, where it is +APG/4.
+    "AT": [
+        (None, (2020, 5, 1)),
+        ((2020, 6, 1), (2022, 11, 1)),
+        ((2022, 12, 1), (2023, 1, 1)),
+        ((2023, 2, 1), (2024, 7, 1)),
+        ((2024, 8, 1), (2024, 12, 1)),
+    ],
+    # MAVIR publishes 'KE' (imbalance energy), whose sign is opposite to the EB GL imbalance (MAVIR BRP working
+    # group, 14 Aug 2025); the HU volume rises with the imbalance price in every month from April 2019.
+    "HU": [(None, None)],
+}
+
+# Categories read from the Baltic TSOs' own Transparency Dashboard (scripts/baltic_download.py) instead of
+# ENTSO-E, per country: (dashboard area, {ENTSO-E category: dashboard report}). Checked for EE, 2019-2026:
+# - imbalance volumes: identical to ENTSO-E until Oct 2024; ENTSO-E then has none until 2025-05-27, is
+#   patchy until Dec 2025 and holds -1 x the dashboard value in 2025 (inverted sign); in 2026 ENTSO-E differs
+#   from the dashboard, and the dashboard volume tracks the imbalance price more closely in every month;
+# - imbalance prices: ENTSO-E holds Elering's preliminary price from Aug 2025 (Jul 2025 matches neither);
+#   the dashboard's final price is used, its preliminary one only where no final exists yet (the last weeks);
+# - balancing prices: ENTSO-E EE mFRR prices end in Oct 2024 and are blank in hours without activation;
+#   the dashboard's balancing energy reference price equals them where they exist and is complete 2019-2026.
+BALTIC_SOURCES = {
+    "EE": (
+        "Estonia",
+        {
+            "imbalance_prices": "imbalance_prices",
+            "imbalance_volumes": "imbalance_volumes_v2",
+            "activated_balancing_energy_prices": "balancing_energy_prices",
+        },
+    ),
+}
+# Until this instant (EE: local midnight 1 April 2025) the dashboard repeats the hourly value in all four
+# quarter-hours of the hour (Jan-Mar 2025; hourly rows before). Volumes are MWh per period, so these quarter-hour
+# repeats are divided by 4; summed per hour they give the hourly value instead of 4x it. Hourly rows are untouched.
+BALTIC_HOURLY_UNTIL = {"EE": datetime(2025, 3, 31, 21, tzinfo=UTC)}
+
+# RS from 2025 (quarter-hourly publication), checked against EMS's own balancing data (aFRR, mFRR, IGCC):
+# - timestamps are early by the Belgrade UTC offset in 2025 (1 h in CET, 2 h in CEST) and by 1 h in 2026;
+#   the value labelled t belongs to t + shift. Unshifted, the volume does not track the EMS IGCC exchange
+#   (corr ~ -0.07); shifted it does (-0.4 to -0.55, every month), as the hourly data does unshifted.
+# - values are MW (average power) rather than MWh per quarter-hour: after alignment the volume is ~5x as
+#   large relative to EMS's IGCC energy as before 2025, while EMS's own energies scale correctly; /4 makes
+#   the hourly-equivalent volume continuous with 2023-24 instead of jumping 6.5x on 1 January 2025.
+RS_15MIN_FROM = datetime(2024, 12, 31, 23, tzinfo=UTC)
+RS_2026_FROM = datetime(2025, 12, 31, 23, tzinfo=UTC)
+
+
+def local_instant(country_code, ymd):
+    """Local midnight of a (year, month, day) date as a UTC datetime."""
+    from zoneinfo import ZoneInfo
+
+    return (
+        datetime(*ymd, tzinfo=ZoneInfo(LOCAL_TZ[country_code]))
+        .astimezone(UTC)
+    )
+
+
+def fix_volume_sign(df_cat, country_code):
+    """Multiplies the volume by -1 in the periods of VOLUME_SIGN_FLIP (see there)."""
+    periods = VOLUME_SIGN_FLIP.get(country_code)
+    if not periods:
+        return df_cat
+    ts = pl.col("timestamp").dt.convert_time_zone("UTC")
+    flip = pl.lit(False)
+    for start, end in periods:
+        cond = pl.lit(True)
+        if start is not None:
+            cond = cond & (ts >= local_instant(country_code, start))
+        if end is not None:
+            cond = cond & (ts < local_instant(country_code, end))
+        flip = flip | cond
+    return df_cat.with_columns(
+        pl.when(flip).then(-pl.col("value")).otherwise(pl.col("value")).alias("value")
+    )
+
+
+def fix_rs_volume(df_cat):
+    """Moves the 2025+ RS volumes to their true quarter-hour and converts MW to MWh (see RS_15MIN_FROM)."""
+    ts = pl.col("timestamp").dt.convert_time_zone("UTC")
+    shift = (
+        pl.when(ts < RS_2026_FROM)
+        .then(
+            pl.duration(hours=1)
+            + ts.dt.convert_time_zone("Europe/Belgrade").dt.dst_offset()
+        )
+        .otherwise(pl.duration(hours=1))
+    )
+    is_15min = ts >= RS_15MIN_FROM
+    return (
+        df_cat.with_columns(
+            pl.when(is_15min)
+            .then(ts + shift)
+            .otherwise(ts)
+            .cast(pl.Datetime("us", "UTC"))
+            .alias("timestamp"),
+            pl.when(is_15min)
+            .then(pl.col("value") / 4)
+            .otherwise(pl.col("value"))
+            .alias("value"),
+        )
+        # a DST change in the shift maps two labels onto one quarter-hour; keep the first
+        .unique(subset=["timestamp"], keep="first", maintain_order=True)
+    )
 
 # ENTSO-E passes prices through in the TSO's reporting currency. These series are converted
 # to EUR with the ECB daily reference rate (data/reference/ecb_eur_rates.csv, see get_fx_rates.py).
@@ -109,6 +271,9 @@ LOCAL_CURRENCY = {
         "prices": ("RON", datetime(2021, 6, 17, 22)),
     },  # day-ahead moved to EUR with SDAC coupling
     "HR": {"imbalance_prices": ("HRK", datetime(2022, 12, 31, 23))},  # euro adoption
+    # CZ imbalance prices are CZK throughout (XML checked 2019-2026). aFRR/mFRR prices were CZK until March 2022 and
+    # EUR from April 2022 (RR always EUR); CZ starts in 2024 (TRAIN_START), so only the imbalance prices need converting
+    "CZ": {"imbalance_prices": ("CZK", None)},
 }
 PRICE_COLUMNS = {
     "imbalance_prices": ["Long", "Short"],
@@ -208,17 +373,55 @@ def procured_capacity(df, cat):
     return df.select(exprs).unique(subset=["timestamp"], keep="first")
 
 
+def spread_repeated_quarters(df, until):
+    """Before `until` the source repeats the hourly volume (MWh per hour) in each quarter-hour: divide by 4, so that
+    each quarter holds its share and the hour sums to the hourly value (whatever period length is inferred).
+    Hours with a single (hourly) row are left as they are."""
+    ts = pl.col("timestamp")
+    early = (ts < until) & (pl.len().over(ts.dt.truncate("1h")) > 1)
+    return df.with_columns(
+        [pl.when(early).then(pl.col(c) / 4).otherwise(pl.col(c)).alias(c) for c in df.columns if c != "timestamp"]
+    )
+
+
+def load_baltic(country_code, cat):
+    """One category from the Baltic Transparency Dashboard, in the column layout load_entsoe_data builds."""
+    area, reports = BALTIC_SOURCES[country_code]
+    files = sorted(glob.glob(str(BALTIC_DIR / reports[cat] / "year=*" / "data.parquet")))
+    if not files:
+        raise FileNotFoundError(f"no {reports[cat]} in {BALTIC_DIR}; run scripts/baltic_download.py")
+    df = pl.concat([pl.read_parquet(f) for f in files]).filter(pl.col("area") == area)
+    wide = df.pivot("label", index="timestamp", values="value").sort("timestamp")
+    if cat == "imbalance_prices":  # single price: the same value for long and short
+        price = pl.coalesce("Final", "Preliminary")
+        return wide.select("timestamp", price.alias(f"{cat} - Long"), price.alias(f"{cat} - Short"))
+    if cat == "imbalance_volumes":
+        wide = wide.select("timestamp", pl.col("value").alias(f"{cat} - value"))
+        if country_code in BALTIC_HOURLY_UNTIL:
+            wide = spread_repeated_quarters(wide, BALTIC_HOURLY_UNTIL[country_code])
+        return wide
+    if cat == "activated_balancing_energy_prices":
+        limit = lambda c: pl.when(pl.col(c).abs() <= BALANCING_PRICE_LIMIT).then(pl.col(c))
+        return wide.select(
+            "timestamp",
+            limit("Upward").alias(f"{cat} - reference_Up"),
+            limit("Downward").alias(f"{cat} - reference_Down"),
+        )
+    raise ValueError(f"no Baltic source for {cat}")
+
+
 def load_entsoe_data(country_code, is_hourly=False):
     """Loads and joins all available ENTSO-E parquet data for a given country."""
     base_dir = ENTSOE_DIR
     if not base_dir.exists():
         raise FileNotFoundError(f"{base_dir} directory not found.")
 
-    categories = [
+    # Sorted, so that the column order of the output never depends on the file system
+    categories = sorted(
         d.name
         for d in base_dir.iterdir()
         if d.is_dir() and d.name not in SKIP_CATEGORIES
-    ]
+    )
     start_year = CUTOFF_YEARS.get(country_code, 2019)
 
     joined_df = None
@@ -264,11 +467,29 @@ def load_entsoe_data(country_code, is_hourly=False):
                     )
                     continue
                 df_cat = convert_to_eur(df_cat, cat, country_code)
+                if cat == "imbalance_prices" and country_code in SWAPPED_LONG_SHORT:
+                    # with_columns evaluates both expressions on the input frame, so this is a swap
+                    swapped = pl.col("timestamp").dt.convert_time_zone(
+                        "UTC"
+                    ) < pl.lit(SWAPPED_LONG_SHORT[country_code])
+                    df_cat = df_cat.with_columns(
+                        pl.when(swapped)
+                        .then(pl.col("Short"))
+                        .otherwise(pl.col("Long"))
+                        .alias("Long"),
+                        pl.when(swapped)
+                        .then(pl.col("Long"))
+                        .otherwise(pl.col("Short"))
+                        .alias("Short"),
+                    )
                 if cat == "imbalance_volumes":
                     # BA 2019-2021 files call the column "Imbalance Volume", later ones "value"
                     df_cat = df_cat.rename(
                         {c: "value" for c in df_cat.columns if c == "Imbalance Volume"}
                     )
+                    df_cat = fix_volume_sign(df_cat, country_code)
+                    if country_code == "RS":
+                        df_cat = fix_rs_volume(df_cat)
                 for lo, hi in BAD_DATA.get((country_code, cat), []):
                     ts = pl.col("timestamp").dt.convert_time_zone("UTC")
                     bad = (ts >= lo) & (ts < hi)
@@ -354,6 +575,8 @@ def load_entsoe_data(country_code, is_hourly=False):
             except Exception as e:
                 raise RuntimeError(f"Cannot read {f}: {e}") from e
 
+        if cat in BALTIC_SOURCES.get(country_code, (None, {}))[1]:
+            dfs = [load_baltic(country_code, cat)]
         if dfs:
             combined_cat_df = pl.concat(dfs, how="diagonal").sort(
                 ["timestamp", "_source_priority"]
@@ -386,7 +609,9 @@ def load_entsoe_data(country_code, is_hourly=False):
                 )
 
     if joined_df is not None:
-        joined_df = joined_df.sort("timestamp")
+        joined_df = joined_df.sort("timestamp").rename(
+            {k: v for k, v in TARGET_RENAME.items() if k in joined_df.columns}
+        )
     return joined_df
 
 
@@ -509,7 +734,8 @@ GAP_FLAG = timedelta(days=PREPROCESSING_CONFIG["gap_warning_days"])
 
 
 def report_gaps(df, target_cols, step, country_code, split_ts):
-    """Flags holes longer than GAP_FLAG in the target series and writes them to data/processed/."""
+    """Flags holes longer than GAP_FLAG in the target series and writes them to data/processed/.
+    split_ts is the start of the dev period."""
     ts = df.filter(
         pl.all_horizontal([pl.col(c).is_not_null() for c in target_cols])
     ).select("timestamp")
@@ -521,7 +747,13 @@ def report_gaps(df, target_cols, step, country_code, split_ts):
     )
     big = gaps.filter(pl.col("gap") > GAP_FLAG)
     for r in big.iter_rows(named=True):
-        where = "TEST" if r["gap_end"] >= split_ts else "train"
+        where = (
+            "train"
+            if r["gap_end"] < split_ts
+            else "dev"
+            if r["gap_end"] < TEST_START
+            else "test"
+        )
         print(
             f"  WARNING {country_code}: {r['gap']} target gap {r['gap_start']} -> {r['gap_end']} ({where} period)"
         )
@@ -532,13 +764,26 @@ def report_gaps(df, target_cols, step, country_code, split_ts):
     print(f"  {gaps.height} target gaps in total, {big.height} longer than {GAP_FLAG}")
 
 
-def select_feature_columns(df, feature_cols, split_ts):
-    """Drops columns that are mostly missing or (quasi-)constant in the train or the test portion."""
+def select_feature_columns(df, feature_cols, split_ts, eval_end_ts=None):
+    """Drops columns that are mostly missing or (quasi-)constant in the train or the dev portion.
+
+    With eval_end_ts (the start of the test period), columns that are mostly missing in the test portion
+    are dropped too. Only availability is checked there, never the values: an input the TSO stopped
+    publishing cannot be used by a forecaster in that period, and keeping it would silently remove every
+    test row in the final drop of incomplete samples (ES balancing prices and GR generation in 2026)."""
+    dev_filter = (
+        (pl.col("timestamp") >= split_ts) & (pl.col("timestamp") < eval_end_ts)
+        if eval_end_ts
+        else (pl.col("timestamp") >= split_ts)
+    )
     portions = {
         "train": df.filter(pl.col("timestamp") < split_ts),
-        "test": df.filter(pl.col("timestamp") >= split_ts),
+        "dev": df.filter(dev_filter),
     }
-    dropped = {"missing": [], "constant": []}
+    test = (
+        df.filter(pl.col("timestamp") >= eval_end_ts) if eval_end_ts else df.clear()
+    )
+    dropped = {"missing": [], "constant": [], "missing in test": []}
     keep = []
     for c in feature_cols:
         reason = None
@@ -556,6 +801,12 @@ def select_feature_columns(df, feature_cols, split_ts):
             ):
                 reason = "constant"
                 break
+        if (
+            reason is None
+            and test.height
+            and test[c].null_count() / test.height > MAX_NULL_RATIO
+        ):
+            reason = "missing in test"
         if reason:
             dropped[reason].append(c)
         else:
@@ -663,7 +914,7 @@ def process_country(country_code):
         df = df.filter(pl.col("timestamp") >= TRAIN_START[country_code])
 
     # Resample everything onto the target resolution (hourly countries average their 15-min data)
-    vol_cols = [c for c in df.columns if c.startswith("imbalance_volumes")]
+    vol_cols = [c for c in df.columns if c == VOLUME]
     hourly_volumes = hourly_energy(df, vol_cols) if is_hourly else None
     df = (
         df.with_columns(pl.col("timestamp").dt.truncate("1h" if is_hourly else "15m"))
@@ -674,29 +925,19 @@ def process_country(country_code):
     if hourly_volumes is not None:
         df = df.drop(vol_cols).join(hourly_volumes, on="timestamp", how="left")
 
-    # Target columns in ENTSO-E
-    pos_price_col = [
-        c for c in df.columns if "imbalance_prices" in c and c.endswith("Long")
-    ]
-    neg_price_col = [
-        c for c in df.columns if "imbalance_prices" in c and c.endswith("Short")
-    ]
-    imb_vol_col = [
-        c for c in df.columns if "imbalance_volumes" in c and c.endswith("value")
-    ]
-
-    target_cols = pos_price_col + neg_price_col + imb_vol_col
+    # Targets, in a fixed order: long price, short price, volume
+    target_cols = [c for c in TARGET_RENAME.values() if c in df.columns]
     if not target_cols:
         print(f"No target columns found for {country_code}. Skipping.")
         return
 
-    # Fix Slovakia single pricing: if Short is 0 and Long != 0, populate Short = Long
-    if country_code == "SK" and pos_price_col and neg_price_col:
+    # SK publishes a short price of 0 in single-priced periods; there the short price equals the long price
+    if country_code == "SK" and {LONG_PRICE, SHORT_PRICE} <= set(target_cols):
         df = df.with_columns(
-            pl.when((pl.col(neg_price_col[0]) == 0) & (pl.col(pos_price_col[0]) != 0))
-            .then(pl.col(pos_price_col[0]))
-            .otherwise(pl.col(neg_price_col[0]))
-            .alias(neg_price_col[0])
+            pl.when((pl.col(SHORT_PRICE) == 0) & (pl.col(LONG_PRICE) != 0))
+            .then(pl.col(LONG_PRICE))
+            .otherwise(pl.col(SHORT_PRICE))
+            .alias(SHORT_PRICE)
         )
 
     # Regular time grid over the span with targets, so that a row shift is exactly one time step
@@ -719,7 +960,7 @@ def process_country(country_code):
     grid = grid.with_columns(pl.col("timestamp").cast(df.schema["timestamp"]))
     df = grid.join(df, on="timestamp", how="left")
 
-    split_ts = TEST_START
+    split_ts = DEV_START
     if t_max < split_ts or t_min >= split_ts:
         print(
             f"Skipping {country_code}: targets run {t_min} → {t_max}, needs data both before and in {split_ts.year}."
@@ -773,7 +1014,7 @@ def process_country(country_code):
 
     # Column checks only look at rows that can become samples
     non_time_cols = select_feature_columns(
-        df.filter(has_target), feature_cols, split_ts
+        df.filter(has_target), feature_cols, split_ts, eval_end_ts=TEST_START
     )
     border_cols = [c for c in non_time_cols if c.startswith("import - ")]
     if border_cols:
@@ -792,12 +1033,14 @@ def process_country(country_code):
     )
     target_cols_exist = target_cols
 
-    weather_cols_exist = [c for c in non_time_cols if c in weather_cols]
-    other_cols = list(set(non_time_cols) - set(weather_cols_exist))
+    # Sorted lists, never sets: set order changes between Python processes (string hashing is randomised),
+    # which used to give every preprocessing run a different column order
+    weather_cols_exist = sorted(c for c in non_time_cols if c in weather_cols)
+    other_cols = sorted(c for c in non_time_cols if c not in weather_cols)
 
     # Forecasts and day-ahead results are known in advance, so they also get future values
     forecast_cols = [c for c in other_cols if known_in_advance(c)]
-    actual_cols = list(set(other_cols) - set(forecast_cols))
+    actual_cols = [c for c in other_cols if not known_in_advance(c)]
 
     X_exprs = [pl.col("timestamp")]  # Keep timestamp for precise inference alignment
     X_exprs += [pl.col(c) for c in time_features if c in df.columns]
@@ -858,9 +1101,36 @@ def process_country(country_code):
     X = df.select(X_exprs)
     y = df.select(y_exprs)
 
-    combined = pl.concat([X, y], how="horizontal").drop_nulls()
-    X = combined.select(X.columns)
+    # Rows that have every target, before incomplete feature rows are dropped (for the report below)
+    split_of = (
+        pl.when(pl.col("timestamp") < DEV_START)
+        .then(pl.lit("train"))
+        .when(pl.col("timestamp") < TEST_START)
+        .then(pl.lit("dev"))
+        .otherwise(pl.lit("test"))
+    )
+    with_targets = (
+        X.select("timestamp").hstack(y)
+        .drop_nulls()
+        .group_by(split_of.alias("split"))
+        .len()
+    )
+    combined = X.hstack(y).drop_nulls()
+    # Features in sorted order, so the model input layout is the same in every run
+    X = combined.select(["timestamp", *sorted(c for c in X.columns if c != "timestamp")])
     y = combined.select(y.columns)
+
+    kept = combined.group_by(split_of.alias("split")).len()
+    report = with_targets.join(kept, on="split", how="left", suffix="_kept").fill_null(0)
+    for split in ("train", "dev", "test"):
+        row = report.filter(pl.col("split") == split)
+        n_targets, n_kept = (row.row(0)[1], row.row(0)[2]) if row.height else (0, 0)
+        print(f"  {split}: {n_kept} samples kept of {n_targets} with targets")
+        if n_targets and n_kept < 0.8 * n_targets:
+            print(
+                f"  WARNING {country_code}: incomplete features remove "
+                f"{1 - n_kept / n_targets:.0%} of the {split} rows"
+            )
 
     out_dir = PROCESSED_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -877,4 +1147,9 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:  # optional subset: python scripts/preprocess_all.py DE,FR
         countries = sys.argv[1].split(",")
     for cc in countries:
+        if cc in EXCLUDED_COUNTRIES:
+            print(f"\nSkipping {cc}: {EXCLUDED_COUNTRIES[cc]}")
+            for stale in (PROCESSED_DIR / f"X_{cc}.parquet", PROCESSED_DIR / f"y_{cc}.parquet"):
+                stale.unlink(missing_ok=True)
+            continue
         process_country(cc)

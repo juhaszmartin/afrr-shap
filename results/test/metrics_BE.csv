@@ -1,0 +1,76 @@
+Country,Split,Model,Target,Series,Horizon,Group,MAE,MAE_STD,RMSE,RMSE_STD,R2,R2_STD,SMAPE,SMAPE_STD
+BE,test,nn,imbalance_price_long_t+15min,imbalance_price_long,t+15min,long price [EUR/MWh],60.91341985798584,9.125191687592809,182.96566928015537,4.428214294278704,0.3161108773904,0.03340018531741287,59.78206758502317,5.508892979865718
+BE,test,nn,imbalance_price_short_t+15min,imbalance_price_short,t+15min,short price = long price (single pricing),61.591574312452586,8.337057477699197,183.54548890440313,3.9472101545030274,0.3118543032508116,0.029792190642808074,60.22479978551746,5.718237787069147
+BE,test,nn,imbalance_volume_t+15min,imbalance_volume,t+15min,volume [MWh],25.364875315713046,2.609817299036849,33.27732020614323,2.8004933356783734,0.4236578174688169,0.10106644778732944,109.21040252515769,4.731178035688738
+BE,test,nn,imbalance_price_long_t+30min,imbalance_price_long,t+30min,long price [EUR/MWh],61.80114441714246,9.262468647153307,198.94036127811663,3.9690264081134696,0.19165039578741466,0.032595258597818505,58.270836822340655,4.9057410557420225
+BE,test,nn,imbalance_price_short_t+30min,imbalance_price_short,t+30min,short price = long price (single pricing),62.08623740675987,9.14238805591179,199.13689641321724,4.163915652619566,0.19002072906960385,0.0344600068934682,58.46660845038344,4.6021980267418146
+BE,test,nn,imbalance_volume_t+30min,imbalance_volume,t+30min,volume [MWh],28.8364665001157,2.386084018984162,38.019951997789306,2.565920953627642,0.2497045337615826,0.10391585809143074,120.41751224417236,3.166360442465411
+BE,test,nn,imbalance_price_long_t+45min,imbalance_price_long,t+45min,long price [EUR/MWh],61.9460188306825,9.1289092673195,205.6589678688945,3.89351683989203,0.13617351497284413,0.03319331922661545,57.329409760468316,4.0034238985573705
+BE,test,nn,imbalance_price_short_t+45min,imbalance_price_short,t+45min,short price = long price (single pricing),61.19827661027545,8.51294940029378,205.4610401402098,3.674062017946644,0.13786873165507346,0.031144174679263534,56.952005912731714,3.608822340229497
+BE,test,nn,imbalance_volume_t+45min,imbalance_volume,t+45min,volume [MWh],30.863556340596602,2.0744908080210185,40.794701739783,2.207643965607811,0.1377016472342279,0.09523245181882503,127.78692839471229,2.3287279771313796
+BE,test,nn,imbalance_price_long_t+60min,imbalance_price_long,t+60min,long price [EUR/MWh],63.192246586415834,9.266670819312711,210.0854943409205,3.852131716990202,0.10036650540952385,0.033310530121577905,57.79251173228034,3.8352835477084493
+BE,test,nn,imbalance_price_short_t+60min,imbalance_price_short,t+60min,short price = long price (single pricing),62.657408081475026,9.358067728143821,209.91255585620158,3.8953048858178243,0.10183970590381002,0.033746263683017544,57.67864328850981,4.35689686034453
+BE,test,nn,imbalance_volume_t+60min,imbalance_volume,t+60min,volume [MWh],32.34828740537118,2.0432303064922697,42.849717613162966,2.178432305722652,0.04921645252854155,0.09859472123364359,132.18101335286102,2.0251278711663385
+BE,test,nn,imbalance_price_long_t+75min,imbalance_price_long,t+75min,long price [EUR/MWh],63.7186838554717,8.259152524851645,213.48810248591963,3.305857635021148,0.07259814993414329,0.028925129873285584,57.667209376815535,3.4595482938913253
+BE,test,nn,imbalance_price_short_t+75min,imbalance_price_short,t+75min,short price = long price (single pricing),64.55214352275866,8.916908499178973,213.809404646604,3.4830114797865845,0.0697807510618084,0.03045976446162363,58.227294659924766,3.8152158757909715
+BE,test,nn,imbalance_volume_t+75min,imbalance_volume,t+75min,volume [MWh],33.63363645842835,1.6749132516601093,44.631185961569564,1.7687689783528118,-0.030394806486403088,0.082599955796154,136.108014915451,2.1606419673757205
+BE,test,naive,imbalance_price_long_t+15min,imbalance_price_long,t+15min,long price [EUR/MWh],27.66074512487184,0.0,131.76186529078146,0.0,0.6455364107953434,0.0,33.53936629001526,0.0
+BE,test,naive,imbalance_price_short_t+15min,imbalance_price_short,t+15min,short price = long price (single pricing),27.66074512487184,0.0,131.76186529078146,0.0,0.6455364107953434,0.0,33.53936629001526,0.0
+BE,test,naive,imbalance_volume_t+15min,imbalance_volume,t+15min,volume [MWh],20.32667601779003,0.0,27.481010413792816,0.0,0.6097129338512783,0.0,88.99184675180301,0.0
+BE,test,naive,imbalance_price_long_t+30min,imbalance_price_long,t+30min,long price [EUR/MWh],36.71671159767356,0.0,181.99015113642892,0.0,0.3237981316637699,0.0,41.07496181962379,0.0
+BE,test,naive,imbalance_price_short_t+30min,imbalance_price_short,t+30min,short price = long price (single pricing),36.71671159767356,0.0,181.99015113642892,0.0,0.3237981316637699,0.0,41.07496181962379,0.0
+BE,test,naive,imbalance_volume_t+30min,imbalance_volume,t+30min,volume [MWh],26.725695860417268,0.0,36.03382140270396,0.0,0.32910241171588817,0.0,105.09956599765485,0.0
+BE,test,naive,imbalance_price_long_t+45min,imbalance_price_long,t+45min,long price [EUR/MWh],42.630673965103895,0.0,221.45136364435655,0.0,-0.0012264145890330536,0.0,45.53129081225761,0.0
+BE,test,naive,imbalance_price_short_t+45min,imbalance_price_short,t+45min,short price = long price (single pricing),42.630673965103895,0.0,221.45136364435655,0.0,-0.0012264145890330536,0.0,45.53129081225761,0.0
+BE,test,naive,imbalance_volume_t+45min,imbalance_volume,t+45min,volume [MWh],31.13478412589805,0.0,41.87425655824655,0.0,0.09411250862339893,0.0,114.56822944594826,0.0
+BE,test,naive,imbalance_price_long_t+60min,imbalance_price_long,t+60min,long price [EUR/MWh],48.15836435169326,0.0,255.27764740732758,0.0,-0.3278623915922272,0.0,49.48467942409363,0.0
+BE,test,naive,imbalance_price_short_t+60min,imbalance_price_short,t+60min,short price = long price (single pricing),48.15836435169326,0.0,255.27764740732758,0.0,-0.3278623915922272,0.0,49.48467942409363,0.0
+BE,test,naive,imbalance_volume_t+60min,imbalance_volume,t+60min,volume [MWh],34.71636606226471,0.0,46.66481063255143,0.0,-0.1247181891092346,0.0,121.8688870613925,0.0
+BE,test,naive,imbalance_price_long_t+75min,imbalance_price_long,t+75min,long price [EUR/MWh],53.52922647964417,0.0,285.439783892427,0.0,-0.6574692761902408,0.0,53.153683990116996,0.0
+BE,test,naive,imbalance_price_short_t+75min,imbalance_price_short,t+75min,short price = long price (single pricing),53.52922647964417,0.0,285.439783892427,0.0,-0.6574692761902408,0.0,53.153683990116996,0.0
+BE,test,naive,imbalance_volume_t+75min,imbalance_volume,t+75min,volume [MWh],38.383204584331075,0.0,51.39012630774628,0.0,-0.3639693434158868,0.0,129.02125470432594,0.0
+BE,test,ridge,imbalance_price_long_t+15min,imbalance_price_long,t+15min,long price [EUR/MWh],37.98888005658788,0.0,159.875563115035,0.0,0.47813720440671126,0.0,41.48356961296006,0.0
+BE,test,ridge,imbalance_price_short_t+15min,imbalance_price_short,t+15min,short price = long price (single pricing),38.147922331509996,0.0,159.9008015987653,0.0,0.4779724254369906,0.0,41.58821203152187,0.0
+BE,test,ridge,imbalance_volume_t+15min,imbalance_volume,t+15min,volume [MWh],20.560881474177542,0.0,27.669420659487844,0.0,0.6043429597249106,0.0,94.4883631490475,0.0
+BE,test,ridge,imbalance_price_long_t+30min,imbalance_price_long,t+30min,long price [EUR/MWh],44.00897403769928,0.0,186.4603732398538,0.0,0.29017107345650006,0.0,45.83199377746515,0.0
+BE,test,ridge,imbalance_price_short_t+30min,imbalance_price_short,t+30min,short price = long price (single pricing),44.14395762669537,0.0,186.48486845338587,0.0,0.2899845614066432,0.0,45.92509476186094,0.0
+BE,test,ridge,imbalance_volume_t+30min,imbalance_volume,t+30min,volume [MWh],25.779580001083637,0.0,34.398474370372845,0.0,0.38861616758618434,0.0,111.62145840082303,0.0
+BE,test,ridge,imbalance_price_long_t+45min,imbalance_price_long,t+45min,long price [EUR/MWh],46.425533725703595,0.0,198.3788116936589,0.0,0.1965365044554972,0.0,47.566429659520324,0.0
+BE,test,ridge,imbalance_price_short_t+45min,imbalance_price_short,t+45min,short price = long price (single pricing),46.525619207895815,0.0,198.39839968037094,0.0,0.19637782814184268,0.0,47.63412046263743,0.0
+BE,test,ridge,imbalance_volume_t+45min,imbalance_volume,t+45min,volume [MWh],28.364912878680627,0.0,37.773098517223225,0.0,0.2628679975415664,0.0,120.76573823761447,0.0
+BE,test,ridge,imbalance_price_long_t+60min,imbalance_price_long,t+60min,long price [EUR/MWh],48.00171784897444,0.0,204.79019497099694,0.0,0.14543360213931145,0.0,48.691485206396514,0.0
+BE,test,ridge,imbalance_price_short_t+60min,imbalance_price_short,t+60min,short price = long price (single pricing),48.06712411222798,0.0,204.80596837221253,0.0,0.14530195581934668,0.0,48.74379989375201,0.0
+BE,test,ridge,imbalance_volume_t+60min,imbalance_volume,t+60min,volume [MWh],29.684659925085473,0.0,39.56403239355805,0.0,0.19152647877257334,0.0,126.24480596632482,0.0
+BE,test,ridge,imbalance_price_long_t+75min,imbalance_price_long,t+75min,long price [EUR/MWh],46.052803287908574,0.0,210.27562339826807,0.0,0.10051414656240842,0.0,48.13183134146353,0.0
+BE,test,ridge,imbalance_price_short_t+75min,imbalance_price_short,t+75min,short price = long price (single pricing),46.090050818680275,0.0,210.27958012092475,0.0,0.10048029528204738,0.0,48.15302307029343,0.0
+BE,test,ridge,imbalance_volume_t+75min,imbalance_volume,t+75min,volume [MWh],31.341927841210588,0.0,41.74247529411674,0.0,0.1000846978748412,0.0,132.49383928558524,0.0
+BE,test,lightgbm,imbalance_price_long_t+15min,imbalance_price_long,t+15min,long price [EUR/MWh],33.65297381719754,0.0,199.87078746941438,0.0,0.18437447382587535,0.0,39.319625956682735,0.0
+BE,test,lightgbm,imbalance_price_short_t+15min,imbalance_price_short,t+15min,short price = long price (single pricing),33.621652199736424,0.0,199.86820564473442,0.0,0.18439554532450642,0.0,39.333863739743755,0.0
+BE,test,lightgbm,imbalance_volume_t+15min,imbalance_volume,t+15min,volume [MWh],20.193512770826555,0.0,27.135301398796816,0.0,0.619470732223155,0.0,94.15513158511432,0.0
+BE,test,lightgbm,imbalance_price_long_t+30min,imbalance_price_long,t+30min,long price [EUR/MWh],37.29203745644824,0.0,202.18656439209332,0.0,0.1653869320097323,0.0,42.59494398012114,0.0
+BE,test,lightgbm,imbalance_price_short_t+30min,imbalance_price_short,t+30min,short price = long price (single pricing),37.41131526885247,0.0,202.1487715544103,0.0,0.16569891563079464,0.0,42.900012430523795,0.0
+BE,test,lightgbm,imbalance_volume_t+30min,imbalance_volume,t+30min,volume [MWh],25.145533971184086,0.0,33.665215603953406,0.0,0.41440361416046023,0.0,110.85261307783642,0.0
+BE,test,lightgbm,imbalance_price_long_t+45min,imbalance_price_long,t+45min,long price [EUR/MWh],39.25325911890202,0.0,204.2583519216457,0.0,0.1482047227712867,0.0,44.6751594054748,0.0
+BE,test,lightgbm,imbalance_price_short_t+45min,imbalance_price_short,t+45min,short price = long price (single pricing),39.21438257147077,0.0,204.11725818662447,0.0,0.1493810905147973,0.0,44.502117549820305,0.0
+BE,test,lightgbm,imbalance_volume_t+45min,imbalance_volume,t+45min,volume [MWh],27.72756371140649,0.0,37.16395841907395,0.0,0.2864507159542,0.0,121.15741179224224,0.0
+BE,test,lightgbm,imbalance_price_long_t+60min,imbalance_price_long,t+60min,long price [EUR/MWh],40.480978379391175,0.0,205.86864746665412,0.0,0.13640938178251594,0.0,45.611233396291915,0.0
+BE,test,lightgbm,imbalance_price_short_t+60min,imbalance_price_short,t+60min,short price = long price (single pricing),40.318815654217836,0.0,206.12304233580485,0.0,0.13427376022040782,0.0,45.488157076117766,0.0
+BE,test,lightgbm,imbalance_volume_t+60min,imbalance_volume,t+60min,volume [MWh],29.314968672839814,0.0,39.35858052688609,0.0,0.1999013135869694,0.0,129.10868882131538,0.0
+BE,test,lightgbm,imbalance_price_long_t+75min,imbalance_price_long,t+75min,long price [EUR/MWh],42.420387053132316,0.0,208.05396718157547,0.0,0.11942068059634592,0.0,46.84897402859663,0.0
+BE,test,lightgbm,imbalance_price_short_t+75min,imbalance_price_short,t+75min,short price = long price (single pricing),42.34610954136443,0.0,208.1457299266871,0.0,0.11864374568640679,0.0,46.81140454715227,0.0
+BE,test,lightgbm,imbalance_volume_t+75min,imbalance_volume,t+75min,volume [MWh],30.914295673482478,0.0,41.438382795603914,0.0,0.11314864283907722,0.0,135.6293487867667,0.0
+BE,test,nn_ensemble,imbalance_price_long_t+15min,imbalance_price_long,t+15min,long price [EUR/MWh],52.05904557729278,0.0,178.79867494891576,0.0,0.34728926717574105,0.0,52.82189645136198,0.0
+BE,test,nn_ensemble,imbalance_price_short_t+15min,imbalance_price_short,t+15min,short price = long price (single pricing),52.54814746534278,0.0,179.298970750765,0.0,0.3436314627044501,0.0,53.04531646783981,0.0
+BE,test,nn_ensemble,imbalance_volume_t+15min,imbalance_volume,t+15min,volume [MWh],22.694562723886644,0.0,30.38424083456449,0.0,0.5228932670186062,0.0,103.10788202286759,0.0
+BE,test,nn_ensemble,imbalance_price_long_t+30min,imbalance_price_long,t+30min,long price [EUR/MWh],54.392850788149346,0.0,195.71283111937487,0.0,0.21797759868853483,0.0,52.77486135827376,0.0
+BE,test,nn_ensemble,imbalance_price_short_t+30min,imbalance_price_short,t+30min,short price = long price (single pricing),54.67933525229362,0.0,195.93011408974832,0.0,0.2162402115884573,0.0,52.94196949214414,0.0
+BE,test,nn_ensemble,imbalance_volume_t+30min,imbalance_volume,t+30min,volume [MWh],27.159390252938348,0.0,36.19537360856903,0.0,0.3230731900047805,0.0,117.66596646302862,0.0
+BE,test,nn_ensemble,imbalance_price_long_t+45min,imbalance_price_long,t+45min,long price [EUR/MWh],56.03350141857009,0.0,203.11116161282163,0.0,0.15774584753441145,0.0,53.380997878947646,0.0
+BE,test,nn_ensemble,imbalance_price_short_t+45min,imbalance_price_short,t+45min,short price = long price (single pricing),55.43653160152615,0.0,203.00544962331514,0.0,0.15862234483099114,0.0,53.043988931454756,0.0
+BE,test,nn_ensemble,imbalance_volume_t+45min,imbalance_volume,t+45min,volume [MWh],29.602392836973326,0.0,39.42308859245074,0.0,0.19706325023535587,0.0,126.30800467859918,0.0
+BE,test,nn_ensemble,imbalance_price_long_t+60min,imbalance_price_long,t+60min,long price [EUR/MWh],57.43814392856343,0.0,207.6200790772621,0.0,0.12165284820976185,0.0,53.995048487017385,0.0
+BE,test,nn_ensemble,imbalance_price_short_t+60min,imbalance_price_short,t+60min,short price = long price (single pricing),56.765945701835186,0.0,207.4117441037532,0.0,0.12341470690043943,0.0,53.673858739395605,0.0
+BE,test,nn_ensemble,imbalance_volume_t+60min,imbalance_volume,t+60min,volume [MWh],31.191346906406327,0.0,41.63347718135999,0.0,0.104738163841671,0.0,131.03576238072822,0.0
+BE,test,nn_ensemble,imbalance_price_long_t+75min,imbalance_price_long,t+75min,long price [EUR/MWh],59.06681028554434,0.0,211.4208611274057,0.0,0.09068960924258151,0.0,54.71085810378541,0.0
+BE,test,nn_ensemble,imbalance_price_short_t+75min,imbalance_price_short,t+75min,short price = long price (single pricing),59.16977602130707,0.0,211.4803010555522,0.0,0.09017824114149664,0.0,54.74201846025274,0.0
+BE,test,nn_ensemble,imbalance_volume_t+75min,imbalance_volume,t+75min,volume [MWh],32.72973128599923,0.0,43.69048066187142,0.0,0.014131741025474986,0.0,135.20010229848202,0.0

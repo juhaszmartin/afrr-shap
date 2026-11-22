@@ -157,8 +157,8 @@ class TestLoadEntsoeData:
 
         # Check expected columns from each category
         expected_prefixes = [
-            "imbalance_prices - ",
-            "imbalance_volumes - ",
+            "imbalance_price_",  # targets are renamed by TARGET_RENAME
+            "imbalance_volume",
             "generation - ",
             "activated_balancing_energy_prices - ",
             "load_forecast - ",
@@ -177,7 +177,7 @@ class TestLoadEntsoeData:
         # fill.parquet has timestamp 2024-01-01 01:00 with Long=54.0
         # data.parquet has timestamps 00:00-00:45
         # Both should appear (different timestamps)
-        long_col = "imbalance_prices - Long"
+        long_col = "imbalance_price_long"
         assert long_col in df.columns
 
         # Check fill row exists
@@ -261,8 +261,8 @@ class TestLoadEntsoeData:
         df = load_entsoe_data("DE", is_hourly=False)
 
         row = df.filter(pl.col("timestamp") == datetime(2024, 1, 1, 0, 0, tzinfo=UTC))
-        assert row["imbalance_prices - Long"][0] == 50.0  # first kept
-        assert row["imbalance_prices - Short"][0] == 40.0
+        assert row["imbalance_price_long"][0] == 50.0  # first kept
+        assert row["imbalance_price_short"][0] == 40.0
 
     def test_cutoff_year_filters_old_files(self, temp_entsoe_dir, monkeypatch):
         """Files before cutoff year are skipped for 15-min countries."""
@@ -298,7 +298,7 @@ class TestLoadEntsoeData:
 
         # Only 2023 data should be loaded
         assert df.height == 1
-        assert df["imbalance_prices - Long"][0] == 200.0
+        assert df["imbalance_price_long"][0] == 200.0
 
     def test_no_cutoff_for_hourly_countries(self, temp_entsoe_dir, monkeypatch):
         """Hourly countries load all years regardless of cutoff."""
@@ -321,7 +321,7 @@ class TestLoadEntsoeData:
         df = load_entsoe_data("FR", is_hourly=True)
 
         assert df.height == 1
-        assert df["imbalance_prices - Long"][0] == 100.0
+        assert df["imbalance_price_long"][0] == 100.0
 
     def test_returns_none_for_missing_country(self, temp_entsoe_dir, monkeypatch):
         """Returns None if no data found for country."""

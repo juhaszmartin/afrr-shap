@@ -7,7 +7,7 @@ from pathlib import Path
 
 import polars as pl
 
-from afrr_shap.config import TEST_START, TIME_FEATURES
+from afrr_shap.config import DEV_START, TEST_START, TIME_FEATURES
 from afrr_shap.paths import PROCESSED_DIR
 
 LAG_SUFFIX = re.compile(r"_t[+-]\d+(min|h)$")
@@ -62,16 +62,17 @@ if __name__ == "__main__":
     for f in sorted(PROCESSED_DIR.glob("X_*.parquet")):
         cc = Path(f).stem.split("_")[1]
         timestamps = pl.read_parquet(f, columns=["timestamp"])["timestamp"]
-        has_training_data = timestamps.lt(TEST_START).any()
+        has_training_data = timestamps.lt(DEV_START).any()
+        has_dev_data = (timestamps.ge(DEV_START) & timestamps.lt(TEST_START)).any()
         has_test_data = timestamps.ge(TEST_START).any()
-        if has_training_data and has_test_data:
+        if has_training_data and has_dev_data and has_test_data:
             status = "usable"
-        elif has_test_data:
+        elif has_training_data and has_dev_data:
+            status = "usable, but no test data"
+        elif not has_training_data:
             status = "excluded: no training data"
-        elif has_training_data:
-            status = "excluded: no test data"
         else:
-            status = "excluded: empty processed data"
+            status = "excluded: no dev data"
         data[cc] = (
             series_by_category(pl.read_parquet_schema(f)),
             [c for c in pl.read_parquet_schema(PROCESSED_DIR / f"y_{cc}.parquet")],
@@ -80,13 +81,14 @@ if __name__ == "__main__":
                 "first": timestamps.min(),
                 "last": timestamps.max(),
                 "has_training": has_training_data,
+                "has_dev": has_dev_data,
                 "has_test": has_test_data,
                 "status": status,
             },
         )
     countries = list(data)
     eligible_countries = [
-        cc for cc in countries if data[cc][2]["status"] == "usable"
+        cc for cc in countries if data[cc][2]["status"].startswith("usable")
     ]
     cats = [
         c
@@ -110,8 +112,8 @@ if __name__ == "__main__":
             "lags and leads (PIPELINE.md §5). Calendar sin/cos pairs count as one series.\n\n"
         ),
         "## Data availability\n\n",
-        "| Country | Processed samples | First timestamp (UTC) | Last timestamp (UTC) | Training data | 2025 test data | Status |\n",
-        "|---|---:|---|---|---|---|---|\n",
+        f"| Country | Processed samples | First timestamp (UTC) | Last timestamp (UTC) | Training data (before {DEV_START.year}) | {DEV_START.year} dev data | {TEST_START.year} test data | Status |\n",
+        "|---|---:|---|---|---|---|---|---|\n",
     ]
     for cc in countries:
         availability = data[cc][2]
@@ -120,6 +122,7 @@ if __name__ == "__main__":
             f"{format_timestamp(availability['first'])} | "
             f"{format_timestamp(availability['last'])} | "
             f"{'yes' if availability['has_training'] else 'no'} | "
+            f"{'yes' if availability['has_dev'] else 'no'} | "
             f"{'yes' if availability['has_test'] else 'no'} | "
             f"{availability['status']} |\n"
         )

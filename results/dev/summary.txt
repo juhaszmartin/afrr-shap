@@ -1,0 +1,398 @@
+Averages over horizons per target group, dev split. MAE skill vs naive = 1 - MAE / MAE(naive). Single-priced short prices are left out.
+
+AT | long price [EUR/MWh]
+               MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       75.712 471.787 -0.528 68.012               0.000
+ridge       59.195 366.626  0.084 59.213               0.218
+lightgbm    55.620 374.370  0.047 55.992               0.265
+nn          59.495 371.017  0.063 60.071               0.214
+nn_ensemble 57.462 370.598  0.065 58.129               0.241
+
+AT | volume [MWh]
+               MAE   RMSE     R2   SMAPE  MAE skill vs naive
+Model                                                       
+naive       27.448 37.626 -0.054 110.641               0.000
+ridge       22.848 30.955  0.301 114.289               0.168
+lightgbm    22.689 30.780  0.308 116.358               0.173
+nn          23.099 31.398  0.284 114.233               0.158
+nn_ensemble 22.800 30.998  0.301 113.481               0.169
+
+BE | long price [EUR/MWh]
+               MAE    RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                      
+naive       56.265 103.489 0.104 63.471               0.000
+ridge       48.857  86.413 0.379 63.681               0.132
+lightgbm    47.263  85.646 0.391 60.293               0.160
+nn          53.569  88.162 0.355 67.168               0.048
+nn_ensemble 51.922  86.802 0.374 65.386               0.077
+
+BE | volume [MWh]
+               MAE   RMSE     R2   SMAPE  MAE skill vs naive
+Model                                                       
+naive       28.545 38.822 -0.020 118.181               0.000
+ridge       24.124 32.943  0.277 121.414               0.155
+lightgbm    23.898 32.725  0.286 122.134               0.163
+nn          24.747 33.687  0.246 124.740               0.133
+nn_ensemble 24.335 33.252  0.264 124.037               0.147
+
+CH | long price [EUR/MWh]
+               MAE    RMSE    R2   SMAPE  MAE skill vs naive
+Model                                                       
+naive       84.361 179.432 0.215 102.158               0.000
+ridge       83.080 178.996 0.217 122.790               0.015
+lightgbm    70.091 155.896 0.414 102.623               0.169
+nn          98.760 174.941 0.263 130.538              -0.171
+nn_ensemble 95.200 170.785 0.300 132.497              -0.128
+
+CH | short price [EUR/MWh]
+               MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       62.879 133.420 -0.121 25.601               0.000
+ridge       56.919 110.879  0.229 24.633               0.095
+lightgbm    50.226 109.886  0.244 21.581               0.201
+nn          64.146 119.856  0.097 29.292              -0.020
+nn_ensemble 53.618 113.796  0.190 23.305               0.147
+
+CH | volume [MWh]
+               MAE   RMSE    R2   SMAPE  MAE skill vs naive
+Model                                                      
+naive       25.193 34.714 0.411 101.989               0.000
+ridge       19.654 28.020 0.611  88.866               0.220
+lightgbm    18.457 26.891 0.642  84.145               0.267
+nn          24.925 33.840 0.439 107.373               0.011
+nn_ensemble 22.894 31.553 0.514 103.469               0.091
+
+CZ | long price [EUR/MWh]
+               MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       74.573 314.840 -0.654 77.660               0.000
+ridge       66.432 237.590  0.059 88.199               0.109
+lightgbm    61.313 236.138  0.070 82.296               0.178
+nn          71.118 239.064  0.047 95.474               0.046
+nn_ensemble 67.262 237.534  0.059 91.405               0.098
+
+CZ | volume [MWh]
+               MAE   RMSE    R2   SMAPE  MAE skill vs naive
+Model                                                      
+naive       14.143 19.018 0.111 106.737               0.000
+ridge       12.965 17.303 0.270 121.452               0.083
+lightgbm    12.349 16.666 0.326 114.870               0.127
+nn          14.359 18.896 0.147 130.144              -0.015
+nn_ensemble 14.003 18.441 0.187 129.748               0.010
+
+DE | long price [EUR/MWh]
+               MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       53.689 148.368 -0.160 62.307               0.000
+ridge       46.099 119.455  0.259 58.882               0.141
+lightgbm    43.782 119.193  0.263 57.201               0.185
+nn          49.225 121.390  0.235 62.908               0.083
+nn_ensemble 46.900 120.125  0.251 60.358               0.126
+
+DE | volume [MWh]
+               MAE    RMSE     R2   SMAPE  MAE skill vs naive
+Model                                                        
+naive       97.702 126.555 -0.242 124.258               0.000
+ridge       77.321 100.056  0.235 128.027               0.209
+lightgbm    77.353 100.122  0.234 132.434               0.208
+nn          78.974 102.048  0.207 131.483               0.192
+nn_ensemble 78.179 101.125  0.220 131.395               0.200
+
+EE | long price [EUR/MWh]
+                MAE    RMSE     R2   SMAPE  MAE skill vs naive
+Model                                                         
+naive       138.546 281.040 -0.323 108.658               0.000
+ridge       118.967 226.496  0.142 108.261               0.141
+lightgbm    112.016 222.540  0.172 107.175               0.191
+nn          114.520 224.719  0.156 108.323               0.173
+nn_ensemble 113.582 224.101  0.161 107.469               0.180
+
+EE | volume [MWh]
+               MAE   RMSE    R2   SMAPE  MAE skill vs naive
+Model                                                      
+naive       40.890 55.347 0.190 107.674               0.000
+ridge       35.217 47.276 0.417 110.095               0.139
+lightgbm    35.108 48.033 0.400 110.252               0.141
+nn          36.454 49.457 0.365 110.188               0.108
+nn_ensemble 35.876 48.749 0.382 109.439               0.123
+
+ES | long price [EUR/MWh]
+               MAE   RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                     
+naive       25.531 42.846 0.222 76.989               0.000
+ridge       22.175 34.189 0.507 74.984               0.131
+lightgbm    21.440 34.232 0.506 72.863               0.160
+nn          22.276 34.083 0.510 77.474               0.128
+nn_ensemble 21.878 33.764 0.519 76.277               0.143
+
+ES | short price [EUR/MWh]
+               MAE   RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                     
+naive       25.228 42.160 0.316 56.930               0.000
+ridge       22.014 34.075 0.556 53.278               0.127
+lightgbm    21.329 34.314 0.550 51.306               0.155
+nn          22.440 34.316 0.550 52.549               0.110
+nn_ensemble 22.040 33.988 0.558 52.097               0.126
+
+ES | volume [MWh]
+               MAE   RMSE    R2   SMAPE  MAE skill vs naive
+Model                                                      
+naive       63.247 90.769 0.055 125.152               0.000
+ridge       53.557 83.387 0.204 143.054               0.153
+lightgbm    54.346 89.233 0.091 145.219               0.141
+nn          54.309 85.377 0.167 145.884               0.141
+nn_ensemble 54.108 85.195 0.171 146.353               0.145
+
+FI | long price [EUR/MWh]
+               MAE    RMSE     R2   SMAPE  MAE skill vs naive
+Model                                                        
+naive       56.995 229.537 -0.027  92.393               0.000
+ridge       54.292 195.833  0.259 109.612               0.047
+lightgbm    49.371 212.732  0.132  98.715               0.134
+nn          51.880 193.628  0.275 106.058               0.090
+nn_ensemble 50.691 193.038  0.280 103.460               0.111
+
+FI | volume [MWh]
+                MAE    RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       141.577 193.955 0.603 78.708               0.000
+ridge       122.257 168.824 0.699 72.365               0.136
+lightgbm    123.361 166.192 0.707 73.829               0.129
+nn          139.125 191.528 0.621 79.661               0.017
+nn_ensemble 133.855 182.308 0.655 77.850               0.055
+
+FR | long price [EUR/MWh]
+               MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       52.730 135.440 -0.270 77.674               0.000
+ridge       42.600 103.431  0.262 77.166               0.192
+lightgbm    40.481 106.280  0.221 68.618               0.232
+nn          42.017 104.434  0.247 74.308               0.203
+nn_ensemble 41.106 104.021  0.253 72.478               0.220
+
+FR | short price [EUR/MWh]
+               MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       54.951 130.186 -0.210 76.741               0.000
+ridge       43.299  99.635  0.294 70.131               0.212
+lightgbm    42.775 102.398  0.255 67.412               0.222
+nn          43.825 100.277  0.285 70.916               0.202
+nn_ensemble 42.800  99.756  0.292 69.169               0.221
+
+FR | volume [MWh]
+                MAE    RMSE    R2   SMAPE  MAE skill vs naive
+Model                                                        
+naive       570.713 743.873 0.147 111.037               0.000
+ridge       488.806 637.177 0.381 114.044               0.144
+lightgbm    491.151 642.640 0.370 117.733               0.139
+nn          501.365 652.538 0.354 115.895               0.122
+nn_ensemble 490.129 638.788 0.379 114.808               0.141
+
+GR | long price [EUR/MWh]
+               MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       56.089 136.915 -0.071 52.954               0.000
+ridge       56.652 108.404  0.330 68.942              -0.010
+lightgbm    51.688 109.308  0.319 67.063               0.078
+nn          55.336 109.997  0.311 69.708               0.013
+nn_ensemble 54.680 109.582  0.316 69.126               0.025
+
+GR | volume [MWh]
+               MAE   RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                     
+naive       52.229 73.813 0.539 86.030               0.000
+ridge       43.054 59.208 0.694 79.686               0.176
+lightgbm    45.674 62.458 0.663 83.843               0.126
+nn          48.656 65.349 0.635 87.988               0.068
+nn_ensemble 47.689 64.257 0.646 86.717               0.087
+
+HR | long price [EUR/MWh]
+               MAE    RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                      
+naive       63.152 136.349 0.049 59.519               0.000
+ridge       55.809 111.200 0.371 56.697               0.116
+lightgbm    54.987 117.452 0.299 54.691               0.129
+nn          58.204 115.862 0.319 58.641               0.078
+nn_ensemble 57.294 115.252 0.326 57.536               0.093
+
+HR | volume [MWh]
+               MAE   RMSE    R2   SMAPE  MAE skill vs naive
+Model                                                      
+naive       13.354 18.035 0.322  99.973               0.000
+ridge       11.063 14.830 0.537  96.162               0.172
+lightgbm    11.444 15.439 0.500  98.646               0.143
+nn          12.942 17.175 0.390 106.673               0.031
+nn_ensemble 12.588 16.738 0.420 105.091               0.057
+
+HU | long price [EUR/MWh]
+                MAE    RMSE     R2   SMAPE  MAE skill vs naive
+Model                                                         
+naive       116.379 281.458 -0.227  86.519               0.000
+ridge       115.992 225.518  0.220 113.027               0.003
+lightgbm    106.305 224.503  0.227 106.777               0.087
+nn          111.262 224.899  0.223 112.057               0.044
+nn_ensemble 109.520 223.711  0.231 110.709               0.059
+
+HU | volume [MWh]
+               MAE   RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                     
+naive       19.323 28.642 0.211 95.387               0.000
+ridge       17.434 25.588 0.383 90.681               0.098
+lightgbm    16.503 24.392 0.440 89.642               0.146
+nn          17.357 25.035 0.412 93.120               0.102
+nn_ensemble 16.861 24.526 0.434 90.920               0.127
+
+LV | long price [EUR/MWh]
+                MAE    RMSE     R2   SMAPE  MAE skill vs naive
+Model                                                         
+naive       126.808 257.369 -0.258 105.428               0.000
+ridge       108.822 209.553  0.171 106.202               0.142
+lightgbm    104.286 207.385  0.188 106.609               0.178
+nn          107.067 208.828  0.176 108.588               0.156
+nn_ensemble 106.299 208.336  0.180 108.007               0.162
+
+LV | volume [MWh]
+               MAE   RMSE    R2   SMAPE  MAE skill vs naive
+Model                                                      
+naive       20.201 28.601 0.349 101.249               0.000
+ridge       18.387 26.096 0.463 103.502               0.090
+lightgbm    18.234 26.190 0.461 103.979               0.097
+nn          18.604 26.262 0.458 105.360               0.079
+nn_ensemble 18.326 25.954 0.470 104.509               0.093
+
+PL | long price [EUR/MWh]
+               MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       35.737 190.374 -0.585 37.077               0.000
+ridge       31.100 142.233  0.118 39.492               0.130
+lightgbm    27.990 138.855  0.159 36.521               0.217
+nn          33.111 140.492  0.139 42.044               0.073
+nn_ensemble 32.438 140.211  0.143 41.370               0.092
+
+PL | volume [MWh]
+               MAE    RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                      
+naive       85.473 116.058 0.505 84.665               0.000
+ridge       74.254 100.873 0.610 81.052               0.131
+lightgbm    72.096  95.559 0.657 80.048               0.157
+nn          95.326 131.305 0.377 98.880              -0.115
+nn_ensemble 92.944 127.692 0.411 97.716              -0.087
+
+PT | long price [EUR/MWh]
+               MAE   RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                     
+naive       19.696 31.436 0.441 67.793               0.000
+ridge       19.731 28.651 0.537 70.231              -0.002
+lightgbm    18.002 27.355 0.578 63.861               0.086
+nn          18.510 27.261 0.582 67.002               0.060
+nn_ensemble 17.949 26.783 0.596 64.561               0.089
+
+PT | short price [EUR/MWh]
+               MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       26.349 111.744 -0.569 45.950               0.000
+ridge       26.506  82.166  0.152 44.509              -0.006
+lightgbm    21.869  80.338  0.189 38.963               0.170
+nn          24.059  81.290  0.170 41.617               0.087
+nn_ensemble 23.441  81.040  0.175 40.867               0.110
+
+PT | volume [MWh]
+                MAE    RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       170.558 235.945 0.729 81.568               0.000
+ridge       143.876 203.430 0.800 75.748               0.156
+lightgbm    155.314 292.530 0.601 78.725               0.089
+nn          149.078 213.066 0.783 78.154               0.126
+nn_ensemble 144.472 208.187 0.792 76.460               0.153
+
+RO | long price [EUR/MWh]
+                MAE    RMSE     R2   SMAPE  MAE skill vs naive
+Model                                                         
+naive       201.677 398.302 -0.319  99.644               0.000
+ridge       161.799 315.340  0.175 103.301               0.198
+lightgbm    149.189 311.805  0.193  95.233               0.260
+nn          161.326 307.142  0.218 105.483               0.200
+nn_ensemble 156.916 304.896  0.229 102.807               0.222
+
+RO | short price [EUR/MWh]
+                MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                        
+naive       196.632 391.207 -0.345 96.524               0.000
+ridge       156.792 307.592  0.170 97.199               0.203
+lightgbm    143.978 303.569  0.192 90.347               0.268
+nn          155.104 300.040  0.211 99.642               0.211
+nn_ensemble 150.855 297.956  0.222 96.940               0.233
+
+RO | volume [MWh]
+               MAE   RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                     
+naive       22.123 29.611 0.454 96.418               0.000
+ridge       20.321 27.072 0.538 92.781               0.081
+lightgbm    19.649 26.152 0.570 93.686               0.112
+nn          22.356 29.360 0.467 98.659              -0.011
+nn_ensemble 21.067 27.829 0.517 95.779               0.048
+
+RS | long price [EUR/MWh]
+               MAE   RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                     
+naive       51.774 73.326 0.104 59.790               0.000
+ridge       42.413 55.036 0.500 52.373               0.181
+lightgbm    41.808 54.994 0.501 49.862               0.193
+nn          44.896 58.244 0.441 53.529               0.133
+nn_ensemble 43.627 56.725 0.469 51.991               0.157
+
+RS | volume [MWh]
+               MAE   RMSE     R2   SMAPE  MAE skill vs naive
+Model                                                       
+naive       25.869 34.547 -0.635 133.135               0.000
+ridge       18.592 24.892  0.154 128.481               0.281
+lightgbm    18.078 24.530  0.179 126.159               0.301
+nn          19.075 25.480  0.114 132.534               0.263
+nn_ensemble 18.941 25.339  0.124 132.667               0.268
+
+SI | long price [EUR/MWh]
+               MAE    RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                      
+naive       47.550 106.454 0.062 49.800               0.000
+ridge       48.431  85.786 0.400 59.190              -0.019
+lightgbm    45.998  86.922 0.388 55.723               0.033
+nn          49.274  87.368 0.380 59.861              -0.036
+nn_ensemble 48.256  86.530 0.391 58.340              -0.015
+
+SI | volume [MWh]
+              MAE   RMSE    R2  SMAPE  MAE skill vs naive
+Model                                                    
+naive       9.041 12.520 0.622 92.995               0.000
+ridge       8.063 11.229 0.693 90.358               0.108
+lightgbm    7.460 10.471 0.734 86.868               0.175
+nn          8.260 11.249 0.695 93.878               0.086
+nn_ensemble 7.865 10.825 0.717 91.514               0.130
+
+SK | long price [EUR/MWh]
+               MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       44.150 108.373 -0.390 59.075               0.000
+ridge       37.932  83.767  0.171 55.201               0.141
+lightgbm    35.503  82.120  0.203 53.284               0.196
+nn          39.722  89.561  0.052 58.136               0.100
+nn_ensemble 38.313  85.892  0.128 56.383               0.132
+
+SK | short price [EUR/MWh]
+               MAE    RMSE     R2  SMAPE  MAE skill vs naive
+Model                                                       
+naive       48.176 145.647 -0.575 56.990               0.000
+ridge       39.829 110.563  0.094 49.774               0.173
+lightgbm    37.511 109.812  0.106 46.946               0.221
+nn          41.769 115.440  0.012 53.096               0.133
+nn_ensemble 40.382 112.685  0.059 51.232               0.162
+
+SK | volume [MWh]
+              MAE   RMSE    R2   SMAPE  MAE skill vs naive
+Model                                                     
+naive       7.812 13.583 0.135 102.168               0.000
+ridge       6.959 12.414 0.283 122.140               0.109
+lightgbm    6.880 11.929 0.337 120.152               0.119
+nn          7.249 12.837 0.237 123.391               0.072
+nn_ensemble 7.054 12.310 0.297 122.452               0.097
+

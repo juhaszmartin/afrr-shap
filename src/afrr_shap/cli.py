@@ -61,7 +61,7 @@ def main(argv=None):
         _run("preprocess_all.py", countries, env)
         _run("get_entsoe_info.py", env=env)
     if args.command in ("train", "pipeline"):
-        _run("train_all_100_seeds.py", countries, env)
+        _run("train_models.py", countries, env)
     if args.command in ("explain", "pipeline"):
         _run("run_shap_all.py", countries, env)
     if args.command in ("report", "pipeline"):
