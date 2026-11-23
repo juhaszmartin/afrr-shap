@@ -88,7 +88,9 @@ def write_manifest(country_code, data, extra):
         "target_names": data.target_names,
         **extra,
     }
-    (model_dir(country_code) / "manifest.json").write_text(json.dumps(manifest, indent=1))
+    (model_dir(country_code) / "manifest.json").write_text(
+        json.dumps(manifest, indent=1)
+    )
     return manifest
 
 

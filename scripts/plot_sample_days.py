@@ -14,7 +14,9 @@ from afrr_shap.modeling.metrics import base_series, horizon
 from afrr_shap.paths import RESULTS_DIR, SAMPLES_DIR
 
 plt.style.use(
-    "seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default"
+    "seaborn-v0_8-whitegrid"
+    if "seaborn-v0_8-whitegrid" in plt.style.available
+    else "default"
 )
 plt.rcParams.update({"font.size": 11, "axes.titlesize": 13, "legend.fontsize": 10})
 
@@ -44,7 +46,9 @@ def plot_country(country_code, split):
     df = df.filter(pl.col("timestamp") > last - pl.duration(days=3)).sort("timestamp")
     ts = df["timestamp"].dt.replace_time_zone(None).to_numpy()
 
-    targets = [c for c in df.columns if c not in ("timestamp", "split") and "|" not in c]
+    targets = [
+        c for c in df.columns if c not in ("timestamp", "split") and "|" not in c
+    ]
     models = [m for m in MODEL_STYLE if f"{targets[0]}|{m}" in df.columns]
     out_dir = SAMPLES_DIR / split
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -54,9 +58,10 @@ def plot_country(country_code, split):
     for target in targets:
         series = base_series(target)
         # Single-priced short prices repeat the long price; skip them
-        if series == "imbalance_price_short" and (
-            df[target] - df[target.replace("_short", "_long")]
-        ).abs().max() < 1e-6:
+        if (
+            series == "imbalance_price_short"
+            and (df[target] - df[target.replace("_short", "_long")]).abs().max() < 1e-6
+        ):
             continue
         fig, ax = plt.subplots(figsize=(14, 5.5))
         ax.plot(ts, df[target].to_numpy(), color="black", linewidth=2.0, label="actual")

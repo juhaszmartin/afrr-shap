@@ -493,7 +493,9 @@ def update_series(cc, cat):
     }
 
 
-DOWNLOAD_END = pd.Timestamp("2026-11-10", tz="UTC")  # in line with the end of the stored 2026 data
+DOWNLOAD_END = pd.Timestamp(
+    "2026-11-10", tz="UTC"
+)  # in line with the end of the stored 2026 data
 
 
 def download_series(cc, cat):
@@ -691,7 +693,8 @@ def parse_args(argv=None):
     )
 
     download = commands.add_parser(
-        "download", help="download every category of a new country, 2019 to DOWNLOAD_END"
+        "download",
+        help="download every category of a new country, 2019 to DOWNLOAD_END",
     )
     add_series_options(download)
 

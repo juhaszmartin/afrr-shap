@@ -90,7 +90,9 @@ def run_shap_for_country(country_code):
         print(f"Skipping {country_code}: no processed data.")
         return
     data = load_country(country_code)
-    manifest = load_manifest(country_code, data)  # refuses a feature layout that differs from training
+    manifest = load_manifest(
+        country_code, data
+    )  # refuses a feature layout that differs from training
     seeds = manifest.get("nn", {}).get("saved_seeds", [])
     model_paths = [model_dir(country_code) / f"nn_seed{s}.pt" for s in seeds]
     if not model_paths or not all(p.exists() for p in model_paths):
@@ -111,7 +113,9 @@ def run_shap_for_country(country_code):
 
     rng = np.random.default_rng(SHAP_CONFIG["sample_seed"])
     bg_idx = rng.choice(len(X_train), min(N_BACKGROUND, len(X_train)), replace=False)
-    ex_idx = np.sort(rng.choice(len(X_eval), min(N_EXPLAIN, len(X_eval)), replace=False))
+    ex_idx = np.sort(
+        rng.choice(len(X_eval), min(N_EXPLAIN, len(X_eval)), replace=False)
+    )
     background = torch.tensor(X_train[bg_idx], dtype=torch.float32, device=device)
     samples = torch.tensor(X_eval[ex_idx], dtype=torch.float32, device=device)
 
@@ -123,7 +127,9 @@ def run_shap_for_country(country_code):
         model.to(device).eval()
         explainer = shap.DeepExplainer(model, background)
         sv = explainer.shap_values(samples, check_additivity=False)
-        sv = np.stack(sv, axis=-1) if isinstance(sv, list) else sv  # (samples, features, targets)
+        sv = (
+            np.stack(sv, axis=-1) if isinstance(sv, list) else sv
+        )  # (samples, features, targets)
         # Additivity: SHAP values plus the expected value must give the model output
         with torch.no_grad():
             out = model(samples).cpu().numpy()
@@ -146,14 +152,18 @@ def run_shap_for_country(country_code):
     raw = X_eval_raw[ex_idx]
     for g, name in enumerate(group_names):
         if f"{name}_sin" in feature_names:
-            sin, cos = (raw[:, feature_names.index(f"{name}_{f}")] for f in ("sin", "cos"))
+            sin, cos = (
+                raw[:, feature_names.index(f"{name}_{f}")] for f in ("sin", "cos")
+            )
             group_values[:, g] = np.mod(np.arctan2(sin, cos), 2 * np.pi) / (2 * np.pi)
     mean_grouped = grouped.mean(axis=0)  # (samples, groups, targets)
 
     FIGURES_DIR.mkdir(exist_ok=True)
     clear_country_outputs(country_code)
     weather = {
-        c for c in group_names if any(k in c for k in ("temperature", "ssrd", "wind_speed"))
+        c
+        for c in group_names
+        if any(k in c for k in ("temperature", "ssrd", "wind_speed"))
     }
     mean_abs = pd.DataFrame(
         {
@@ -174,7 +184,11 @@ def run_shap_for_country(country_code):
                 "Target": target_name,
                 "rank_corr_mean": corr[np.triu_indices(len(imp), 1)].mean(),
                 "top10_overlap_mean": np.mean(
-                    [len(a & b) / 10 for i, a in enumerate(top10) for b in top10[i + 1 :]]
+                    [
+                        len(a & b) / 10
+                        for i, a in enumerate(top10)
+                        for b in top10[i + 1 :]
+                    ]
                 ),
             }
         )
@@ -215,7 +229,9 @@ def run_shap_for_country(country_code):
 
 
 if __name__ == "__main__":
-    countries = sorted(Path(f).stem.split("_")[1] for f in PROCESSED_DIR.glob("X_*.parquet"))
+    countries = sorted(
+        Path(f).stem.split("_")[1] for f in PROCESSED_DIR.glob("X_*.parquet")
+    )
     if len(sys.argv) > 1:  # optional subset, e.g. DE,FR
         countries = sys.argv[1].split(",")
     print(f"Running SHAP for {len(countries)} countries: {countries}")

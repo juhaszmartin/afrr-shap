@@ -54,7 +54,15 @@ EXCLUDED_COUNTRIES = {
 }
 
 # Cutoff years for countries that transitioned to 15-min settlement under EU EBGL
-CUTOFF_YEARS = {"ES": 2022, "RO": 2021, "FI": 2023, "HR": 2024, "PL": 2024, "SI": 2021, "CZ": 2024}
+CUTOFF_YEARS = {
+    "ES": 2022,
+    "RO": 2021,
+    "FI": 2023,
+    "HR": 2024,
+    "PL": 2024,
+    "SI": 2021,
+    "CZ": 2024,
+}
 
 # 2025 is the test year for every country; everything before it is training data
 # Countries whose market changed so much that older data describes a different system
@@ -198,10 +206,7 @@ def local_instant(country_code, ymd):
     """Local midnight of a (year, month, day) date as a UTC datetime."""
     from zoneinfo import ZoneInfo
 
-    return (
-        datetime(*ymd, tzinfo=ZoneInfo(LOCAL_TZ[country_code]))
-        .astimezone(UTC)
-    )
+    return datetime(*ymd, tzinfo=ZoneInfo(LOCAL_TZ[country_code])).astimezone(UTC)
 
 
 def fix_volume_sign(df_cat, country_code):
@@ -250,6 +255,7 @@ def fix_rs_volume(df_cat):
         # a DST change in the shift maps two labels onto one quarter-hour; keep the first
         .unique(subset=["timestamp"], keep="first", maintain_order=True)
     )
+
 
 # ENTSO-E passes prices through in the TSO's reporting currency. These series are converted
 # to EUR with the ECB daily reference rate (data/reference/ecb_eur_rates.csv, see get_fx_rates.py).
@@ -380,28 +386,40 @@ def spread_repeated_quarters(df, until):
     ts = pl.col("timestamp")
     early = (ts < until) & (pl.len().over(ts.dt.truncate("1h")) > 1)
     return df.with_columns(
-        [pl.when(early).then(pl.col(c) / 4).otherwise(pl.col(c)).alias(c) for c in df.columns if c != "timestamp"]
+        [
+            pl.when(early).then(pl.col(c) / 4).otherwise(pl.col(c)).alias(c)
+            for c in df.columns
+            if c != "timestamp"
+        ]
     )
 
 
 def load_baltic(country_code, cat):
     """One category from the Baltic Transparency Dashboard, in the column layout load_entsoe_data builds."""
     area, reports = BALTIC_SOURCES[country_code]
-    files = sorted(glob.glob(str(BALTIC_DIR / reports[cat] / "year=*" / "data.parquet")))
+    files = sorted(
+        glob.glob(str(BALTIC_DIR / reports[cat] / "year=*" / "data.parquet"))
+    )
     if not files:
-        raise FileNotFoundError(f"no {reports[cat]} in {BALTIC_DIR}; run scripts/baltic_download.py")
+        raise FileNotFoundError(
+            f"no {reports[cat]} in {BALTIC_DIR}; run scripts/baltic_download.py"
+        )
     df = pl.concat([pl.read_parquet(f) for f in files]).filter(pl.col("area") == area)
     wide = df.pivot("label", index="timestamp", values="value").sort("timestamp")
     if cat == "imbalance_prices":  # single price: the same value for long and short
         price = pl.coalesce("Final", "Preliminary")
-        return wide.select("timestamp", price.alias(f"{cat} - Long"), price.alias(f"{cat} - Short"))
+        return wide.select(
+            "timestamp", price.alias(f"{cat} - Long"), price.alias(f"{cat} - Short")
+        )
     if cat == "imbalance_volumes":
         wide = wide.select("timestamp", pl.col("value").alias(f"{cat} - value"))
         if country_code in BALTIC_HOURLY_UNTIL:
             wide = spread_repeated_quarters(wide, BALTIC_HOURLY_UNTIL[country_code])
         return wide
     if cat == "activated_balancing_energy_prices":
-        limit = lambda c: pl.when(pl.col(c).abs() <= BALANCING_PRICE_LIMIT).then(pl.col(c))
+        limit = lambda c: pl.when(pl.col(c).abs() <= BALANCING_PRICE_LIMIT).then(
+            pl.col(c)
+        )
         return wide.select(
             "timestamp",
             limit("Upward").alias(f"{cat} - reference_Up"),
@@ -469,9 +487,9 @@ def load_entsoe_data(country_code, is_hourly=False):
                 df_cat = convert_to_eur(df_cat, cat, country_code)
                 if cat == "imbalance_prices" and country_code in SWAPPED_LONG_SHORT:
                     # with_columns evaluates both expressions on the input frame, so this is a swap
-                    swapped = pl.col("timestamp").dt.convert_time_zone(
-                        "UTC"
-                    ) < pl.lit(SWAPPED_LONG_SHORT[country_code])
+                    swapped = pl.col("timestamp").dt.convert_time_zone("UTC") < pl.lit(
+                        SWAPPED_LONG_SHORT[country_code]
+                    )
                     df_cat = df_cat.with_columns(
                         pl.when(swapped)
                         .then(pl.col("Short"))
@@ -780,9 +798,7 @@ def select_feature_columns(df, feature_cols, split_ts, eval_end_ts=None):
         "train": df.filter(pl.col("timestamp") < split_ts),
         "dev": df.filter(dev_filter),
     }
-    test = (
-        df.filter(pl.col("timestamp") >= eval_end_ts) if eval_end_ts else df.clear()
-    )
+    test = df.filter(pl.col("timestamp") >= eval_end_ts) if eval_end_ts else df.clear()
     dropped = {"missing": [], "constant": [], "missing in test": []}
     keep = []
     for c in feature_cols:
@@ -1110,18 +1126,23 @@ def process_country(country_code):
         .otherwise(pl.lit("test"))
     )
     with_targets = (
-        X.select("timestamp").hstack(y)
+        X.select("timestamp")
+        .hstack(y)
         .drop_nulls()
         .group_by(split_of.alias("split"))
         .len()
     )
     combined = X.hstack(y).drop_nulls()
     # Features in sorted order, so the model input layout is the same in every run
-    X = combined.select(["timestamp", *sorted(c for c in X.columns if c != "timestamp")])
+    X = combined.select(
+        ["timestamp", *sorted(c for c in X.columns if c != "timestamp")]
+    )
     y = combined.select(y.columns)
 
     kept = combined.group_by(split_of.alias("split")).len()
-    report = with_targets.join(kept, on="split", how="left", suffix="_kept").fill_null(0)
+    report = with_targets.join(kept, on="split", how="left", suffix="_kept").fill_null(
+        0
+    )
     for split in ("train", "dev", "test"):
         row = report.filter(pl.col("split") == split)
         n_targets, n_kept = (row.row(0)[1], row.row(0)[2]) if row.height else (0, 0)
@@ -1149,7 +1170,10 @@ if __name__ == "__main__":
     for cc in countries:
         if cc in EXCLUDED_COUNTRIES:
             print(f"\nSkipping {cc}: {EXCLUDED_COUNTRIES[cc]}")
-            for stale in (PROCESSED_DIR / f"X_{cc}.parquet", PROCESSED_DIR / f"y_{cc}.parquet"):
+            for stale in (
+                PROCESSED_DIR / f"X_{cc}.parquet",
+                PROCESSED_DIR / f"y_{cc}.parquet",
+            ):
                 stale.unlink(missing_ok=True)
             continue
         process_country(cc)

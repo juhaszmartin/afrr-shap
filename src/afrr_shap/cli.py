@@ -50,8 +50,8 @@ def _parser():
 def main(argv=None):
     args = _parser().parse_args(argv)
     env = os.environ.copy()
-    env["PYTHONPATH"] = str(PROJECT_ROOT / "src") + os.pathsep + env.get(
-        "PYTHONPATH", ""
+    env["PYTHONPATH"] = (
+        str(PROJECT_ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
     )
     if args.config:
         env["AFRR_CONFIG"] = args.config

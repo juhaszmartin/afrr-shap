@@ -54,7 +54,9 @@ def series_by_category(columns):
 
 def format_timestamp(value):
     """Format UTC timestamps without repeating the timezone in every cell."""
-    return "-" if value is None else value.replace(tzinfo=None).strftime("%Y-%m-%d %H:%M")
+    return (
+        "-" if value is None else value.replace(tzinfo=None).strftime("%Y-%m-%d %H:%M")
+    )
 
 
 if __name__ == "__main__":
@@ -90,19 +92,8 @@ if __name__ == "__main__":
     eligible_countries = [
         cc for cc in countries if data[cc][2]["status"].startswith("usable")
     ]
-    cats = [
-        c
-        for c in CATEGORIES
-        if any(c in data[cc][0] for cc in eligible_countries)
-    ]
-    cats += sorted(
-        {
-            c
-            for cc in eligible_countries
-            for c in data[cc][0]
-        }
-        - set(cats)
-    )
+    cats = [c for c in CATEGORIES if any(c in data[cc][0] for cc in eligible_countries)]
+    cats += sorted({c for cc in eligible_countries for c in data[cc][0]} - set(cats))
 
     lines = [
         "# Input series per country\n\n",
@@ -138,8 +129,7 @@ if __name__ == "__main__":
         lines.append(
             f"| {cat} | "
             + " | ".join(
-                str(len(data[cc][0].get(cat, ()))) or "0"
-                for cc in eligible_countries
+                str(len(data[cc][0].get(cat, ()))) or "0" for cc in eligible_countries
             )
             + " |\n"
         )

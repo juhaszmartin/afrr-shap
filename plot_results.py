@@ -29,7 +29,9 @@ def chart(df, value, title):
     misplaced panels), one panel per country, one bar per model."""
     models = [m for m in MODEL_ORDER if m in set(df["Model"])]
     colors = [MODEL_COLORS[MODEL_ORDER.index(m)] for m in models]
-    y_scale = alt.Scale(domain=[float(df[value].min()), float(df[value].max())], nice=True)
+    y_scale = alt.Scale(
+        domain=[float(df[value].min()), float(df[value].max())], nice=True
+    )
     rows = []
     for h in sorted(df["Horizon"].unique(), key=horizon_key):
         rows.append(
@@ -41,7 +43,9 @@ def chart(df, value, title):
                 color=alt.Color(
                     "Model:N", sort=models, scale=alt.Scale(domain=models, range=colors)
                 ).legend(orient="bottom", direction="horizontal"),
-                column=alt.Column("Country:N", title=None, header=alt.Header(labelFontSize=12)),
+                column=alt.Column(
+                    "Country:N", title=None, header=alt.Header(labelFontSize=12)
+                ),
             )
             .properties(width=55, height=110)
         )

@@ -21,7 +21,9 @@ Usage: python scripts/train_models.py [CC,CC,...]
 
 import os
 
-os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")  # before CUDA starts, for deterministic cuBLAS
+os.environ.setdefault(
+    "CUBLAS_WORKSPACE_CONFIG", ":4096:8"
+)  # before CUDA starts, for deterministic cuBLAS
 
 import copy
 import pickle
@@ -144,7 +146,9 @@ def train_nn_seeds(data, Xs, ys, scaler_y, out_dir):
     batch_size = NN_CONFIG["batch_size"]
     n_samples = len(X_train)
     per_seed = {s: [] for s in EVAL_SPLITS}  # list of metric dicts
-    pred_sum = {s: np.zeros((int(data.masks[s].sum()), ys.shape[1])) for s in EVAL_SPLITS}
+    pred_sum = {
+        s: np.zeros((int(data.masks[s].sum()), ys.shape[1])) for s in EVAL_SPLITS
+    }
     dev_losses, epochs_run = [], []
     for seed in range(n_seeds):
         np.random.seed(seed)
@@ -300,9 +304,7 @@ def train_country(country_code):
         groups = target_groups(data.target_names, y_true)
         rows = []
         if seed_metrics is not None and seed_metrics[s]:
-            stacked = {
-                k: np.stack([m[k] for m in seed_metrics[s]]) for k in METRICS
-            }
+            stacked = {k: np.stack([m[k] for m in seed_metrics[s]]) for k in METRICS}
             rows += metric_rows(
                 country_code,
                 s,
@@ -372,7 +374,9 @@ def write_summary(split):
 
 
 if __name__ == "__main__":
-    countries = sorted(Path(f).stem.split("_")[1] for f in PROCESSED_DIR.glob("X_*.parquet"))
+    countries = sorted(
+        Path(f).stem.split("_")[1] for f in PROCESSED_DIR.glob("X_*.parquet")
+    )
     if len(sys.argv) > 1:  # optional subset, e.g. DE,FR
         countries = sys.argv[1].split(",")
     print(f"Training {MODELS} for {len(countries)} countries: {countries}")

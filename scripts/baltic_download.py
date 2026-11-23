@@ -37,15 +37,19 @@ START, END = datetime(2019, 1, 1, tzinfo=UTC), datetime(2026, 11, 10, tzinfo=UTC
 
 
 def fetch(report, start, end):
-    query = urllib.parse.urlencode({
-        "id": report,
-        "start_date": start.strftime("%Y-%m-%dT%H:%M"),
-        "end_date": end.strftime("%Y-%m-%dT%H:%M"),
-        "output_time_zone": "UTC",
-        "output_format": "json",
-        "json_header_groups": 1,
-    })
-    request = urllib.request.Request(f"{URL}?{query}", headers={"User-Agent": "Mozilla/5.0"})
+    query = urllib.parse.urlencode(
+        {
+            "id": report,
+            "start_date": start.strftime("%Y-%m-%dT%H:%M"),
+            "end_date": end.strftime("%Y-%m-%dT%H:%M"),
+            "output_time_zone": "UTC",
+            "output_format": "json",
+            "json_header_groups": 1,
+        }
+    )
+    request = urllib.request.Request(
+        f"{URL}?{query}", headers={"User-Agent": "Mozilla/5.0"}
+    )
     for attempt in range(5):
         try:
             with urllib.request.urlopen(request, timeout=120) as r:
@@ -67,7 +71,13 @@ def fetch(report, start, end):
         if v is not None
     ]
     return pl.DataFrame(
-        rows, schema={"timestamp": pl.Datetime("us", "UTC"), "area": pl.Utf8, "label": pl.Utf8, "value": pl.Float64},
+        rows,
+        schema={
+            "timestamp": pl.Datetime("us", "UTC"),
+            "area": pl.Utf8,
+            "label": pl.Utf8,
+            "value": pl.Float64,
+        },
         orient="row",
     )
 
@@ -82,11 +92,19 @@ def download(report):
             continue
         frames = []
         for m in year_months:
-            frames.append(fetch(report, m, min(m + pd.offsets.MonthBegin(1), pd.Timestamp(END))))
-        df = pl.concat(frames).unique(["timestamp", "area", "label"], keep="last").sort("timestamp", "area", "label")
+            frames.append(
+                fetch(report, m, min(m + pd.offsets.MonthBegin(1), pd.Timestamp(END)))
+            )
+        df = (
+            pl.concat(frames)
+            .unique(["timestamp", "area", "label"], keep="last")
+            .sort("timestamp", "area", "label")
+        )
         path.parent.mkdir(parents=True, exist_ok=True)
         df.write_parquet(path)
-        print(f"{report} {year}: {df.height} values, areas {sorted(df['area'].unique())}")
+        print(
+            f"{report} {year}: {df.height} values, areas {sorted(df['area'].unique())}"
+        )
 
 
 if __name__ == "__main__":

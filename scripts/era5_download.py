@@ -74,7 +74,9 @@ REGIONS = {
 }
 COUNTRIES = {c: box for boxes in REGIONS.values() for c, box in boxes.items()}
 REGION_OF = {c: r for r, boxes in REGIONS.items() for c in boxes}
-YEARS = range(2019, 2027)  # cached region files are reused, so only missing years are downloaded
+YEARS = range(
+    2019, 2027
+)  # cached region files are reused, so only missing years are downloaded
 VARIABLES = [
     "2m_temperature",
     "surface_solar_radiation_downwards",
@@ -103,7 +105,9 @@ def region_area(region):
 
 
 def _cds():
-    return os.environ["CDSAPI_URL"].rstrip("/") + "/retrieve/v1", {"PRIVATE-TOKEN": os.environ["CDSAPI_KEY"]}
+    return os.environ["CDSAPI_URL"].rstrip("/") + "/retrieve/v1", {
+        "PRIVATE-TOKEN": os.environ["CDSAPI_KEY"]
+    }
 
 
 def _key(req):
@@ -117,9 +121,19 @@ def earlier_jobs():
     base, h = _cds()
     jobs = {}
     for status in ("successful", "running", "accepted"):
-        listed = requests.get(f"{base}/jobs", params={"limit": 100, "status": status}, headers=h, timeout=60)
+        listed = requests.get(
+            f"{base}/jobs",
+            params={"limit": 100, "status": status},
+            headers=h,
+            timeout=60,
+        )
         for j in listed.json().get("jobs", []):
-            meta = requests.get(f"{base}/jobs/{j['jobID']}", params={"request": "true"}, headers=h, timeout=60)
+            meta = requests.get(
+                f"{base}/jobs/{j['jobID']}",
+                params={"request": "true"},
+                headers=h,
+                timeout=60,
+            )
             ids = meta.json().get("metadata", {}).get("request", {}).get("ids", {})
             if all(k in ids for k in ("year", "month", "area", "variable")):
                 jobs.setdefault(_key(ids), j["jobID"])
@@ -130,7 +144,11 @@ def fetch_job(job_id, path):
     """Waits for an earlier CDS job and downloads its result to path; False if it failed or its result expired."""
     base, h = _cds()
     while True:
-        status = requests.get(f"{base}/jobs/{job_id}", headers=h, timeout=60).json().get("status")
+        status = (
+            requests.get(f"{base}/jobs/{job_id}", headers=h, timeout=60)
+            .json()
+            .get("status")
+        )
         if status == "successful":
             break
         if status not in ("accepted", "running"):
@@ -139,7 +157,9 @@ def fetch_job(job_id, path):
     res = requests.get(f"{base}/jobs/{job_id}/results", headers=h, timeout=60)
     if res.status_code != 200:
         return False
-    with requests.get(res.json()["asset"]["value"]["href"], stream=True, timeout=600) as r:
+    with requests.get(
+        res.json()["asset"]["value"]["href"], stream=True, timeout=600
+    ) as r:
         r.raise_for_status()
         with open(path, "wb") as f:
             f.writelines(r.iter_content(1 << 20))
@@ -168,9 +188,13 @@ def download(job):
     if not (earlier and fetch_job(earlier, tmp)):
         for _ in range(200):
             try:
-                cdsapi.Client(quiet=True).retrieve("reanalysis-era5-single-levels", request, str(tmp))
+                cdsapi.Client(quiet=True).retrieve(
+                    "reanalysis-era5-single-levels", request, str(tmp)
+                )
                 break
-            except Exception as e:  # CDS rejects jobs when too many are queued; wait and retry
+            except (
+                Exception
+            ) as e:  # CDS rejects jobs when too many are queued; wait and retry
                 if "queued requests" not in str(e):
                     raise
                 time.sleep(120)
@@ -299,9 +323,13 @@ def download_point(point):
     }
     for _ in range(500):
         try:
-            cdsapi.Client(quiet=True).retrieve("reanalysis-era5-single-levels-timeseries", request, str(tmp))
+            cdsapi.Client(quiet=True).retrieve(
+                "reanalysis-era5-single-levels-timeseries", request, str(tmp)
+            )
             break
-        except Exception as e:  # CDS rejects jobs when too many are queued; wait and retry
+        except (
+            Exception
+        ) as e:  # CDS rejects jobs when too many are queued; wait and retry
             if "queued requests" not in str(e):
                 raise
             time.sleep(20)
@@ -320,21 +348,32 @@ def process_points(countries):
     OUT.mkdir(exist_ok=True)
     for country in countries:
         frames = [
-            pd.read_csv(point_path(pt), parse_dates=["valid_time"], index_col="valid_time")
+            pd.read_csv(
+                point_path(pt), parse_dates=["valid_time"], index_col="valid_time"
+            )
             for pt in grid_points(COUNTRIES[country])
         ]
         fields = {
             "temperature": pd.concat([f["t2m"] - 273.15 for f in frames], axis=1),
             "ssrd": pd.concat([f["ssrd"] for f in frames], axis=1),
-            "10m_wind": pd.concat([np.sqrt(f["u10"] ** 2 + f["v10"] ** 2) for f in frames], axis=1),
-            "100m_wind": pd.concat([np.sqrt(f["u100"] ** 2 + f["v100"] ** 2) for f in frames], axis=1),
+            "10m_wind": pd.concat(
+                [np.sqrt(f["u10"] ** 2 + f["v10"] ** 2) for f in frames], axis=1
+            ),
+            "100m_wind": pd.concat(
+                [np.sqrt(f["u100"] ** 2 + f["v100"] ** 2) for f in frames], axis=1
+            ),
         }
         for k, values in fields.items():
             values = values.sort_index()
-            for (name, column), s in zip(FILES[k], (values.mean(axis=1), values.std(axis=1, ddof=0))):
-                pd.DataFrame({"datetime": s.index.strftime("%Y-%m-%d %H:%M:%S"), column: s.values}).to_csv(
-                    OUT / f"{country}_{name}_2019_2025.csv", index=False
-                )
+            for (name, column), s in zip(
+                FILES[k], (values.mean(axis=1), values.std(axis=1, ddof=0))
+            ):
+                pd.DataFrame(
+                    {
+                        "datetime": s.index.strftime("%Y-%m-%d %H:%M:%S"),
+                        column: s.values,
+                    }
+                ).to_csv(OUT / f"{country}_{name}_2019_2025.csv", index=False)
         print(f"wrote {country} from {len(frames)} grid points", flush=True)
 
 
